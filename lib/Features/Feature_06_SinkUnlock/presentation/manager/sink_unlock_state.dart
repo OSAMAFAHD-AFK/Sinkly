@@ -1,0 +1,76 @@
+part of 'sink_unlock_cubit.dart';
+
+/// Linear flow of the unlock experience.
+enum SinkUnlockStage { intro, sprinting, verifying, celebrating }
+
+class SinkUnlockState extends Equatable {
+  const SinkUnlockState({
+    required this.stage,
+    required this.lockStatus,
+    required this.blockedApps,
+    required this.remainingSeconds,
+    this.sprintStartedAt,
+    this.photoPath,
+    this.isCapturing = false,
+    this.failureKey,
+    this.completedSession,
+    this.statsAfterUnlock,
+  });
+
+  final SinkUnlockStage stage;
+  final LockStatusModel lockStatus;
+  final List<BlockableAppModel> blockedApps;
+  final int remainingSeconds;
+  final DateTime? sprintStartedAt;
+  final String? photoPath;
+  final bool isCapturing;
+  final String? failureKey;
+  final SinkCleaningSessionModel? completedSession;
+  final SinkProgressStatsModel? statsAfterUnlock;
+
+  static int get sprintTotalSeconds => AppConstants.sinkSprintDuration.inSeconds;
+
+  /// 0 → 1 as the 4-minute sprint elapses.
+  double get sprintProgress => 1 - remainingSeconds / sprintTotalSeconds;
+
+  bool get isSprintFinished => remainingSeconds <= 0;
+
+  SinkUnlockState copyWith({
+    SinkUnlockStage? stage,
+    LockStatusModel? lockStatus,
+    List<BlockableAppModel>? blockedApps,
+    int? remainingSeconds,
+    DateTime? sprintStartedAt,
+    String? photoPath,
+    bool? isCapturing,
+    String? failureKey,
+    bool clearFailure = false,
+    SinkCleaningSessionModel? completedSession,
+    SinkProgressStatsModel? statsAfterUnlock,
+  }) => SinkUnlockState(
+    stage: stage ?? this.stage,
+    lockStatus: lockStatus ?? this.lockStatus,
+    blockedApps: blockedApps ?? this.blockedApps,
+    remainingSeconds: remainingSeconds ?? this.remainingSeconds,
+    sprintStartedAt: sprintStartedAt ?? this.sprintStartedAt,
+    photoPath: photoPath ?? this.photoPath,
+    isCapturing: isCapturing ?? this.isCapturing,
+    failureKey: clearFailure ? null : failureKey ?? this.failureKey,
+    completedSession: completedSession ?? this.completedSession,
+    statsAfterUnlock: statsAfterUnlock ?? this.statsAfterUnlock,
+  );
+
+  @override
+  List<Object?> get props => [
+    stage,
+    lockStatus,
+    blockedApps,
+    remainingSeconds,
+    sprintStartedAt,
+    photoPath,
+    isCapturing,
+    failureKey,
+    completedSession,
+    statsAfterUnlock,
+  ];
+}

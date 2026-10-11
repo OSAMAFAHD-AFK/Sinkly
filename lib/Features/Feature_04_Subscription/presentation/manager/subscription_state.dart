@@ -1,0 +1,46 @@
+part of 'subscription_cubit.dart';
+
+enum SubscriptionStatus { initial, loading, ready, purchasing, restoring, failure }
+
+class SubscriptionState extends Equatable {
+  const SubscriptionState({
+    this.status = SubscriptionStatus.initial,
+    this.plans = const [],
+    this.selectedPlanId,
+    this.isPremium = false,
+    this.failureKey,
+  });
+
+  final SubscriptionStatus status;
+  final List<SubscriptionPlanModel> plans;
+  final String? selectedPlanId;
+  final bool isPremium;
+  final String? failureKey;
+
+  bool get isBusy => status == SubscriptionStatus.purchasing || status == SubscriptionStatus.restoring;
+
+  SubscriptionPlanModel? get selectedPlan {
+    for (final plan in plans) {
+      if (plan.id == selectedPlanId) return plan;
+    }
+    return plans.isEmpty ? null : plans.first;
+  }
+
+  SubscriptionState copyWith({
+    SubscriptionStatus? status,
+    List<SubscriptionPlanModel>? plans,
+    String? selectedPlanId,
+    bool? isPremium,
+    String? failureKey,
+    bool clearFailure = false,
+  }) => SubscriptionState(
+    status: status ?? this.status,
+    plans: plans ?? this.plans,
+    selectedPlanId: selectedPlanId ?? this.selectedPlanId,
+    isPremium: isPremium ?? this.isPremium,
+    failureKey: clearFailure ? null : failureKey ?? this.failureKey,
+  );
+
+  @override
+  List<Object?> get props => [status, plans, selectedPlanId, isPremium, failureKey];
+}

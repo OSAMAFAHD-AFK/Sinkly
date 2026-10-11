@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Force D:\\\\Sinkly; \\(Get-Command flutter -ErrorAction SilentlyContinue\\).Source; \\(Get-Command dart -ErrorAction SilentlyContinue\\).Source)",
+      "PowerShell(flutter --version)"
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+import 'package:dartz/dartz.dart';
+
+import '../../../../core/errors/failures.dart';
+import '../../../../core/models/shared_core_models.dart';
+import '../models/sink_photo_verification_result_model.dart';
+
+abstract class SinkUnlockRepo {
+  LockStatusModel currentLockStatus({required DateTime now});
+  List<BlockableAppModel> blockedApps();
+  SinkProgressStatsModel progressStats({required DateTime now});
+
+  /// `Right(null)` means the user cancelled the camera.
+  Future<Either<Failure, String?>> captureSinkPhoto();
+
+  Future<Either<Failure, SinkPhotoVerificationResultModel>> verifySinkPhoto(String photoPath);
+
+  /// Records the session and lifts the OS-level lock.
+  Future<Either<Failure, SinkCleaningSessionModel>> completeSession({
+    required DateTime startedAt,
+    required String photoPath,
+    required MealType? triggeringMeal,
+  });
+}

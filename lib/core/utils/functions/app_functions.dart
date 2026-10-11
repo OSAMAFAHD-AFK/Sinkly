@@ -1,0 +1,65 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import '../app_localizations.dart';
+
+/// Small, stateless helpers shared across features.
+abstract final class AppFunctions {
+  // ── Haptics (subtle feedback makes the glass UI feel tactile) ──────────
+  static void selectionHaptic() => HapticFeedback.selectionClick();
+  static void lightHaptic() => HapticFeedback.lightImpact();
+  static void mediumHaptic() => HapticFeedback.mediumImpact();
+  static void successHaptic() => HapticFeedback.heavyImpact();
+
+  // ── Time formatting ────────────────────────────────────────────────────
+  /// 1260 → "9:00 PM" (or "21:00" depending on device settings).
+  static String formatMinutesOfDay(BuildContext context, int minutesOfDay) {
+    final time = TimeOfDay(hour: minutesOfDay ~/ 60, minute: minutesOfDay % 60);
+    return MaterialLocalizations.of(context)
+        .formatTimeOfDay(time, alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+  }
+
+  static String formatDateTimeClock(BuildContext context, DateTime dateTime) =>
+      formatMinutesOfDay(context, dateTime.hour * 60 + dateTime.minute);
+
+  /// 2h 14m / 14m / 45s — compact, language-neutral units from translations.
+  static String formatCompactDuration(BuildContext context, Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    if (hours > 0) return context.tr('duration_hours_minutes', {'h': '$hours', 'm': '$minutes'});
+    if (duration.inMinutes > 0) return context.tr('duration_minutes', {'m': '${duration.inMinutes}'});
+    return context.tr('duration_seconds', {'s': '${duration.inSeconds.clamp(0, 59)}'});
+  }
+
+  /// 240 → "04:00" for countdowns.
+  static String formatCountdown(int totalSeconds) {
+    final safe = totalSeconds < 0 ? 0 : totalSeconds;
+    final minutes = (safe ~/ 60).toString().padLeft(2, '0');
+    final seconds = (safe % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  /// Translation key for a short weekday label (1 = Monday).
+  static String weekdayShortKey(int weekday) => 'weekday_short_$weekday';
+  static String weekdayLongKey(int weekday) => 'weekday_long_$weekday';
+
+  /// Greeting translation key based on the hour.
+  static String greetingKey(DateTime now) {
+    if (now.hour < 12) return 'greeting_morning';
+    if (now.hour < 18) return 'greeting_afternoon';
+    return 'greeting_evening';
+  }
+
+  static bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+
+  static DateTime startOfDay(DateTime date) => DateTime(date.year, date.month, date.day);
+
+  /// Initial letter for avatar bubbles.
+  static String initialOf(String name) => name.trim().isEmpty ? '🙂' : name.trim().characters.first.toUpperCase();
+
+  static void showSnack(BuildContext context, String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+}

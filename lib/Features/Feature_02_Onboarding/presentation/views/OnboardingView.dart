@@ -1,0 +1,159 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../../../core/utils/app_router.dart';
+import '../../../../core/utils/functions/app_functions.dart';
+import '../../../../core/utils/style.dart';
+import '../../../../core/widgets/glass_icon_button.dart';
+import '../../../../core/widgets/glass_screen_scaffold.dart';
+import '../manager/onboarding_cubit.dart';
+import 'widgets/dish_pileup_diagnosis_quiz_step_widget.dart';
+import 'widgets/dishwashing_struggle_empathy_step_widget.dart';
+import 'widgets/distracting_apps_selection_step_widget.dart';
+import 'widgets/emotional_pain_point_step_widget.dart';
+import 'widgets/language_selection_step_widget.dart';
+import 'widgets/meal_schedule_setup_step_widget.dart';
+import 'widgets/name_input_step_widget.dart';
+import 'widgets/onboarding_progress_bar_widget.dart';
+import 'widgets/paywall_step_widget.dart';
+import 'widgets/personal_commitment_step_widget.dart';
+import 'widgets/personalized_plan_summary_step_widget.dart';
+import 'widgets/reality_check_step_widget.dart';
+import 'widgets/screen_time_permission_step_widget.dart';
+import 'widgets/sinkly_solution_explainer_step_widget.dart';
+import 'widgets/time_loss_friction_analysis_step_widget.dart';
+import 'widgets/trial_reminder_assurance_step_widget.dart';
+
+/// The 15-screen onboarding funnel in a single, cubit-driven [PageView].
+///
+/// * Swipe is disabled — progress only moves through CTAs (keeps answers valid).
+/// * Pages are built lazily by [PageView.builder]; only the visible step lives.
+/// * System back / swipe-back goes to the previous step instead of exiting.
+///
+/// Adapty Onboarding Builder: when `AppConstants.useAdaptyOnboardingBuilder`
+/// is enabled, the router can present the remote onboarding instead of this
+/// view; answers would then be mapped into the same OnboardingUserPreferencesModel.
+class OnboardingView extends StatefulWidget {
+  const OnboardingView({super.key});
+
+  @override
+  State<OnboardingView> createState() => _OnboardingViewState();
+}
+
+class _OnboardingViewState extends State<OnboardingView> {
+  late final PageController _pageController = PageController(
+    initialPage: context.read<OnboardingCubit>().state.stepIndex,
+  );
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _syncPage(OnboardingState state) {
+    if (!_pageController.hasClients) return;
+    FocusManager.instance.primaryFocus?.unfocus();
+    AppFunctions.selectionHaptic();
+    _pageController.animateToPage(state.stepIndex, duration: AppDurations.page, curve: Curves.easeInOutCubic);
+  }
+
+  Future<void> _finishOnboarding(bool purchased) async {
+    final completed = await context.read<OnboardingCubit>().completeOnboarding();
+    if (!mounted || !completed) return;
+    // Account step is next: lets the user save the plan (Apple / Google / guest).
+    context.go(AppRouter.kAuthView);
+  }
+
+  Widget _buildStep(OnboardingStep step) => switch (step) {
+    OnboardingStep.languageSelection => const LanguageSelectionStepWidget(),
+    OnboardingStep.nameInput => const NameInputStepWidget(),
+    OnboardingStep.emotionalPainPoint => const EmotionalPainPointStepWidget(),
+    OnboardingStep.realityCheck => const RealityCheckStepWidget(),
+    OnboardingStep.dishPileupDiagnosisQuiz => const DishPileupDiagnosisQuizStepWidget(),
+    OnboardingStep.dishwashingStruggleEmpathy => const DishwashingStruggleEmpathyStepWidget(),
+    OnboardingStep.timeLossFrictionAnalysis => const TimeLossFrictionAnalysisStepWidget(),
+    OnboardingStep.mealScheduleSetup => const MealScheduleSetupStepWidget(),
+    OnboardingStep.distractingAppsSelection => const DistractingAppsSelectionStepWidget(),
+    OnboardingStep.screenTimePermission => const ScreenTimePermissionStepWidget(),
+    OnboardingStep.sinklySolutionExplainer => const SinklySolutionExplainerStepWidget(),
+    OnboardingStep.personalCommitment => const PersonalCommitmentStepWidget(),
+    OnboardingStep.personalizedPlanSummary => const PersonalizedPlanSummaryStepWidget(),
+    OnboardingStep.trialReminderAssurance => const TrialReminderAssuranceStepWidget(),
+    OnboardingStep.paywall => PaywallStepWidget(
+      userName: context.read<OnboardingCubit>().state.preferences.trimmedName,
+      onFinished: _finishOnboarding,
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final currentStep = context.select((OnboardingCubit c) => c.state.currentStep);
+
+    return PopScope(
+      canPop: currentStep.isFirst,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && !currentStep.isPaywall) context.read<OnboardingCubit>().previousStep();
+      },
+      child: BlocListener<OnboardingCubit, OnboardingState>(
+        listenWhen: (previous, current) => previous.currentStep != current.currentStep,
+        listener: (context, state) => _syncPage(state),
+        child: GlassScreenScaffold(
+          animateBackground: true,
+          body: Column(
+            children: [
+              AnimatedSize(
+                duration: AppDurations.medium,
+                child: currentStep.showsChrome
+                    ? _OnboardingTopBar(step: currentStep)
+                    : const SizedBox(width: double.infinity),
+              ),
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: OnboardingStep.values.length,
+                  itemBuilder: (context, index) => _buildStep(OnboardingStep.values[index]),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OnboardingTopBar extends StatelessWidget {
+  const _OnboardingTopBar({required this.step});
+
+  final OnboardingStep step;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = context.select((OnboardingCubit c) => c.state.progress);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter - 6, AppSpacing.xs, AppSpacing.screenGutter, 0),
+      child: Row(
+        children: [
+          AnimatedOpacity(
+            opacity: step.isFirst ? 0 : 1,
+            duration: AppDurations.medium,
+            child: IgnorePointer(
+              ignoring: step.isFirst,
+              child: GlassIconButton.back(context: context, onPressed: context.read<OnboardingCubit>().previousStep),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(child: OnboardingProgressBarWidget(progress: progress)),
+          const SizedBox(width: AppSpacing.sm),
+          Text(
+            '${step.index + 1}/${OnboardingStep.values.length}',
+            style: AppTextStyles.label.copyWith(letterSpacing: 0),
+          ),
+        ],
+      ),
+    );
+  }
+}
