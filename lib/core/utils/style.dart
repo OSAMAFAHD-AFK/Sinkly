@@ -168,19 +168,32 @@ abstract final class AppGradients {
 /// Typography scale. Plus Jakarta Sans gives the soft geometric feel seen in
 /// the reference designs while staying highly legible.
 abstract final class AppTextStyles {
+  /// Plus Jakarta Sans has no Arabic glyphs, so Arabic switches to Cairo
+  /// (similar geometric, friendly feel). Set by `LocaleController`.
+  static bool _useArabicFont = false;
+  static void configureForLanguage(String languageCode) => _useArabicFont = languageCode == 'ar';
+
+  /// Font family name used for the global TextTheme.
+  static String? get fontFamily =>
+      _useArabicFont ? GoogleFonts.cairo().fontFamily : GoogleFonts.plusJakartaSans().fontFamily;
+
   static TextStyle _base(
     double size,
     FontWeight weight, {
     double height = 1.3,
     Color color = AppColors.ink,
     double letterSpacing = 0,
-  }) => GoogleFonts.plusJakartaSans(
-    fontSize: size,
-    fontWeight: weight,
-    height: height,
-    color: color,
-    letterSpacing: letterSpacing,
-  );
+  }) {
+    // Arabic letters must stay joined: no tracking, slightly taller lines.
+    final style = _useArabicFont ? GoogleFonts.cairo : GoogleFonts.plusJakartaSans;
+    return style(
+      fontSize: size,
+      fontWeight: weight,
+      height: _useArabicFont ? height * 1.08 : height,
+      color: color,
+      letterSpacing: _useArabicFont ? 0 : letterSpacing,
+    );
+  }
 
   static TextStyle get display => _base(34, FontWeight.w800, height: 1.12, letterSpacing: -0.8);
   static TextStyle get headline => _base(27, FontWeight.w800, height: 1.18, letterSpacing: -0.5);

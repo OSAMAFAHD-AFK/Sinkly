@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'style.dart';
 
@@ -33,7 +32,7 @@ abstract final class AppTheme {
       // google_fonts 9 builds TextTheme against the decoupled `material_ui`
       // package, so apply the family to Flutter's own TextTheme instead.
       textTheme: base.textTheme.apply(
-        fontFamily: GoogleFonts.plusJakartaSans().fontFamily,
+        fontFamily: AppTextStyles.fontFamily,
         bodyColor: AppColors.ink,
         displayColor: AppColors.ink,
       ),

@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 
 import '../models/supported_language_model.dart';
 import 'local_storage_service.dart';
+import 'style.dart';
 
 /// JSON-based localization.
 ///
@@ -74,7 +75,9 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 /// [changeLanguage] re-renders the app instantly (including RTL flipping for
 /// Arabic, handled automatically by `GlobalWidgetsLocalizations`).
 class LocaleController extends ChangeNotifier {
-  LocaleController(this._storage) : _locale = Locale(_storage.getString(_localeKey) ?? deviceLanguageCode());
+  LocaleController(this._storage) : _locale = Locale(_storage.getString(_localeKey) ?? deviceLanguageCode()) {
+    AppTextStyles.configureForLanguage(_locale.languageCode);
+  }
 
   final LocalStorageService _storage;
   static const String _localeKey = 'sinkly.locale';
@@ -100,6 +103,7 @@ class LocaleController extends ChangeNotifier {
     if (persist) await _storage.setString(_localeKey, safeCode);
     if (safeCode == _locale.languageCode) return;
     _locale = Locale(safeCode);
+    AppTextStyles.configureForLanguage(safeCode);
     notifyListeners();
   }
 }
@@ -108,4 +112,8 @@ class LocaleController extends ChangeNotifier {
 extension AppLocalizationsContext on BuildContext {
   String tr(String key, [Map<String, String>? params]) => AppLocalizations.of(this).translate(key, params);
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
+
+  /// Mirrors a horizontal slide offset so entrance animations travel
+  /// "from the reading-start side" in both LTR and RTL.
+  double flipX(double value) => isRtl ? -value : value;
 }

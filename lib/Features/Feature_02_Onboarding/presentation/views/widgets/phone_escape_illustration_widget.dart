@@ -68,7 +68,7 @@ class PhoneEscapeIllustrationWidget extends StatelessWidget {
                         ]
                         .animate(interval: 450.ms, delay: 400.ms)
                         .fadeIn(duration: 300.ms)
-                        .slideX(begin: 0.3, curve: Curves.easeOutBack),
+                        .slideX(begin: context.flipX(0.3), curve: Curves.easeOutBack),
               ),
             ),
           ),

@@ -61,7 +61,7 @@ class TrialReminderAssuranceStepWidget extends StatelessWidget {
                   ]
                   .animate(interval: 160.ms, delay: 250.ms)
                   .fadeIn(duration: 350.ms)
-                  .slideX(begin: 0.08, curve: Curves.easeOutCubic),
+                  .slideX(begin: context.flipX(0.08), curve: Curves.easeOutCubic),
         ),
       ),
     );

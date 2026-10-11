@@ -31,12 +31,16 @@ class DishwashingStruggleEmpathyStepWidget extends StatelessWidget {
           for (final (index, option) in OnboardingQuizOptionModel.dishwashingStruggleOptions.indexed)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: QuizOptionCardWidget(
-                emoji: option.emoji,
-                label: context.tr(option.translationKey),
-                isSelected: option.id == selectedId,
-                onTap: () => cubit.selectMainStruggle(option.id),
-              ).animate(delay: (120 + index * 80).ms).fadeIn().slideX(begin: 0.08, curve: Curves.easeOutCubic),
+              child:
+                  QuizOptionCardWidget(
+                        emoji: option.emoji,
+                        label: context.tr(option.translationKey),
+                        isSelected: option.id == selectedId,
+                        onTap: () => cubit.selectMainStruggle(option.id),
+                      )
+                      .animate(delay: (120 + index * 80).ms)
+                      .fadeIn()
+                      .slideX(begin: context.flipX(0.08), curve: Curves.easeOutCubic),
             ),
         ],
       ),

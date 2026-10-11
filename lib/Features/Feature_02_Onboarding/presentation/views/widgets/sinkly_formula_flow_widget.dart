@@ -64,7 +64,7 @@ class SinklyFormulaFlowWidget extends StatelessWidget {
                 )
                 .animate(delay: (250 + i * 220).ms)
                 .fadeIn(duration: 350.ms)
-                .slideX(begin: 0.1, curve: Curves.easeOutCubic),
+                .slideX(begin: context.flipX(0.1), curve: Curves.easeOutCubic),
         ],
       ),
     );

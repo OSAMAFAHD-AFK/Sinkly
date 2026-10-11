@@ -146,7 +146,7 @@ class _PlanSummaryCard extends StatelessWidget {
             children: [
               for (var i = 0; i < rows.length; i++) ...[
                 if (i > 0) const Divider(height: 1),
-                rows[i].animate(delay: (150 + i * 120).ms).fadeIn().slideX(begin: 0.06),
+                rows[i].animate(delay: (150 + i * 120).ms).fadeIn().slideX(begin: context.flipX(0.06)),
               ],
             ],
           ),

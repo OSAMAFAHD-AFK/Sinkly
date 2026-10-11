@@ -89,7 +89,10 @@ class _FeedbackViewState extends State<FeedbackView> {
                     const _FeedbackHeroHeaderCard().animate().fadeIn(duration: 400.ms).slideY(begin: 0.08),
                     const SizedBox(height: AppSpacing.lg),
                     SectionHeaderWidget(title: context.tr('feedback_category_label')),
-                    const _FeedbackCategoryChipsRow().animate(delay: 100.ms).fadeIn().slideX(begin: 0.05),
+                    const _FeedbackCategoryChipsRow()
+                        .animate(delay: 100.ms)
+                        .fadeIn()
+                        .slideX(begin: context.flipX(0.05)),
                     const SizedBox(height: AppSpacing.lg),
                     SectionHeaderWidget(title: context.tr('feedback_message_label')),
                     CustomTextField(
