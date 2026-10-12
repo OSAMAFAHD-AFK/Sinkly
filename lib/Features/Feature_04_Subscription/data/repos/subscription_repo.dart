@@ -8,4 +8,5 @@ abstract class SubscriptionRepo {
   Future<Either<Failure, bool>> purchase(SubscriptionPlanModel plan);
   Future<Either<Failure, bool>> restorePurchases();
   Future<bool> isPremiumActive();
+  Future<void> logPaywallShown({required String placementId});
 }

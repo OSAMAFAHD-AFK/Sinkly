@@ -15,6 +15,7 @@ class HoldToCommitButtonWidget extends StatefulWidget {
     required this.onCommitted,
     this.holdDuration = const Duration(milliseconds: 1500),
     this.isCompleted = false,
+    this.onProgressChanged,
   });
 
   final String label;
@@ -23,6 +24,9 @@ class HoldToCommitButtonWidget extends StatefulWidget {
   final VoidCallback onCommitted;
   final Duration holdDuration;
   final bool isCompleted;
+
+  /// 0 … 1 hold progress, reported every frame (drives the commitment scene).
+  final ValueChanged<double>? onProgressChanged;
 
   @override
   State<HoldToCommitButtonWidget> createState() => _HoldToCommitButtonWidgetState();
@@ -44,6 +48,7 @@ class _HoldToCommitButtonWidgetState extends State<HoldToCommitButtonWidget> wit
   }
 
   void _onTick() {
+    widget.onProgressChanged?.call(_controller.value);
     final quarter = (_controller.value * 4).floor();
     if (_controller.status == AnimationStatus.forward && quarter > _lastHapticQuarter) AppFunctions.lightHaptic();
     _lastHapticQuarter = quarter;

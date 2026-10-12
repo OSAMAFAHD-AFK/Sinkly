@@ -113,9 +113,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
             prefixIcon: widget.prefixIcon == null
                 ? null
                 : Icon(widget.prefixIcon, size: 22, color: _hasFocus ? AppColors.primaryInk : AppColors.inkMuted),
-            prefixIconConstraints: widget.prefixIcon == null
-                ? null
-                : const BoxConstraints(minWidth: 40, minHeight: 40),
+            prefixIconConstraints: widget.prefixIcon == null ? null : const BoxConstraints(minWidth: 40, minHeight: 40),
             contentPadding: EdgeInsets.symmetric(vertical: isMultiline ? 0 : 14),
           ),
         ),

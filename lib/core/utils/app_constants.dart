@@ -17,10 +17,9 @@ abstract final class AppConstants {
   // ── Subscription / Adapty ─────────────────────────────────────────────
   static const int freeTrialDays = 3;
 
-  /// When `true`, the onboarding paywall step and the in-app PaywallView
-  /// delegate rendering to Adapty Paywall Builder (remote-configured UI)
-  /// instead of the native Flutter paywall. Flip once the SDK is wired.
-  static const bool useAdaptyPaywallBuilder = false;
+  // PRODUCT DECISION: the paywall is ALWAYS our custom Flutter screen (with
+  // the heroine). Adapty only supplies products/prices, purchases, restore and
+  // analytics — its built-in Paywall Builder UI (AdaptyUI) is never used.
 
   /// When `true`, onboarding is rendered by Adapty Onboarding Builder.
   static const bool useAdaptyOnboardingBuilder = false;

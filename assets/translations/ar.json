@@ -1,6 +1,5 @@
 {
   "language_name": "العربية",
-
   "continue": "متابعة",
   "continue_with_name": "متابعة يا {name}",
   "back": "رجوع",
@@ -21,17 +20,14 @@
   "restoring": "جارٍ الاستعادة…",
   "restore_success": "تمت استعادة النسخة المميزة. أهلًا بعودتك! 💎",
   "restore_nothing_found": "لم نجد اشتراكًا نشطًا لهذا الحساب.",
-
   "duration_hours_minutes": "{h} س {m} د",
   "duration_minutes": "{m} د",
   "duration_seconds": "{s} ث",
   "hours_value": "{h} ساعة",
   "days_value": "{d} يومًا",
-
   "greeting_morning": "صباح الخير ☀️",
   "greeting_afternoon": "مساء الخير 🌤️",
   "greeting_evening": "مساء النور 🌙",
-
   "weekday_short_1": "ن",
   "weekday_short_2": "ث",
   "weekday_short_3": "ر",
@@ -46,26 +42,20 @@
   "weekday_long_5": "الجمعة",
   "weekday_long_6": "السبت",
   "weekday_long_7": "الأحد",
-
   "meal_breakfast": "الفطور",
   "meal_lunch": "الغداء",
   "meal_dinner": "العشاء",
-
   "tab_home": "الرئيسية",
   "tab_plan": "الخطة",
   "tab_progress": "التقدم",
   "tab_settings": "الإعدادات",
-
   "splash_tagline": "حوض نظيف. عقل صافٍ. تصفّح بلا ذنب.",
-
   "choose_language_title": "اختر لغتك",
   "choose_language_subtitle": "اخترنا لغة هاتفك تلقائيًا — اضغط على أي بطاقة للتبديل.",
   "device_language_badge": "لغة جهازك",
-
   "name_question_title": "أهلًا بك! ما اسمك؟",
   "name_question_description": "لنبدأ معًا رحلة استعادة وقتك والحفاظ على نظافة مطبخك.",
   "name_hint": "اسمك",
-
   "pain_point_title": "{name}... كم مرة رأيت كومة الصحون فهربت إلى هاتفك بدلًا من غسلها؟",
   "pain_point_description": "تفتح تيك توك أو إنستغرام... تحاول الهروب من منظر المطبخ، لكن الشعور بالذنب يلاحقك طوال اليوم. أنت لست كسولًا؛ دماغك ببساطة يبحث عن جرعة سريعة من الدوبامين!",
   "pain_point_cta": "هذا يحدث معي كل يوم...",
@@ -73,32 +63,27 @@
   "pain_notification_two": "٣ أشخاص نشروا قصصًا",
   "pain_notification_three": "مرة أخيرة فقط…",
   "pain_guilt_badge": "الذنب 98%",
-
   "reality_check_title": "كم تساوي راحة بالك حين تدخل مطبخًا نظيفًا؟",
   "reality_check_description": "تخيّل أن تستيقظ أو تعود إلى المنزل فتجد مطبخًا يلمع — بلا ذلك الثقل الجاثم على صدرك. المطبخ النظيف يعني عقلًا صافيًا.",
   "reality_check_cta": "أشتاق لذلك الشعور",
   "reality_chip_clear_mind": "🧠 عقل صافٍ",
   "reality_chip_no_guilt": "💛 بلا ذنب",
   "reality_chip_fresh_start": "🌿 بداية جديدة",
-
   "quiz_single_choice_hint": "كن صريحًا — لا توجد إجابة خاطئة هنا.",
   "quiz_pileup_title": "ما أطول مدة تركت فيها الصحون تتكدس في الحوض؟",
   "quiz_pileup_full_day": "يومًا كاملًا... حتى تحوّل المطبخ إلى منطقة كارثة.",
   "quiz_pileup_several_days": "عدة أيام... حتى نفدت الأطباق النظيفة.",
   "quiz_pileup_disgust_anxiety": "أحيانًا أصل إلى حد الاشمئزاز والقلق الشديد.",
-
   "quiz_struggle_title": "ما أصعب شيء في غسل الصحون بالنسبة لك؟",
   "quiz_struggle_description": "معرفة عائقك الحقيقي تساعد سنكلي على تصميم الدفعة المناسبة لك.",
   "quiz_struggle_boredom": "ملل شديد ومقاومة ذهنية.",
   "quiz_struggle_adhd_paralysis": "الشعور بالضياع والتشتت عند البدء (شلل فرط الحركة وتشتت الانتباه).",
   "quiz_struggle_social_media": "أفضّل تصفّح وسائل التواصل بدلًا من تنظيف المطبخ.",
   "quiz_struggle_cta": "حلّل وضعي",
-
   "analysis_title": "نحلل إجاباتك…",
   "analysis_item_answers": "قراءة عاداتك مع الصحون",
   "analysis_item_avoidance": "قياس وقت التهرّب",
   "analysis_item_reclaim": "حساب الساعات التي يمكن استعادتها",
-
   "time_loss_title": "غسل صحون وجبة واحدة يستغرق 4 دقائق... كم من الوقت تقضيه في التهرّب منه يا {name}؟",
   "time_loss_description": "تُظهر الدراسات أن تجنّب مهمة مدتها 4 دقائق يؤدي إلى خسارة ساعة ونصف يوميًا في المتوسط — تُقضى في تصفّح بلا وعي وسط التوتر والذنب.",
   "time_loss_cta": "أريد استعادة هذا الوقت",
@@ -107,7 +92,6 @@
   "time_loss_avoiding_value": "1.5 ساعة",
   "time_loss_per_week": "تضيع كل أسبوع",
   "time_loss_per_year": "تضيع كل سنة",
-
   "schedule_title": "أي الأيام تتحول فيها الصحون إلى كابوس بالنسبة لك يا {name}؟",
   "schedule_description": "لنصمّم جدول حظر يناسب أسبوعك تمامًا.",
   "schedule_section_days": "أيام الكارثة",
@@ -129,12 +113,10 @@
   "schedule_save_cta": "حفظ الجدول",
   "time_picker_title": "تنتهي وجبة {meal} عادةً عند…",
   "time_picker_hint": "يقفل سنكلي تطبيقاتك في هذا الوقت بالضبط.",
-
   "apps_title": "اختر التطبيقات التي تسرق وقتك عندما تتهرّب من الصحون",
   "apps_description": "اختر التطبيقات التي ستُقفل تلقائيًا بعد أوقات وجباتك المحددة.",
   "apps_cta": "تأكيد التطبيقات",
   "apps_privacy_note": "سنكلي لا يقرأ رسائلك ولا محتواك أبدًا.",
-
   "permission_title": "دع سنكلي يساعدك على التركيز",
   "permission_description": "نحتاج إلى إذن «مدة استخدام الجهاز» لقفل التطبيقات المقيّدة تلقائيًا وتهيئة بيئة تحفّزك.",
   "permission_cta": "فعّل الإذن الآن",
@@ -146,7 +128,6 @@
   "permission_promise_only_selected": "تُقفل فقط التطبيقات التي اخترتها",
   "permission_promise_private": "خصوصية 100% — بياناتك لا تغادر هاتفك",
   "permission_promise_instant_unlock": "تُفتح التطبيقات فور نظافة الحوض",
-
   "solution_title": "المعادلة السحرية: «لا تواصل اجتماعي حتى يصبح الحوض نظيفًا»",
   "solution_description": "يقفل سنكلي التطبيقات المشتتة بعد الوجبة مباشرةً ولا يفتحها إلا عندما ترفع صورة للحوض النظيف. يتحوّل تصفّح الهاتف إلى مكافأة تستحقها!",
   "solution_cta": "هذا هو الحل الذي أحتاجه",
@@ -160,13 +141,11 @@
   "formula_step_photo_subtitle": "صورة واحدة هي إثباتك",
   "formula_step_reward_title": "تُفتح التطبيقات — بلا ذنب!",
   "formula_step_reward_subtitle": "تصفّح بضمير مرتاح",
-
   "commitment_title": "هل أنت مستعد لمطبخ نظيف كل يوم يا {name}؟",
   "commitment_quote": "أتعهّد بإنهاء صحوني فورًا والاستمتاع بوقت هاتفي بضمير مرتاح وراحة بال كاملة.",
   "commitment_cta": "ألتزم بالتغيير",
   "commitment_hold_hint": "اضغط مطولًا لتثبيت التزامك",
   "commitment_done": "تم تثبيت التزامك!",
-
   "plan_building_title": "نبني خطتك الشخصية…",
   "plan_building_subtitle": "نخصّص سنكلي لك",
   "plan_building_item_schedule": "إنشاء جدول القفل الذكي",
@@ -184,7 +163,6 @@
   "plan_reclaimed_label": "الوقت المستعاد المتوقع",
   "plan_reclaimed_value": "{h} ساعات",
   "plan_reclaimed_caption": "كل أسبوع!",
-
   "trial_reminder_title": "سنرسل لك تذكيرًا قبل 24 ساعة من انتهاء تجربتك المجانية!",
   "trial_reminder_description": "بلا مفاجآت — ألغِ في أي وقت بنقرة واحدة.",
   "trial_reminder_cta": "متابعة",
@@ -194,7 +172,6 @@
   "trial_timeline_reminder_subtitle": "سنذكّرك بأن تجربتك على وشك الانتهاء.",
   "trial_timeline_end_title": "اليوم {day}",
   "trial_timeline_end_subtitle": "يبدأ اشتراكك — يمكنك الإلغاء قبل ذلك.",
-
   "paywall_title": "ابدأ تجربتك المجانية لمدة {days} أيام يا {name}!",
   "paywall_title_generic": "ابدأ تجربتك المجانية لمدة {days} أيام!",
   "paywall_subtitle": "احصل على وصول كامل لنظام الحظر الذكي المرتبط بالوجبات. 0$ اليوم؛ ألغِ في أي وقت بنقرة واحدة.",
@@ -211,14 +188,12 @@
   "plan_trial_then_month": "تجربة مجانية {days} أيام، ثم {price}/شهر",
   "plan_per_week": "في الأسبوع",
   "plan_save_badge": "وفّر {percent}%",
-
   "auth_title": "احفظ خطتك وإنجازاتك",
   "auth_subtitle": "حافظ على تقدمك آمنًا ومتزامنًا بين أجهزتك.",
   "auth_continue_apple": "المتابعة عبر Apple",
   "auth_continue_google": "المتابعة عبر Google",
   "auth_continue_guest": "المتابعة كضيف",
   "auth_legal": "بالمتابعة فإنك توافق على شروط الخدمة وسياسة الخصوصية.",
-
   "home_greeting_fallback": "صديقي",
   "home_status_locked": "التطبيقات مقفلة",
   "home_status_unlocked": "كل شيء على ما يرام",
@@ -239,11 +214,9 @@
   "home_premium_subtitle": "ابدأ تجربتك المجانية — ألغِ في أي وقت",
   "home_feedback_title": "ساعد في بناء سنكلي",
   "home_feedback_subtitle": "اقترح الميزة التالية التي نبنيها",
-
   "stat_day_streak": "أيام متتالية",
   "stat_cleans_week": "تنظيفات هذا الأسبوع",
   "stat_time_reclaimed": "الوقت المستعاد",
-
   "unlock_screen_title": "سباق الحوض",
   "unlock_intro_title_locked": "تطبيقاتك تنتظر حوضًا نظيفًا",
   "unlock_intro_title_free": "جاهز لسباق حوض سريع؟",
@@ -253,7 +226,6 @@
   "unlock_plan_step_photo": "التقط صورة للنتيجة اللامعة",
   "unlock_start_sprint_cta": "ابدأ السباق (4 دقائق)",
   "unlock_already_clean": "نظيف بالفعل؟ التقط الصورة",
-
   "sprint_title": "هيا هيا! 🧽",
   "sprint_title_done": "انتهى الوقت! أرِنا الحوض ✨",
   "sprint_subtitle": "شغّل أغنية وسابق الماء.",
@@ -264,21 +236,17 @@
   "sprint_tip_2": "انقع المقالي الدهنية في ماء ساخن أثناء غسل الباقي.",
   "sprint_tip_3": "رتّب الأطباق النظيفة لتجف أثناء العمل.",
   "sprint_tip_4": "اختم بمسح حوض الغسيل — يجعل الصورة تلمع.",
-
   "verify_in_progress": "نتحقق من حوضك اللامع…",
   "verify_in_progress_hint": "لن يستغرق الأمر سوى لحظة.",
   "verify_error_not_clean": "همم، يبدو أن هناك صحونًا لا تزال موجودة. امنح نفسك دقيقة إضافية!",
   "verify_error_unreadable": "لم نتمكن من قراءة الصورة. حاول مرة أخرى.",
-
   "reward_title": "تم فتح التطبيقات!",
   "reward_subtitle": "لقد أنجزتها. استمتع بكل تمريرة — بلا ذنب.",
   "reward_stat_time": "وقت السباق",
   "reward_stat_reclaimed": "الوقت المستعاد",
   "reward_cta": "أستمتع بمكافأتي",
-
   "session_after_meal": "تنظيف بعد {meal}",
   "session_manual_clean": "سباق حوض إضافي",
-
   "plan_screen_title": "خطة القفل",
   "plan_screen_subtitle": "اضبط أيامك ووجباتك والتطبيقات المقفلة في أي وقت.",
   "plan_apps_section": "التطبيقات المقفلة",
@@ -288,7 +256,6 @@
   "plan_unsaved_changes": "تغييرات غير محفوظة",
   "plan_saved": "تم حفظ الخطة ✓",
   "plan_error_invalid": "اختر يومًا واحدًا وتطبيقًا واحدًا على الأقل.",
-
   "progress_screen_title": "تقدمك",
   "progress_screen_subtitle": "كل حوض نظيف انتصار صغير. واصل جمعها.",
   "progress_streak_label": "أيام متتالية",
@@ -308,7 +275,6 @@
   "badge_cleans_10": "10 أحواض",
   "badge_cleans_50": "50 حوضًا",
   "badge_hours_10": "10 ساعات مستعادة",
-
   "settings_screen_title": "الإعدادات",
   "settings_account_apple": "مسجّل عبر Apple",
   "settings_account_google": "مسجّل عبر Google",
@@ -338,7 +304,6 @@
   "settings_reset_message": "سيؤدي هذا إلى حذف خطتك وسلاسلك وسجلك على هذا الجهاز. لا يمكن التراجع عن ذلك.",
   "settings_reset_confirm": "إعادة ضبط",
   "settings_footer": "صُنع بـ 🫧 من أجل مطابخ أكثر هدوءًا",
-
   "feedback_screen_title": "ساعد في بناء سنكلي",
   "feedback_hero_title": "صوتك يصنع النسخة القادمة من سنكلي! 🚀",
   "feedback_hero_description": "أنت أدرى بما تحتاجه! سنبني الميزات الأكثر طلبًا أولًا.",
@@ -353,7 +318,6 @@
   "feedback_success_title": "شكرًا لك! 💙",
   "feedback_success_message": "تم إرسال اقتراحك وهو قيد المراجعة للإصدار القادم.",
   "feedback_error_too_short": "أخبرنا بالمزيد قليلًا (10 أحرف على الأقل).",
-
   "error_generic": "حدث خطأ ما. حاول مرة أخرى.",
   "error_timeout": "انتهت مهلة الاتصال. حاول مرة أخرى.",
   "error_no_internet": "لا يوجد اتصال بالإنترنت.",
@@ -365,5 +329,17 @@
   "error_restore": "تعذّرت استعادة المشتريات. حاول مرة أخرى.",
   "error_sign_in": "فشل تسجيل الدخول. حاول مرة أخرى.",
   "error_permission_screen_time": "إذن مدة استخدام الجهاز مطلوب لقفل التطبيقات.",
-  "error_permission_notifications": "الإشعارات متوقفة."
+  "error_permission_notifications": "الإشعارات متوقفة.",
+  "scene_hi_there": "أهلًا! 👋 بماذا أناديك؟",
+  "scene_hi_name": "سعيدة جدًا بلقائك يا {name}! 💙",
+  "paywall_bubble_loading": "عصر المطبخ النظيف يبدأ اليوم ✨",
+  "paywall_bubble_annual": "أفضل اختيار! توفّر 50% 💙",
+  "paywall_bubble_monthly": "بداية جميلة! السنوي يوفّر 50% ✨",
+  "paywall_bubble_hey": "بالمناسبة… أول 3 أيام مجانًا 🎁",
+  "paywall_bubble_purchasing": "رائع! نجهّز خطتك…",
+  "paywall_bubble_success": "أهلًا بك في سنكلي المميز! 🎉",
+  "plan_best_value": "الأفضل قيمة",
+  "paywall_trust_cancel": "ألغِ في أي وقت",
+  "paywall_trust_reminder": "تذكير قبل الدفع",
+  "paywall_trust_secure": "دفع آمن"
 }

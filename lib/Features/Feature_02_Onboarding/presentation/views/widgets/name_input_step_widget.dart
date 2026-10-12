@@ -5,7 +5,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
 import '../../manager/onboarding_cubit.dart';
-import 'name_avatar_orb_widget.dart';
+import 'name_greeting_scene_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
 /// Screen 2 — The name & hook.
@@ -39,7 +39,7 @@ class _NameInputStepWidgetState extends State<NameInputStepWidget> {
     final name = context.select((OnboardingCubit c) => c.state.preferences.trimmedName);
 
     return OnboardingStepScaffoldWidget(
-      illustration: NameAvatarOrbWidget(name: name),
+      illustration: NameGreetingSceneWidget(name: name),
       title: context.tr('name_question_title'),
       description: context.tr('name_question_description'),
       ctaLabel: context.tr('continue'),

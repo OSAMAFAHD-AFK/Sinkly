@@ -1,6 +1,5 @@
 {
   "language_name": "English",
-
   "continue": "Continue",
   "continue_with_name": "Continue, {name}",
   "back": "Back",
@@ -21,17 +20,14 @@
   "restoring": "Restoring…",
   "restore_success": "Premium restored. Welcome back! 💎",
   "restore_nothing_found": "No active subscription found for this account.",
-
   "duration_hours_minutes": "{h}h {m}m",
   "duration_minutes": "{m} min",
   "duration_seconds": "{s}s",
   "hours_value": "{h} h",
   "days_value": "{d} days",
-
   "greeting_morning": "Good morning ☀️",
   "greeting_afternoon": "Good afternoon 🌤️",
   "greeting_evening": "Good evening 🌙",
-
   "weekday_short_1": "M",
   "weekday_short_2": "T",
   "weekday_short_3": "W",
@@ -46,26 +42,20 @@
   "weekday_long_5": "Friday",
   "weekday_long_6": "Saturday",
   "weekday_long_7": "Sunday",
-
   "meal_breakfast": "Breakfast",
   "meal_lunch": "Lunch",
   "meal_dinner": "Dinner",
-
   "tab_home": "Home",
   "tab_plan": "Plan",
   "tab_progress": "Progress",
   "tab_settings": "Settings",
-
   "splash_tagline": "Clean sink. Clear mind. Guilt-free scrolling.",
-
   "choose_language_title": "Choose your language",
   "choose_language_subtitle": "We picked your phone's language for you — tap any card to switch.",
   "device_language_badge": "Device language",
-
   "name_question_title": "Welcome! What is your name?",
   "name_question_description": "Let's start the journey of reclaiming your time and keeping your kitchen clean — together.",
   "name_hint": "Your name",
-
   "pain_point_title": "{name}... how often have you seen a pile of dishes and escaped to your phone instead?",
   "pain_point_description": "Opening TikTok or Instagram... You try to escape the sight of the kitchen, yet a sense of guilt dogs you all day long. You aren't lazy; your brain is simply seeking a quick dopamine hit!",
   "pain_point_cta": "This happens to me every day...",
@@ -73,32 +63,27 @@
   "pain_notification_two": "3 people posted stories",
   "pain_notification_three": "Just one more scroll…",
   "pain_guilt_badge": "GUILT 98%",
-
   "reality_check_title": "What is the value of your peace of mind when walking into a clean kitchen?",
   "reality_check_description": "Imagine waking up or coming home to a sparkling kitchen — free from that heavy weight pressing on your chest. A clean kitchen means a clear mind.",
   "reality_check_cta": "I miss that feeling",
   "reality_chip_clear_mind": "🧠 Clear mind",
   "reality_chip_no_guilt": "💛 No guilt",
   "reality_chip_fresh_start": "🌿 Fresh start",
-
   "quiz_single_choice_hint": "Be honest — there's no wrong answer here.",
   "quiz_pileup_title": "What's the longest you've let dishes pile up in the sink?",
   "quiz_pileup_full_day": "A full day... turning the kitchen into a disaster zone.",
   "quiz_pileup_several_days": "Several days... until I ran out of clean dishes.",
   "quiz_pileup_disgust_anxiety": "Sometimes I reach a point of feeling disgusted and deeply anxious.",
-
   "quiz_struggle_title": "What do you find hardest about washing dishes?",
   "quiz_struggle_description": "Knowing your real barrier lets Sinkly design the right push for you.",
   "quiz_struggle_boredom": "Intense boredom and mental resistance.",
   "quiz_struggle_adhd_paralysis": "Feeling lost or scattered when starting (ADHD paralysis).",
   "quiz_struggle_social_media": "Preferring to scroll through social media instead of cleaning the kitchen.",
   "quiz_struggle_cta": "Analyze my situation",
-
   "analysis_title": "Analyzing your answers…",
   "analysis_item_answers": "Reading your dish habits",
   "analysis_item_avoidance": "Measuring avoidance time",
   "analysis_item_reclaim": "Calculating reclaimable hours",
-
   "time_loss_title": "Washing dishes from a single meal takes 4 minutes... How much time do you spend avoiding it, {name}?",
   "time_loss_description": "Studies show that avoiding a 4-minute task leads to an average loss of 1.5 hours daily — spent mindlessly browsing while feeling stressed and guilty.",
   "time_loss_cta": "I want to reclaim this time",
@@ -107,7 +92,6 @@
   "time_loss_avoiding_value": "1.5 h",
   "time_loss_per_week": "lost every week",
   "time_loss_per_year": "lost every year",
-
   "schedule_title": "Which days turn dishwashing into a nightmare for you, {name}?",
   "schedule_description": "Let's design a blocking schedule that perfectly fits your week.",
   "schedule_section_days": "Disaster days",
@@ -129,12 +113,10 @@
   "schedule_save_cta": "Save Schedule",
   "time_picker_title": "{meal} usually ends at…",
   "time_picker_hint": "Sinkly locks your apps right at this time.",
-
   "apps_title": "Select the apps that steal your time when avoiding the dishes",
   "apps_description": "Choose the apps to be automatically locked after your scheduled meal times.",
   "apps_cta": "Confirm Apps",
   "apps_privacy_note": "Sinkly never reads your messages or content.",
-
   "permission_title": "Let Sinkly help you focus",
   "permission_description": "We need Screen Time permission to automatically lock restricted apps and create a motivating environment for you.",
   "permission_cta": "Enable Permission Now",
@@ -146,7 +128,6 @@
   "permission_promise_only_selected": "Only the apps you selected get locked",
   "permission_promise_private": "100% private — your data never leaves your phone",
   "permission_promise_instant_unlock": "Apps unlock the moment your sink is clean",
-
   "solution_title": "The magic formula: “No social media until the sink is clean”",
   "solution_description": "Sinkly locks distracting apps right after mealtime and only unlocks them when you upload a photo of the clean sink. Phone browsing becomes a well-earned reward!",
   "solution_cta": "This is the solution I need",
@@ -160,13 +141,11 @@
   "formula_step_photo_subtitle": "One photo is your proof",
   "formula_step_reward_title": "Apps unlock — guilt-free!",
   "formula_step_reward_subtitle": "Scroll with a clear conscience",
-
   "commitment_title": "Are you ready for a clean kitchen every day, {name}?",
   "commitment_quote": "I commit to finishing my dishes immediately and enjoying my phone time with a clear conscience and total peace of mind.",
   "commitment_cta": "I'm committed to change",
   "commitment_hold_hint": "Press and hold to seal your commitment",
   "commitment_done": "Commitment sealed!",
-
   "plan_building_title": "Building your personal plan…",
   "plan_building_subtitle": "Personalizing Sinkly for you",
   "plan_building_item_schedule": "Creating your smart lock schedule",
@@ -184,7 +163,6 @@
   "plan_reclaimed_label": "ESTIMATED TIME RECLAIMED",
   "plan_reclaimed_value": "{h} hours",
   "plan_reclaimed_caption": "every single week!",
-
   "trial_reminder_title": "We'll send you a reminder 24 hours before your free trial ends!",
   "trial_reminder_description": "No surprises — cancel anytime with a single tap.",
   "trial_reminder_cta": "Continue",
@@ -194,7 +172,6 @@
   "trial_timeline_reminder_subtitle": "We'll remind you that your trial is ending.",
   "trial_timeline_end_title": "Day {day}",
   "trial_timeline_end_subtitle": "Your subscription starts — cancel anytime before.",
-
   "paywall_title": "Start your {days}-day free trial, {name}!",
   "paywall_title_generic": "Start your {days}-day free trial!",
   "paywall_subtitle": "Get full access to the smart, meal-linked blocking system. $0 today; cancel anytime with one tap.",
@@ -211,14 +188,12 @@
   "plan_trial_then_month": "{days}-day free trial, then {price}/month",
   "plan_per_week": "per week",
   "plan_save_badge": "SAVE {percent}%",
-
   "auth_title": "Save your plan & streaks",
   "auth_subtitle": "Keep your progress safe and synced across devices.",
   "auth_continue_apple": "Continue with Apple",
   "auth_continue_google": "Continue with Google",
   "auth_continue_guest": "Continue as guest",
   "auth_legal": "By continuing you agree to our Terms of Service and Privacy Policy.",
-
   "home_greeting_fallback": "Friend",
   "home_status_locked": "APPS LOCKED",
   "home_status_unlocked": "ALL CLEAR",
@@ -239,11 +214,9 @@
   "home_premium_subtitle": "Start your free trial — cancel anytime",
   "home_feedback_title": "Help build Sinkly",
   "home_feedback_subtitle": "Suggest the next feature we build",
-
   "stat_day_streak": "Day streak",
   "stat_cleans_week": "Cleans this week",
   "stat_time_reclaimed": "Time reclaimed",
-
   "unlock_screen_title": "Sink sprint",
   "unlock_intro_title_locked": "Your apps are waiting for a clean sink",
   "unlock_intro_title_free": "Ready for a quick sink sprint?",
@@ -253,7 +226,6 @@
   "unlock_plan_step_photo": "Snap the sparkling result",
   "unlock_start_sprint_cta": "Start the 4-minute sprint",
   "unlock_already_clean": "Already clean? Snap the photo",
-
   "sprint_title": "Go go go! 🧽",
   "sprint_title_done": "Time! Show us that sink ✨",
   "sprint_subtitle": "Put on a song and race the water.",
@@ -264,21 +236,17 @@
   "sprint_tip_2": "Soak greasy pans in hot water while you do the rest.",
   "sprint_tip_3": "Stack clean dishes to dry as you go.",
   "sprint_tip_4": "Finish by wiping the sink basin — it makes the photo shine.",
-
   "verify_in_progress": "Checking your sparkling sink…",
   "verify_in_progress_hint": "This only takes a moment.",
   "verify_error_not_clean": "Hmm, there still seem to be dishes. Give it one more minute!",
   "verify_error_unreadable": "We couldn't read that photo. Please try again.",
-
   "reward_title": "Apps unlocked!",
   "reward_subtitle": "You did it. Enjoy every scroll — guilt-free.",
   "reward_stat_time": "Sprint time",
   "reward_stat_reclaimed": "Time reclaimed",
   "reward_cta": "Enjoy my reward",
-
   "session_after_meal": "Cleaned after {meal}",
   "session_manual_clean": "Bonus sink sprint",
-
   "plan_screen_title": "Your lock plan",
   "plan_screen_subtitle": "Tune your days, meals and locked apps anytime.",
   "plan_apps_section": "Locked apps",
@@ -288,7 +256,6 @@
   "plan_unsaved_changes": "Unsaved changes",
   "plan_saved": "Plan saved ✓",
   "plan_error_invalid": "Pick at least one day and one app.",
-
   "progress_screen_title": "Your progress",
   "progress_screen_subtitle": "Every clean sink is a small win. Keep stacking them.",
   "progress_streak_label": "day streak",
@@ -308,7 +275,6 @@
   "badge_cleans_10": "10 sinks",
   "badge_cleans_50": "50 sinks",
   "badge_hours_10": "10 h reclaimed",
-
   "settings_screen_title": "Settings",
   "settings_account_apple": "Signed in with Apple",
   "settings_account_google": "Signed in with Google",
@@ -338,7 +304,6 @@
   "settings_reset_message": "This deletes your plan, streaks and history on this device. This can't be undone.",
   "settings_reset_confirm": "Reset",
   "settings_footer": "Made with 🫧 for calmer kitchens",
-
   "feedback_screen_title": "Help Build Sinkly",
   "feedback_hero_title": "Your voice shapes the next version of Sinkly! 🚀",
   "feedback_hero_description": "You know what you need best! The most requested features will be built first.",
@@ -353,7 +318,6 @@
   "feedback_success_title": "Thank you! 💙",
   "feedback_success_message": "Your suggestion has been submitted and is being reviewed for the next release.",
   "feedback_error_too_short": "Tell us a bit more (at least 10 characters).",
-
   "error_generic": "Something went wrong. Please try again.",
   "error_timeout": "The connection timed out. Please try again.",
   "error_no_internet": "No internet connection.",
@@ -365,5 +329,17 @@
   "error_restore": "Couldn't restore purchases. Please try again.",
   "error_sign_in": "Sign-in failed. Please try again.",
   "error_permission_screen_time": "Screen Time permission is needed to lock apps.",
-  "error_permission_notifications": "Notifications are turned off."
+  "error_permission_notifications": "Notifications are turned off.",
+  "scene_hi_there": "Hi there! 👋 What should I call you?",
+  "scene_hi_name": "So nice to meet you, {name}! 💙",
+  "paywall_bubble_loading": "Your clean-kitchen era starts today ✨",
+  "paywall_bubble_annual": "Best choice! You save 50% 💙",
+  "paywall_bubble_monthly": "Nice start! Annual saves you 50% ✨",
+  "paywall_bubble_hey": "Psst… the first 3 days are free 🎁",
+  "paywall_bubble_purchasing": "Yay! Setting up your plan…",
+  "paywall_bubble_success": "Welcome to Sinkly Premium! 🎉",
+  "plan_best_value": "Best value",
+  "paywall_trust_cancel": "Cancel anytime",
+  "paywall_trust_reminder": "Reminder before billing",
+  "paywall_trust_secure": "Secure payment"
 }

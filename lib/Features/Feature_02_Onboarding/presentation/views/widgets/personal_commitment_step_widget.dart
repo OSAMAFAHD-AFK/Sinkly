@@ -5,9 +5,8 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
-import '../../../../../core/widgets/glass_icon_orb_widget.dart';
-import '../../../../../core/widgets/pulse_rings_widget.dart';
 import '../../manager/onboarding_cubit.dart';
+import 'commitment_heart_scene_widget.dart';
 import 'hold_to_commit_button_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
@@ -21,6 +20,15 @@ class PersonalCommitmentStepWidget extends StatefulWidget {
 
 class _PersonalCommitmentStepWidgetState extends State<PersonalCommitmentStepWidget> {
   bool _celebrate = false;
+
+  /// Live hold progress (0…1) shared with the heart scene — no rebuilds.
+  final ValueNotifier<double> _holdProgress = ValueNotifier(0);
+
+  @override
+  void dispose() {
+    _holdProgress.dispose();
+    super.dispose();
+  }
 
   Future<void> _onCommitted() async {
     final cubit = context.read<OnboardingCubit>()..confirmCommitment();
@@ -38,10 +46,7 @@ class _PersonalCommitmentStepWidgetState extends State<PersonalCommitmentStepWid
     return Stack(
       children: [
         OnboardingStepScaffoldWidget(
-          illustration: const PulseRingsWidget(
-            size: 190,
-            child: GlassIconOrbWidget(emoji: '🤝', size: 84, floating: false),
-          ),
+          illustration: CommitmentHeartSceneWidget(holdProgress: _holdProgress, committed: _celebrate || isRevisit),
           title: context.tr('commitment_title', {'name': name}),
           highlight: name,
           // Revisiting the step: the commitment is already sealed → plain CTA.
@@ -54,6 +59,7 @@ class _PersonalCommitmentStepWidgetState extends State<PersonalCommitmentStepWid
                   hint: context.tr('commitment_hold_hint'),
                   completedLabel: context.tr('commitment_done'),
                   onCommitted: _onCommitted,
+                  onProgressChanged: (value) => _holdProgress.value = value,
                 ),
           body: Column(
             children: [

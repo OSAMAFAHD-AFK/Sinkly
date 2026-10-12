@@ -10,17 +10,22 @@ import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../../core/widgets/glass_icon_button.dart';
-import '../../../../../core/widgets/glass_icon_orb_widget.dart';
+import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'onboarding_step_header_widget.dart';
+import 'paywall_heroine_hero_widget.dart';
 import 'paywall_plan_card_widget.dart';
 
 /// Screen 15 — Paywall (also hosted by the standalone PaywallView).
 ///
-/// Adapty-ready: plans, purchase and restore all go through
-/// [SubscriptionCubit] → SubscriptionRepo → data source. When
-/// `AppConstants.useAdaptyPaywallBuilder` is enabled, this widget is the place
-/// to present `AdaptyUI` instead of the native layout below.
+/// Always this custom Flutter design — never Adapty's built-in paywall UI.
+/// Adapty (later) only feeds it: plans, purchase and restore all go through
+/// [SubscriptionCubit] → SubscriptionRepo → data source, and every display is
+/// reported with `paywallShown()` so Adapty analytics / A-B tests still work.
+///
+/// Conversion choreography: the heroine presents the offer and reacts to the
+/// selected plan, the best-value card glows, the CTA breathes, trust chips
+/// remove payment anxiety, and a successful purchase is celebrated.
 class PaywallStepWidget extends StatefulWidget {
   const PaywallStepWidget({
     super.key,
@@ -42,11 +47,14 @@ class PaywallStepWidget extends StatefulWidget {
 
 class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _showCloseButton = false;
+  bool _celebrating = false;
 
   @override
   void initState() {
     super.initState();
-    context.read<SubscriptionCubit>().loadPaywall();
+    context.read<SubscriptionCubit>()
+      ..loadPaywall()
+      ..paywallShown();
     // A delayed close button keeps focus on the offer (common paywall practice).
     Future<void>.delayed(widget.closeButtonDelay, () {
       if (mounted) setState(() => _showCloseButton = true);
@@ -55,10 +63,12 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
 
   Future<void> _purchase() async {
     final purchased = await context.read<SubscriptionCubit>().purchaseSelectedPlan();
-    if (purchased) {
-      AppFunctions.successHaptic();
-      widget.onFinished(true);
-    }
+    if (!purchased || !mounted) return;
+    AppFunctions.successHaptic();
+    // Let the heroine celebrate with the user before moving on.
+    setState(() => _celebrating = true);
+    await Future<void>.delayed(const Duration(milliseconds: 1800));
+    if (mounted) widget.onFinished(true);
   }
 
   Future<void> _restore() async {
@@ -87,10 +97,10 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Center(child: GlassIconOrbWidget(icon: Icons.water_drop_rounded, size: 60))
+                      PaywallHeroineHeroWidget(celebrating: _celebrating)
                           .animate()
-                          .fadeIn(duration: 400.ms)
-                          .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
+                          .fadeIn(duration: 450.ms)
+                          .slideY(begin: 0.06, curve: Curves.easeOutCubic),
                       OnboardingStepHeaderWidget(
                         title: widget.userName.isEmpty
                             ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
@@ -105,6 +115,8 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
                       // converts better and is what App Review expects).
                       const SizedBox(height: AppSpacing.md + 6),
                       const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
+                      const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
+                      const SizedBox(height: AppSpacing.md),
                       const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
                       const SizedBox(height: AppSpacing.md),
                     ],
@@ -114,6 +126,7 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
               _PaywallBottomActions(onPurchase: _purchase).animate(delay: 380.ms).fadeIn().slideY(begin: 0.3),
             ],
           ),
+          if (_celebrating) const Positioned.fill(child: ConfettiBurstWidget(particleCount: 90)),
         ],
       ),
     );
@@ -158,6 +171,47 @@ class _PaywallTopBar extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PaywallTrustChips extends StatelessWidget {
+  const _PaywallTrustChips();
+
+  @override
+  Widget build(BuildContext context) {
+    const chips = [
+      (Icons.event_available_rounded, 'paywall_trust_cancel'),
+      (Icons.notifications_active_rounded, 'paywall_trust_reminder'),
+      (Icons.lock_rounded, 'paywall_trust_secure'),
+    ];
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final (icon, key) in chips)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.85),
+              borderRadius: AppRadii.pillAll,
+              border: Border.all(color: Colors.white),
+              boxShadow: AppShadows.soft,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 13, color: AppColors.success),
+                const SizedBox(width: 4),
+                Text(
+                  context.tr(key),
+                  style: AppTextStyles.label.copyWith(color: AppColors.ink, fontSize: 10.5, letterSpacing: 0),
+                ),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
@@ -284,12 +338,16 @@ class _PaywallBottomActions extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
+          // The CTA "breathes" softly so the eye keeps coming back to it.
           CustomPrimaryButton(
-            label: context.tr('paywall_cta'),
-            showShimmer: true,
-            isLoading: state.status == SubscriptionStatus.purchasing,
-            onPressed: state.selectedPlan == null || state.isBusy ? null : onPurchase,
-          ),
+                label: context.tr('paywall_cta'),
+                showShimmer: true,
+                trailingIcon: Icons.arrow_forward_rounded,
+                isLoading: state.status == SubscriptionStatus.purchasing,
+                onPressed: state.selectedPlan == null || state.isBusy ? null : onPurchase,
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .scaleXY(begin: 1, end: 1.025, duration: 1100.ms, curve: Curves.easeInOut),
           const SizedBox(height: AppSpacing.xs),
           Text(
             context.tr('paywall_note', {'days': days}),

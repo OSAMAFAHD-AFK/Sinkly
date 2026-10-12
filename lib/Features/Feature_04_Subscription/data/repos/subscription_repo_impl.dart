@@ -46,4 +46,13 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
       return false;
     }
   }
+
+  @override
+  Future<void> logPaywallShown({required String placementId}) async {
+    try {
+      await _remote.logPaywallShown(placementId: placementId);
+    } catch (_) {
+      // Analytics must never block the paywall.
+    }
+  }
 }

@@ -11,6 +11,8 @@ import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'analysis_progress_checklist_widget.dart';
+import 'heroine_character_painter.dart';
+import 'heroine_character_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
 /// Screen 13 — "{name}'s Sinkly plan is ready!" after a short build-up.
@@ -122,6 +124,10 @@ class _PlanSummaryCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        // She celebrates the plan with the user.
+        const Center(
+          child: HeroineCharacterWidget(width: 118, pose: HeroinePose.cheer, motion: HeroineMotion.cheer),
+        ),
         // Hero stat: hours reclaimed per week.
         CustomCardContainer(
           gradient: const LinearGradient(

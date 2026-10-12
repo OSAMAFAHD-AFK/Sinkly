@@ -2,32 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
-import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
-import 'washing_character_scene_widget.dart';
+import 'kitchen_transformation_scene_widget.dart';
 
 /// Screen 4 hero: the sink starts messy, then — as the user reads — transforms
 /// into a sparkling clean kitchen. The reveal IS the message ("what a clean
 /// kitchen feels like"), followed by three feeling chips.
-class CleanKitchenRevealWidget extends StatefulWidget {
+class CleanKitchenRevealWidget extends StatelessWidget {
   const CleanKitchenRevealWidget({super.key});
-
-  @override
-  State<CleanKitchenRevealWidget> createState() => _CleanKitchenRevealWidgetState();
-}
-
-class _CleanKitchenRevealWidgetState extends State<CleanKitchenRevealWidget> {
-  double _cleanliness = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    Future<void>.delayed(const Duration(milliseconds: 900), () {
-      if (!mounted) return;
-      AppFunctions.mediumHaptic();
-      setState(() => _cleanliness = 1);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +21,7 @@ class _CleanKitchenRevealWidgetState extends State<CleanKitchenRevealWidget> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        WashingCharacterSceneWidget(cleanliness: _cleanliness, width: 300),
+        const KitchenTransformationSceneWidget(),
         const SizedBox(height: AppSpacing.sm),
         Wrap(
           alignment: WrapAlignment.center,
@@ -61,7 +43,7 @@ class _CleanKitchenRevealWidgetState extends State<CleanKitchenRevealWidget> {
                     ),
                   )
                   // Chips pop in right after the sink turns clean.
-                  .animate(delay: (2600 + index * 260).ms)
+                  .animate(delay: (3000 + index * 260).ms)
                   .fadeIn(duration: 350.ms)
                   .scaleXY(begin: 0.6, curve: Curves.easeOutBack, duration: 500.ms),
           ],

@@ -9,9 +9,10 @@ import 'subscription_remote_data_source.dart';
 ///  3. Replace each `UnimplementedError` below with the commented Adapty call.
 ///  4. In service_locator.dart register this class instead of
 ///     [MockSubscriptionRemoteDataSource].
-///  5. Optional: set `AppConstants.useAdaptyPaywallBuilder = true` to render the
-///     remote Paywall Builder UI (AdaptyUI) instead of the native Flutter
-///     paywall; the [SubscriptionCubit] contract stays the same.
+///  5. The paywall UI stays our custom Flutter screen (PaywallStepWidget) —
+///     never AdaptyUI / Paywall Builder. Copy & pricing experiments can still
+///     run from the dashboard via `paywall.remoteConfig` (JSON) + A/B tests,
+///     as long as [logPaywallShown] is called whenever the screen appears.
 class AdaptySubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
   @override
   Future<List<SubscriptionPlanModel>> fetchPaywallPlans({required String placementId}) {
@@ -41,5 +42,12 @@ class AdaptySubscriptionRemoteDataSource implements SubscriptionRemoteDataSource
     // final profile = await Adapty().getProfile();
     // return profile.accessLevels[AppConstants.premiumAccessLevelId]?.isActive ?? false;
     throw UnimplementedError('Wire Adapty getProfile here.');
+  }
+
+  @override
+  Future<void> logPaywallShown({required String placementId}) {
+    // Required for custom (non-AdaptyUI) paywalls so analytics & A/B tests work:
+    // await Adapty().logShowPaywall(paywall: _paywallsByPlacement[placementId]!);
+    throw UnimplementedError('Wire Adapty logShowPaywall here.');
   }
 }

@@ -36,6 +36,10 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     );
   }
 
+  /// Call whenever the custom paywall becomes visible (Adapty analytics).
+  void paywallShown({String placementId = AppConstants.adaptyOnboardingPlacementId}) =>
+      _repo.logPaywallShown(placementId: placementId);
+
   void selectPlan(String planId) => emit(state.copyWith(selectedPlanId: planId));
 
   /// Returns `true` when premium is active after the purchase.

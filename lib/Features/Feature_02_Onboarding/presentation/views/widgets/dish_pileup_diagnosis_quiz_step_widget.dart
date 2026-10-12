@@ -6,7 +6,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../data/models/onboarding_quiz_option_model.dart';
 import '../../manager/onboarding_cubit.dart';
-import 'dish_tower_widget.dart';
+import 'dish_overwhelm_reaction_scene_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 import 'quiz_option_card_widget.dart';
 
@@ -29,7 +29,7 @@ class DishPileupDiagnosisQuizStepWidget extends StatelessWidget {
     return OnboardingStepScaffoldWidget(
       illustration: Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.md),
-        child: DishTowerWidget(level: _levelFor(selectedId)),
+        child: DishOverwhelmReactionSceneWidget(level: _levelFor(selectedId)),
       ),
       title: context.tr('quiz_pileup_title'),
       description: context.tr('quiz_single_choice_hint'),

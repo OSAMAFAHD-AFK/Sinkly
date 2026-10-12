@@ -7,7 +7,7 @@ import '../../../../../core/utils/style.dart';
 import '../../../data/models/onboarding_quiz_option_model.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
-import 'struggle_mood_orb_widget.dart';
+import 'struggle_reaction_scene_widget.dart';
 import 'quiz_option_card_widget.dart';
 
 /// Screen 6 — Empathy check: the emotional barrier behind the dishes.
@@ -20,7 +20,7 @@ class DishwashingStruggleEmpathyStepWidget extends StatelessWidget {
     final selectedId = context.select((OnboardingCubit c) => c.state.preferences.mainStruggleId);
 
     return OnboardingStepScaffoldWidget(
-      illustration: StruggleMoodOrbWidget(selectedId: selectedId),
+      illustration: StruggleReactionSceneWidget(selectedId: selectedId),
       title: context.tr('quiz_struggle_title'),
       description: context.tr('quiz_struggle_description'),
       ctaLabel: context.tr('quiz_struggle_cta'),

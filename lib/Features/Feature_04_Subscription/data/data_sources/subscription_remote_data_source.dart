@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/local_storage_service.dart';
 import '../models/subscription_plan_model.dart';
@@ -15,6 +17,10 @@ abstract class SubscriptionRemoteDataSource {
   Future<bool> restorePurchases();
 
   Future<bool> isPremiumActive();
+
+  /// Must be called every time OUR custom paywall becomes visible so the
+  /// provider attributes views → purchases (Adapty: `logShowPaywall`).
+  Future<void> logPaywallShown({required String placementId});
 }
 
 /// Offline mock with realistic latency. Remembers the premium flag locally so
@@ -64,4 +70,8 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
 
   @override
   Future<bool> isPremiumActive() async => _storage.getBool(_premiumKey);
+
+  @override
+  Future<void> logPaywallShown({required String placementId}) async =>
+      debugPrint('[Subscription] paywall shown: $placementId');
 }
