@@ -9,6 +9,7 @@ import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/glass_icon_orb_widget.dart';
 import '../../manager/sink_unlock_cubit.dart';
+import 'sprint_duration_picker_widget.dart';
 
 /// Stage 1 — what's locked, the 3-step game plan and the "start" CTA.
 class SinkUnlockIntroStageWidget extends StatelessWidget {
@@ -19,6 +20,7 @@ class SinkUnlockIntroStageWidget extends StatelessWidget {
     final cubit = context.read<SinkUnlockCubit>();
     final state = context.watch<SinkUnlockCubit>().state;
     final isLocked = state.lockStatus.isLocked;
+    final duration = context.minutes(state.sprintMinutes);
 
     return Column(
       children: [
@@ -40,7 +42,11 @@ class SinkUnlockIntroStageWidget extends StatelessWidget {
                 style: AppTextStyles.headline,
               ),
               const SizedBox(height: AppSpacing.xs),
-              Text(context.tr('unlock_intro_subtitle'), textAlign: TextAlign.center, style: AppTextStyles.body),
+              Text(
+                context.tr('unlock_intro_subtitle', {'duration': duration}),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.body,
+              ),
               const SizedBox(height: AppSpacing.lg),
               if (state.blockedApps.isNotEmpty)
                 Wrap(
@@ -57,7 +63,11 @@ class SinkUnlockIntroStageWidget extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
                 child: Column(
                   children: [
-                    _PlanStepRow(number: 1, emoji: '⏱️', text: context.tr('unlock_plan_step_timer')),
+                    _PlanStepRow(
+                      number: 1,
+                      emoji: '⏱️',
+                      text: context.tr('unlock_plan_step_timer', {'duration': duration}),
+                    ),
                     const Divider(height: 1),
                     _PlanStepRow(number: 2, emoji: '🧽', text: context.tr('unlock_plan_step_clean')),
                     const Divider(height: 1),
@@ -77,8 +87,11 @@ class SinkUnlockIntroStageWidget extends StatelessWidget {
           ),
           child: Column(
             children: [
+              // Next to the main action so it is always reachable (no scrolling).
+              const SprintDurationButtonWidget().animate().fadeIn(delay: 350.ms),
+              const SizedBox(height: AppSpacing.sm),
               CustomPrimaryButton(
-                label: context.tr('unlock_start_sprint_cta'),
+                label: context.tr('unlock_start_sprint_cta', {'duration': duration}),
                 icon: Icons.play_arrow_rounded,
                 showShimmer: true,
                 onPressed: cubit.startSprint,

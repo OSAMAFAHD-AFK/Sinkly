@@ -7,6 +7,10 @@ import '../models/sink_photo_verification_result_model.dart';
 abstract class SinkUnlockRepo {
   LockStatusModel currentLockStatus({required DateTime now});
   List<BlockableAppModel> blockedApps();
+
+  /// The user's preferred sprint length (minutes).
+  int sprintMinutes();
+  Future<void> saveSprintMinutes(int minutes);
   SinkProgressStatsModel progressStats({required DateTime now});
 
   /// `Right(null)` means the user cancelled the camera.

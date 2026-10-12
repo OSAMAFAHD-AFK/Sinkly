@@ -2,30 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_constants.dart';
 import '../utils/style.dart';
+import 'sinkly_logo_mark_painter.dart';
 
-/// Sinkly wordmark: a sky water-drop badge + bold rounded wordmark.
+/// Sinkly brand lockup: the Sink-Lock mark + bold rounded wordmark.
 class SinklyLogoWidget extends StatelessWidget {
   const SinklyLogoWidget({super.key, this.size = 30, this.showWordmark = true});
 
+  /// Wordmark font size; the mark is drawn at `size * 1.35`.
   final double size;
   final bool showWordmark;
 
   @override
   Widget build(BuildContext context) {
-    final badge = Container(
-      width: size * 1.25,
-      height: size * 1.25,
-      decoration: BoxDecoration(
-        gradient: AppGradients.primaryButton,
-        borderRadius: BorderRadius.circular(size * 0.42),
-        boxShadow: AppShadows.primaryGlow(strength: 0.7),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.7), width: 1.2),
-      ),
-      alignment: Alignment.center,
-      child: Icon(Icons.water_drop_rounded, size: size * 0.72, color: Colors.white),
+    final mark = SizedBox.square(
+      dimension: size * 1.35,
+      child: CustomPaint(painter: SinklyLogoMarkPainter()),
     );
 
-    if (!showWordmark) return badge;
+    if (!showWordmark) return mark;
 
     return Directionality(
       // The brand wordmark always reads left-to-right.
@@ -36,7 +30,7 @@ class SinklyLogoWidget extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            badge,
+            mark,
             SizedBox(width: size * 0.35),
             Text(
               AppConstants.appName,

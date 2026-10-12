@@ -17,12 +17,14 @@ class LockStatusHeroCardWidget extends StatelessWidget {
     required this.lockStatus,
     required this.blockedApps,
     required this.now,
+    required this.sprintMinutes,
     required this.onStartSinkSprint,
   });
 
   final LockStatusModel lockStatus;
   final List<BlockableAppModel> blockedApps;
   final DateTime now;
+  final int sprintMinutes;
   final VoidCallback onStartSinkSprint;
 
   @override
@@ -39,6 +41,7 @@ class LockStatusHeroCardWidget extends StatelessWidget {
               key: const ValueKey('locked'),
               lockStatus: lockStatus,
               blockedApps: blockedApps,
+              sprintMinutes: sprintMinutes,
               onStart: onStartSinkSprint,
             )
           : _UnlockedContent(
@@ -52,8 +55,15 @@ class LockStatusHeroCardWidget extends StatelessWidget {
 }
 
 class _LockedContent extends StatelessWidget {
-  const _LockedContent({super.key, required this.lockStatus, required this.blockedApps, required this.onStart});
+  const _LockedContent({
+    super.key,
+    required this.lockStatus,
+    required this.blockedApps,
+    required this.sprintMinutes,
+    required this.onStart,
+  });
 
+  final int sprintMinutes;
   final LockStatusModel lockStatus;
   final List<BlockableAppModel> blockedApps;
   final VoidCallback onStart;
@@ -122,7 +132,7 @@ class _LockedContent extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.lg),
           CustomPrimaryButton(
-            label: context.tr('home_start_sprint_cta'),
+            label: context.tr('home_start_sprint_cta', {'duration': context.minutes(sprintMinutes)}),
             icon: Icons.cleaning_services_rounded,
             showShimmer: true,
             onPressed: onStart,

@@ -27,6 +27,7 @@ class LanguageSelectionStepWidget extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: AppSpacing.sm),
         child: LanguageOrbitGlobeWidget(selectedCode: selectedCode),
       ),
+      headerAlign: TextAlign.center, // the only step with a centered header
       title: context.tr('choose_language_title'),
       description: context.tr('choose_language_subtitle'),
       ctaLabel: context.tr('continue'),

@@ -33,6 +33,7 @@ class HomeView extends StatelessWidget {
         lockStatus: dashboard.lockStatus,
         blockedApps: dashboard.plan.blockedApps,
         now: state.now,
+        sprintMinutes: dashboard.plan.sprintMinutes,
         onStartSinkSprint: () => context.push(AppRouter.kSinkUnlockView),
       ),
       const SizedBox(height: AppSpacing.lg),

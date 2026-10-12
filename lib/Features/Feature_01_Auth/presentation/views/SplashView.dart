@@ -21,7 +21,8 @@ class _SplashViewState extends State<SplashView> {
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(const Duration(milliseconds: 1900), _navigate);
+    // Leave the full brand animation on screen before routing.
+    Future<void>.delayed(SplashAnimatedLogoWidget.totalDuration, _navigate);
   }
 
   void _navigate() {

@@ -180,24 +180,32 @@ class _OnboardingTopBar extends StatelessWidget {
     final progress = context.select((OnboardingCubit c) => c.state.progress);
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter - 6, AppSpacing.xs, AppSpacing.screenGutter, 0),
-      child: Row(
-        children: [
-          AnimatedOpacity(
-            opacity: step.isFirst ? 0 : 1,
-            duration: AppDurations.medium,
-            child: IgnorePointer(
-              ignoring: step.isFirst,
-              child: GlassIconButton.back(context: context, onPressed: context.read<OnboardingCubit>().previousStep),
+      child: SizedBox(
+        height: 46,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: AnimatedOpacity(
+                opacity: step.isFirst ? 0 : 1,
+                duration: AppDurations.medium,
+                child: IgnorePointer(
+                  ignoring: step.isFirst,
+                  child: GlassIconButton.back(
+                    context: context,
+                    onPressed: context.read<OnboardingCubit>().previousStep,
+                  ),
+                ),
+              ),
             ),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: OnboardingProgressBarWidget(progress: progress)),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '${step.index + 1}/${OnboardingStep.values.length}',
-            style: AppTextStyles.label.copyWith(letterSpacing: 0),
-          ),
-        ],
+            // Short centered track (reference layout); keep Sinkly bar styling.
+            SizedBox(
+              width: 148,
+              child: OnboardingProgressBarWidget(progress: progress),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -21,6 +21,7 @@ import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/Onboard
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/widgets/hold_to_commit_button_widget.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/manager/sink_unlock_cubit.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
+import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/widgets/sprint_duration_picker_widget.dart';
 import 'package:sinkly/Features/Feature_03_Feedback/presentation/views/widgets/feedback_success_dialog_widget.dart';
 import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/manager/lock_schedule_cubit.dart';
 import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/views/LockScheduleView.dart';
@@ -223,7 +224,18 @@ void main() {
             // ── Sink unlock: intro → sprint ──
             await visit('unlock/intro', () async => AppRouter.router.go(AppRouter.kSinkUnlockView), ms: 1500);
             unlock = tester.element(find.byType(SinkUnlockView)).read<SinkUnlockCubit>();
+            await visit('unlock/intro-sheet', () async {
+              await tester.tap(find.byType(SprintDurationButtonWidget));
+            }, ms: 1200);
+            Navigator.of(tester.element(find.byType(SinkUnlockView))).pop();
+            await settle(800);
             await visit('unlock/sprint', () async => unlock!.startSprint(), ms: 1500);
+            await visit('unlock/sprint-sheet', () async {
+              await tester.ensureVisible(find.byType(SprintDurationButtonWidget));
+              await tester.tap(find.byType(SprintDurationButtonWidget));
+            }, ms: 1200);
+            Navigator.of(tester.element(find.byType(SinkUnlockView))).pop();
+            await settle(800);
             await visit('unlock/verifying', () async {
               // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
               unlock!.emit(unlock.state.copyWith(stage: SinkUnlockStage.verifying, photoPath: ''));

@@ -113,6 +113,23 @@ extension AppLocalizationsContext on BuildContext {
   String tr(String key, [Map<String, String>? params]) => AppLocalizations.of(this).translate(key, params);
   bool get isRtl => Directionality.of(this) == TextDirection.rtl;
 
+  /// "1 minute" / "5 minutes"; Arabic uses its dual and plural forms
+  /// (دقيقة واحدة · دقيقتان · 3–10 دقائق · 11+ دقيقة).
+  String minutes(int count) {
+    final arabic = Localizations.localeOf(this).languageCode == 'ar';
+    final String form;
+    if (count == 1) {
+      form = 'one';
+    } else if (arabic && count == 2) {
+      form = 'two';
+    } else if (arabic && count >= 3 && count <= 10) {
+      form = 'few';
+    } else {
+      form = 'many';
+    }
+    return tr('minutes_phrase_$form', {'m': '$count'});
+  }
+
   /// Mirrors a horizontal slide offset so entrance animations travel
   /// "from the reading-start side" in both LTR and RTL.
   double flipX(double value) => isRtl ? -value : value;

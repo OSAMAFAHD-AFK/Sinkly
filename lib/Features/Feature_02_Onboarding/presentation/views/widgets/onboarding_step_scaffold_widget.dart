@@ -24,7 +24,7 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
     this.showCtaShimmer = false,
     this.ctaIcon,
     this.secondaryAction,
-    this.headerAlign = TextAlign.center,
+    this.headerAlign = TextAlign.start,
     this.customCta,
   });
 

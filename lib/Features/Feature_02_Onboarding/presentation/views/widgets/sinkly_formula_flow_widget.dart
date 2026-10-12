@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/models/blockable_app_model.dart';
+import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/blockable_app_icon_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 
 /// Screen 11 visual — the Sinkly loop as a vertical, step-by-step timeline:
-/// meal ends → apps lock → 4-min sink sprint → photo → guilt-free reward.
+/// meal ends → apps lock → timed sink sprint → photo → guilt-free reward.
 class SinklyFormulaFlowWidget extends StatefulWidget {
   const SinklyFormulaFlowWidget({super.key, required this.blockedApps});
 
@@ -49,7 +50,9 @@ class _SinklyFormulaFlowWidgetState extends State<SinklyFormulaFlowWidget> with 
       ),
       (
         emoji: '🧽',
-        title: context.tr('formula_step_sprint_title'),
+        title: context.tr('formula_step_sprint_title', {
+          'duration': context.minutes(AppConstants.sinkSprintDuration.inMinutes),
+        }),
         subtitle: context.tr('formula_step_sprint_subtitle'),
         trailing: null,
       ),

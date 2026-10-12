@@ -183,13 +183,13 @@ class HeroinePose {
   );
 
   // ── Paywall: persuasion poses ───────────────────────────────────────────
-  // Presenting hand sits out at waist height: the elbow rests by her side and
-  // the forearm opens toward the plans (an open-palm "here you go").
+  // Presenting hand sits out just below the waist: the elbow rests by her side
+  // and the forearm opens down toward the plans (an open-palm "here you go").
 
   /// Confident hand-on-hip, the other hand presenting the offer below her.
   static const present = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(208, 170),
+    rightHand: Offset(208, 182),
     headTilt: 0.1,
     lean: 0.03,
     smile: 0.9,
@@ -201,7 +201,7 @@ class HeroinePose {
   /// Delighted (the best-value plan is selected).
   static const presentJoy = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(210, 164),
+    rightHand: Offset(208, 178),
     headTilt: 0.12,
     lean: 0.04,
     smile: 1,
@@ -214,13 +214,12 @@ class HeroinePose {
   /// presenting hand open toward the plans.
   static const encourage = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(206, 174),
+    rightHand: Offset(222, 100), // raised, pointing at the speech bubble
     headTilt: -0.08,
-    smile: 0.8,
-    mouthOpen: 0.2,
-    happyEyes: 0.35,
+    smile: 0.9,
+    mouthOpen: 0.3,
     brows: 0.25,
-    blush: 0.55,
+    blush: 0.6,
   );
 
   /// Pure joy (annual picked): both arms flung up in a wide "V".
@@ -249,10 +248,10 @@ class HeroinePose {
     leftHand: Offset(104, 150),
     rightHand: Offset(136, 150),
     headTilt: -0.06,
-    happyEyes: 0.7,
-    smile: 0.9,
-    mouthOpen: 0.4,
-    blush: 0.7,
+    happyEyes: 1,
+    smile: 0.95,
+    mouthOpen: 0.45,
+    blush: 0.75,
   );
 
   HeroinePose copyWith({

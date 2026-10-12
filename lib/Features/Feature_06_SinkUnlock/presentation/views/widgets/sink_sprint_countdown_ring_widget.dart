@@ -6,7 +6,7 @@ import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 
 /// Glass countdown ring whose inside slowly fills with animated sky "water"
-/// as the 4-minute sprint progresses. One painter, isolated repaints.
+/// as the sprint progresses. One painter, isolated repaints.
 class SinkSprintCountdownRingWidget extends StatefulWidget {
   const SinkSprintCountdownRingWidget({
     super.key,

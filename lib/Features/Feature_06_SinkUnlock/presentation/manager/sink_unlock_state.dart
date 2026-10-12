@@ -9,6 +9,7 @@ class SinkUnlockState extends Equatable {
     required this.lockStatus,
     required this.blockedApps,
     required this.remainingSeconds,
+    required this.sprintTotalSeconds,
     this.sprintStartedAt,
     this.photoPath,
     this.isCapturing = false,
@@ -21,6 +22,9 @@ class SinkUnlockState extends Equatable {
   final LockStatusModel lockStatus;
   final List<BlockableAppModel> blockedApps;
   final int remainingSeconds;
+
+  /// Length of this sprint in seconds (user-adjustable).
+  final int sprintTotalSeconds;
   final DateTime? sprintStartedAt;
   final String? photoPath;
   final bool isCapturing;
@@ -28,9 +32,9 @@ class SinkUnlockState extends Equatable {
   final SinkCleaningSessionModel? completedSession;
   final SinkProgressStatsModel? statsAfterUnlock;
 
-  static int get sprintTotalSeconds => AppConstants.sinkSprintDuration.inSeconds;
+  int get sprintMinutes => (sprintTotalSeconds / 60).round();
 
-  /// 0 → 1 as the 4-minute sprint elapses.
+  /// 0 → 1 as the sprint elapses.
   double get sprintProgress => 1 - remainingSeconds / sprintTotalSeconds;
 
   bool get isSprintFinished => remainingSeconds <= 0;
@@ -40,6 +44,7 @@ class SinkUnlockState extends Equatable {
     LockStatusModel? lockStatus,
     List<BlockableAppModel>? blockedApps,
     int? remainingSeconds,
+    int? sprintTotalSeconds,
     DateTime? sprintStartedAt,
     String? photoPath,
     bool? isCapturing,
@@ -52,6 +57,7 @@ class SinkUnlockState extends Equatable {
     lockStatus: lockStatus ?? this.lockStatus,
     blockedApps: blockedApps ?? this.blockedApps,
     remainingSeconds: remainingSeconds ?? this.remainingSeconds,
+    sprintTotalSeconds: sprintTotalSeconds ?? this.sprintTotalSeconds,
     sprintStartedAt: sprintStartedAt ?? this.sprintStartedAt,
     photoPath: photoPath ?? this.photoPath,
     isCapturing: isCapturing ?? this.isCapturing,
@@ -66,6 +72,7 @@ class SinkUnlockState extends Equatable {
     lockStatus,
     blockedApps,
     remainingSeconds,
+    sprintTotalSeconds,
     sprintStartedAt,
     photoPath,
     isCapturing,

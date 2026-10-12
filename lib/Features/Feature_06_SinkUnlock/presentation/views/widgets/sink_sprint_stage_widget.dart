@@ -9,8 +9,9 @@ import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../manager/sink_unlock_cubit.dart';
 import 'sink_sprint_countdown_ring_widget.dart';
+import 'sprint_duration_picker_widget.dart';
 
-/// Stage 2 — the 4-minute sprint: water-fill countdown + rotating pro tips +
+/// Stage 2 — the timed sprint (5 min by default, adjustable): water-fill countdown + rotating pro tips +
 /// "Done! Snap the clean sink" CTA (available any time).
 class SinkSprintStageWidget extends StatelessWidget {
   const SinkSprintStageWidget({super.key});
@@ -58,12 +59,20 @@ class SinkSprintStageWidget extends StatelessWidget {
             AppSpacing.screenGutter,
             AppSpacing.md,
           ),
-          child: CustomPrimaryButton(
-            label: context.tr('sprint_snap_cta'),
-            icon: Icons.photo_camera_rounded,
-            showShimmer: finished,
-            isLoading: isCapturing,
-            onPressed: cubit.captureAndVerifyPhoto,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Need more (or less) time? Always one tap away, even mid-sprint.
+              const SprintDurationButtonWidget(),
+              const SizedBox(height: AppSpacing.sm),
+              CustomPrimaryButton(
+                label: context.tr('sprint_snap_cta'),
+                icon: Icons.photo_camera_rounded,
+                showShimmer: finished,
+                isLoading: isCapturing,
+                onPressed: cubit.captureAndVerifyPhoto,
+              ),
+            ],
           ),
         ),
       ],

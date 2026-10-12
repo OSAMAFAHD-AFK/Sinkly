@@ -4,8 +4,13 @@ abstract final class AppConstants {
   static const String appVersion = '0.1.0';
 
   // ── Core mechanic ──────────────────────────────────────────────────────
-  /// The guided "sink sprint" length.
-  static const Duration sinkSprintDuration = Duration(minutes: 4);
+  /// The guided "sink sprint" length (default; users can adjust it).
+  static const Duration sinkSprintDuration = Duration(minutes: 5);
+
+  /// Bounds and quick picks for the user-adjustable sprint timer (minutes).
+  static const int minSprintMinutes = 1;
+  static const int maxSprintMinutes = 30;
+  static const List<int> sprintPresetMinutes = [3, 5, 7, 10, 15, 20];
 
   /// Avoidance time lost per day according to onboarding research copy.
   static const double averageHoursLostPerDay = 1.5;

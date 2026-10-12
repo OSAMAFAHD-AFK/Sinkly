@@ -6,7 +6,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 
-/// Screen 7 visual: "4 minutes of washing" vs "1.5 hours of avoiding",
+/// Screen 7 visual: "5 minutes of washing" vs "1.5 hours of avoiding",
 /// followed by the weekly & yearly cost of procrastination.
 class TimeLossComparisonChartWidget extends StatelessWidget {
   const TimeLossComparisonChartWidget({super.key});
@@ -15,8 +15,8 @@ class TimeLossComparisonChartWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     const weeklyHours = AppConstants.averageHoursLostPerDay * 7;
     final yearlyDays = (AppConstants.averageHoursLostPerDay * 365 / 24).round();
-    const washMinutes = 4;
-    const ratio = washMinutes / (AppConstants.averageHoursLostPerDay * 60);
+    final washMinutes = AppConstants.sinkSprintDuration.inMinutes;
+    final ratio = washMinutes / (AppConstants.averageHoursLostPerDay * 60);
 
     return Column(
       children: [

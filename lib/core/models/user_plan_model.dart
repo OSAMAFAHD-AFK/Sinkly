@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../utils/app_constants.dart';
 import 'blockable_app_model.dart';
 import 'weekly_lock_schedule_model.dart';
 
@@ -17,6 +18,7 @@ class UserPlanModel extends Equatable {
     this.screenTimePermissionGranted = false,
     this.notificationsEnabled = true,
     this.manualLockTriggeredAt,
+    this.sprintMinutes = _defaultSprintMinutes,
   });
 
   final String userName;
@@ -34,6 +36,11 @@ class UserPlanModel extends Equatable {
 
   /// Set when the user taps "Test the lock now" — behaves like a meal ending.
   final DateTime? manualLockTriggeredAt;
+
+  /// How long the user's sink sprint timer runs (adjustable in the unlock flow).
+  final int sprintMinutes;
+
+  static const int _defaultSprintMinutes = 5; // = AppConstants.sinkSprintDuration
 
   factory UserPlanModel.initial({String languageCode = 'en'}) => UserPlanModel(
     userName: '',
@@ -62,6 +69,7 @@ class UserPlanModel extends Equatable {
     bool? screenTimePermissionGranted,
     bool? notificationsEnabled,
     Object? manualLockTriggeredAt = _unset,
+    int? sprintMinutes,
   }) => UserPlanModel(
     userName: userName ?? this.userName,
     languageCode: languageCode ?? this.languageCode,
@@ -75,6 +83,7 @@ class UserPlanModel extends Equatable {
     manualLockTriggeredAt: identical(manualLockTriggeredAt, _unset)
         ? this.manualLockTriggeredAt
         : manualLockTriggeredAt as DateTime?,
+    sprintMinutes: sprintMinutes ?? this.sprintMinutes,
   );
 
   factory UserPlanModel.fromJson(Map<String, dynamic> json) => UserPlanModel(
@@ -90,6 +99,10 @@ class UserPlanModel extends Equatable {
     screenTimePermissionGranted: json['screenTimePermissionGranted'] as bool? ?? false,
     notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     manualLockTriggeredAt: DateTime.tryParse(json['manualLockTriggeredAt'] as String? ?? ''),
+    sprintMinutes: ((json['sprintMinutes'] as num?)?.toInt() ?? _defaultSprintMinutes).clamp(
+      AppConstants.minSprintMinutes,
+      AppConstants.maxSprintMinutes,
+    ),
   );
 
   Map<String, dynamic> toJson() => {
@@ -103,6 +116,7 @@ class UserPlanModel extends Equatable {
     'screenTimePermissionGranted': screenTimePermissionGranted,
     'notificationsEnabled': notificationsEnabled,
     'manualLockTriggeredAt': manualLockTriggeredAt?.toIso8601String(),
+    'sprintMinutes': sprintMinutes,
   };
 
   @override
@@ -117,5 +131,6 @@ class UserPlanModel extends Equatable {
     screenTimePermissionGranted,
     notificationsEnabled,
     manualLockTriggeredAt,
+    sprintMinutes,
   ];
 }

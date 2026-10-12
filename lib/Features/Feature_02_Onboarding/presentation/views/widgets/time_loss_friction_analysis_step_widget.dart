@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
@@ -39,9 +40,14 @@ class _TimeLossFrictionAnalysisStepWidgetState extends State<TimeLossFrictionAna
         // Sand drains calmly while analyzing, then races once the loss is revealed.
         child: HourglassSandWidget(height: 112, urgent: _analysisDone),
       ),
-      title: context.tr('time_loss_title', {'name': name}),
+      title: context.tr('time_loss_title', {
+        'name': name,
+        'duration': context.minutes(AppConstants.sinkSprintDuration.inMinutes),
+      }),
       highlight: name,
-      description: context.tr('time_loss_description'),
+      description: context.tr('time_loss_description', {
+        'duration': context.minutes(AppConstants.sinkSprintDuration.inMinutes),
+      }),
       ctaLabel: context.tr('time_loss_cta'),
       onCtaPressed: _analysisDone ? context.read<OnboardingCubit>().nextStep : null,
       body: AnimatedSwitcher(

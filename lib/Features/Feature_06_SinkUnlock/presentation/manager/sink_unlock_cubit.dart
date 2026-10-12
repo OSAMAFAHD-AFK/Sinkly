@@ -9,7 +9,7 @@ import '../../data/repos/sink_unlock_repo.dart';
 
 part 'sink_unlock_state.dart';
 
-/// intro → 4-min sprint → photo → verification → celebration (apps unlocked).
+/// intro → timed sprint (default 5 min, user-adjustable) → photo → verification → celebration (apps unlocked).
 class SinkUnlockCubit extends Cubit<SinkUnlockState> {
   SinkUnlockCubit(this._repo)
     : super(
@@ -17,7 +17,8 @@ class SinkUnlockCubit extends Cubit<SinkUnlockState> {
           stage: SinkUnlockStage.intro,
           lockStatus: _repo.currentLockStatus(now: DateTime.now()),
           blockedApps: _repo.blockedApps(),
-          remainingSeconds: SinkUnlockState.sprintTotalSeconds,
+          remainingSeconds: _repo.sprintMinutes() * 60,
+          sprintTotalSeconds: _repo.sprintMinutes() * 60,
         ),
       );
 
@@ -31,10 +32,24 @@ class SinkUnlockCubit extends Cubit<SinkUnlockState> {
     // Wall-clock based so the countdown stays correct after backgrounding.
     _sprintTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       final elapsed = DateTime.now().difference(startedAt).inSeconds;
-      final remaining = (SinkUnlockState.sprintTotalSeconds - elapsed).clamp(0, SinkUnlockState.sprintTotalSeconds);
+      // Read the total every tick so adjusting the timer mid-sprint applies at once.
+      final total = state.sprintTotalSeconds;
+      final remaining = (total - elapsed).clamp(0, total);
       emit(state.copyWith(remainingSeconds: remaining));
       if (remaining == 0) _sprintTimer?.cancel();
     });
+  }
+
+  /// Lets the user pick how long the sprint lasts — before starting, or
+  /// while it runs (the elapsed time is kept; only the total changes).
+  Future<void> setSprintMinutes(int minutes) async {
+    final safe = minutes.clamp(AppConstants.minSprintMinutes, AppConstants.maxSprintMinutes);
+    final total = safe * 60;
+    if (total == state.sprintTotalSeconds) return;
+    final startedAt = state.sprintStartedAt;
+    final elapsed = startedAt == null ? 0 : DateTime.now().difference(startedAt).inSeconds;
+    emit(state.copyWith(sprintTotalSeconds: total, remainingSeconds: (total - elapsed).clamp(0, total)));
+    await _repo.saveSprintMinutes(safe);
   }
 
   /// Opens the camera, then verifies the photo, then unlocks.

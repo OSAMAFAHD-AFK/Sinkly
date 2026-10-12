@@ -33,6 +33,12 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
   List<BlockableAppModel> blockedApps() => _sessions.readPlan().blockedApps;
 
   @override
+  int sprintMinutes() => _sessions.readPlan().sprintMinutes;
+
+  @override
+  Future<void> saveSprintMinutes(int minutes) => _sessions.saveSprintMinutes(minutes);
+
+  @override
   SinkProgressStatsModel progressStats({required DateTime now}) =>
       SinkProgressStatsModel.fromSessions(_sessions.readSessions(), now: now);
 

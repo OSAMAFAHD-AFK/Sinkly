@@ -15,12 +15,14 @@ class GlassIconButton extends StatelessWidget {
     this.iconColor = AppColors.ink,
     this.semanticLabel,
     this.badge = false,
+    this.matchTextDirection = false,
   });
 
-  /// RTL-aware back button.
+  /// Back button: icon flips in Arabic/RTL; button placement follows layout.
   factory GlassIconButton.back({Key? key, required BuildContext context, VoidCallback? onPressed}) => GlassIconButton(
     key: key,
-    icon: context.isRtl ? Icons.arrow_forward_ios_rounded : Icons.arrow_back_ios_new_rounded,
+    icon: Icons.arrow_back_ios_new_rounded,
+    matchTextDirection: true,
     onPressed: onPressed ?? () => Navigator.of(context).maybePop(),
     semanticLabel: context.tr('back'),
   );
@@ -33,6 +35,10 @@ class GlassIconButton extends StatelessWidget {
 
   /// Small sky dot (e.g. unread notification).
   final bool badge;
+
+  /// Kept for API compatibility: Material directional icons (e.g. the back
+  /// chevron) already mirror themselves under RTL via `IconData.matchTextDirection`.
+  final bool matchTextDirection;
 
   @override
   Widget build(BuildContext context) {
