@@ -7,6 +7,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/glass_icon_orb_widget.dart';
+import '../../../../../core/widgets/pulse_rings_widget.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
@@ -25,12 +26,15 @@ class TrialReminderAssuranceStepWidget extends StatelessWidget {
     const trialDays = AppConstants.freeTrialDays;
 
     return OnboardingStepScaffoldWidget(
-      illustration: const GlassIconOrbWidget(icon: Icons.notifications_active_rounded, size: 96)
-          .animate(onPlay: (c) => c.repeat(), delay: 600.ms)
-          .shake(hz: 4, rotation: 0.06, duration: 700.ms)
-          // No-op effect that adds a pause between rings.
-          .then()
-          .scaleXY(begin: 1, end: 1, duration: 1800.ms),
+      illustration: PulseRingsWidget(
+        size: 200,
+        child: const GlassIconOrbWidget(icon: Icons.notifications_active_rounded, size: 88, floating: false)
+            .animate(onPlay: (c) => c.repeat(), delay: 600.ms)
+            .shake(hz: 4, rotation: 0.06, duration: 700.ms)
+            // No-op effect that adds a pause between rings.
+            .then()
+            .scaleXY(begin: 1, end: 1, duration: 1800.ms),
+      ),
       title: context.tr('trial_reminder_title'),
       description: context.tr('trial_reminder_description'),
       ctaLabel: context.tr('trial_reminder_cta'),

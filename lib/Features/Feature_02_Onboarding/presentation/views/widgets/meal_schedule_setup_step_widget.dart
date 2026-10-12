@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
 import '../../manager/onboarding_cubit.dart';
+import '../../../../../core/utils/style.dart';
+import 'animated_clock_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 import 'schedule_meal_picker_matrix_widget.dart';
 
@@ -17,6 +19,10 @@ class MealScheduleSetupStepWidget extends StatelessWidget {
     final schedule = context.select((OnboardingCubit c) => c.state.preferences.schedule);
 
     return OnboardingStepScaffoldWidget(
+      illustration: const Padding(
+        padding: EdgeInsets.only(bottom: AppSpacing.xs),
+        child: AnimatedClockWidget(size: 76, secondsPerTurn: 6, showLockBadge: true),
+      ),
       title: context.tr('schedule_title', {'name': name}),
       highlight: name,
       description: context.tr('schedule_description'),

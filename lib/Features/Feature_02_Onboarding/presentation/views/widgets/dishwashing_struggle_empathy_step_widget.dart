@@ -4,10 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/glass_icon_orb_widget.dart';
 import '../../../data/models/onboarding_quiz_option_model.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
+import 'struggle_mood_orb_widget.dart';
 import 'quiz_option_card_widget.dart';
 
 /// Screen 6 — Empathy check: the emotional barrier behind the dishes.
@@ -20,7 +20,7 @@ class DishwashingStruggleEmpathyStepWidget extends StatelessWidget {
     final selectedId = context.select((OnboardingCubit c) => c.state.preferences.mainStruggleId);
 
     return OnboardingStepScaffoldWidget(
-      illustration: const GlassIconOrbWidget(emoji: '🫧', size: 92, glowColor: AppColors.meshLavender),
+      illustration: StruggleMoodOrbWidget(selectedId: selectedId),
       title: context.tr('quiz_struggle_title'),
       description: context.tr('quiz_struggle_description'),
       ctaLabel: context.tr('quiz_struggle_cta'),

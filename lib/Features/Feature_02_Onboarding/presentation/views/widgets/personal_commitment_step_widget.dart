@@ -6,6 +6,7 @@ import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/glass_icon_orb_widget.dart';
+import '../../../../../core/widgets/pulse_rings_widget.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'hold_to_commit_button_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
@@ -37,7 +38,10 @@ class _PersonalCommitmentStepWidgetState extends State<PersonalCommitmentStepWid
     return Stack(
       children: [
         OnboardingStepScaffoldWidget(
-          illustration: const GlassIconOrbWidget(emoji: '🤝', size: 92),
+          illustration: const PulseRingsWidget(
+            size: 190,
+            child: GlassIconOrbWidget(emoji: '🤝', size: 84, floating: false),
+          ),
           title: context.tr('commitment_title', {'name': name}),
           highlight: name,
           // Revisiting the step: the commitment is already sealed → plain CTA.

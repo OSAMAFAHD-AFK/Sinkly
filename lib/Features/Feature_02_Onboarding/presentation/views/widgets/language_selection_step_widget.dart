@@ -5,9 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/models/supported_language_model.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/sinkly_logo_widget.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'language_card_selection_widget.dart';
+import 'language_orbit_globe_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
 /// Screen 1 — Preferred language. The device language is detected and its
@@ -22,9 +22,9 @@ class LanguageSelectionStepWidget extends StatelessWidget {
     final deviceCode = LocaleController.deviceLanguageCode();
 
     return OnboardingStepScaffoldWidget(
-      illustration: const Padding(
-        padding: EdgeInsets.only(top: AppSpacing.md, bottom: AppSpacing.lg),
-        child: SinklyLogoWidget(size: 34),
+      illustration: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: LanguageOrbitGlobeWidget(selectedCode: selectedCode),
       ),
       title: context.tr('choose_language_title'),
       description: context.tr('choose_language_subtitle'),

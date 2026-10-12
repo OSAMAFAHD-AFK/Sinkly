@@ -14,6 +14,7 @@ class CustomTextField extends StatefulWidget {
     this.onSubmitted,
     this.maxLines = 1,
     this.maxLength,
+    this.showCounter = true,
     this.autofocus = false,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.sentences,
@@ -29,6 +30,7 @@ class CustomTextField extends StatefulWidget {
   final ValueChanged<String>? onSubmitted;
   final int maxLines;
   final int? maxLength;
+  final bool showCounter;
   final bool autofocus;
   final TextInputAction? textInputAction;
   final TextCapitalization textCapitalization;
@@ -84,7 +86,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
         fillColor: AppColors.glassFillStrong,
         borderColor: _hasFocus ? AppColors.primary : AppColors.glassBorder,
         borderWidth: _hasFocus ? 1.6 : 1.2,
-        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg - 2, vertical: isMultiline ? AppSpacing.md : 4),
+        padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg - 2, vertical: isMultiline ? AppSpacing.md : 6),
         child: TextField(
           controller: widget.controller,
           focusNode: _focusNode,
@@ -101,15 +103,20 @@ class _CustomTextFieldState extends State<CustomTextField> {
           style: widget.textStyle ?? AppTextStyles.bodyStrong.copyWith(fontSize: 16),
           cursorRadius: const Radius.circular(4),
           decoration: InputDecoration(
+            isDense: !isMultiline,
             hintText: widget.hintText,
             hintStyle: AppTextStyles.body.copyWith(color: AppColors.inkMuted),
             hintMaxLines: widget.maxLines,
             border: InputBorder.none,
+            counterText: widget.showCounter ? null : '',
             counterStyle: AppTextStyles.caption.copyWith(fontSize: 11),
             prefixIcon: widget.prefixIcon == null
                 ? null
-                : Icon(widget.prefixIcon, color: _hasFocus ? AppColors.primaryInk : AppColors.inkMuted),
-            contentPadding: EdgeInsets.symmetric(vertical: isMultiline ? 0 : 18),
+                : Icon(widget.prefixIcon, size: 22, color: _hasFocus ? AppColors.primaryInk : AppColors.inkMuted),
+            prefixIconConstraints: widget.prefixIcon == null
+                ? null
+                : const BoxConstraints(minWidth: 40, minHeight: 40),
+            contentPadding: EdgeInsets.symmetric(vertical: isMultiline ? 0 : 14),
           ),
         ),
       ),

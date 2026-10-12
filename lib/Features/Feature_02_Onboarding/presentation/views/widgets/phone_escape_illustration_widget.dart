@@ -45,32 +45,40 @@ class PhoneEscapeIllustrationWidget extends StatelessWidget {
           PositionedDirectional(
             end: 18,
             top: 4,
-            child: CustomCardContainer(
-              width: 150,
-              height: 214,
-              borderRadius: BorderRadius.circular(30),
-              fillColor: AppColors.glassFillStrong,
-              padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
-              child: Column(
-                children:
-                    [
-                          Container(
-                            width: 44,
-                            height: 6,
-                            decoration: const BoxDecoration(color: AppColors.ink, borderRadius: AppRadii.pillAll),
-                          ),
-                          const SizedBox(height: 12),
-                          _NotificationPill(app: tiktok, text: context.tr('pain_notification_one')),
-                          const SizedBox(height: 8),
-                          _NotificationPill(app: instagram, text: context.tr('pain_notification_two')),
-                          const SizedBox(height: 8),
-                          _NotificationPill(app: tiktok, text: context.tr('pain_notification_three')),
-                        ]
-                        .animate(interval: 450.ms, delay: 400.ms)
-                        .fadeIn(duration: 300.ms)
-                        .slideX(begin: context.flipX(0.3), curve: Curves.easeOutBack),
-              ),
-            ),
+            child:
+                CustomCardContainer(
+                      width: 150,
+                      height: 214,
+                      borderRadius: BorderRadius.circular(30),
+                      fillColor: AppColors.glassFillStrong,
+                      padding: const EdgeInsets.fromLTRB(10, 14, 10, 10),
+                      child: Column(
+                        children:
+                            [
+                                  Container(
+                                    width: 44,
+                                    height: 6,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.ink,
+                                      borderRadius: AppRadii.pillAll,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _NotificationPill(app: tiktok, text: context.tr('pain_notification_one')),
+                                  const SizedBox(height: 8),
+                                  _NotificationPill(app: instagram, text: context.tr('pain_notification_two')),
+                                  const SizedBox(height: 8),
+                                  _NotificationPill(app: tiktok, text: context.tr('pain_notification_three')),
+                                ]
+                                .animate(interval: 450.ms, delay: 400.ms)
+                                .fadeIn(duration: 300.ms)
+                                .slideX(begin: context.flipX(0.3), curve: Curves.easeOutBack),
+                      ),
+                    )
+                    // The phone buzzes for attention, then rests — like real life.
+                    .animate(onPlay: (c) => c.repeat(), delay: 1800.ms)
+                    .shake(hz: 7, rotation: 0.035, duration: 600.ms)
+                    .then(delay: 2200.ms),
           ),
           // Guilt meter badge.
           PositionedDirectional(

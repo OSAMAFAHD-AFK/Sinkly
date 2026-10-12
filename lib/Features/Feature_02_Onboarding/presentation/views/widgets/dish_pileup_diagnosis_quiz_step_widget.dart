@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/glass_icon_orb_widget.dart';
 import '../../../data/models/onboarding_quiz_option_model.dart';
 import '../../manager/onboarding_cubit.dart';
+import 'dish_tower_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 import 'quiz_option_card_widget.dart';
 
@@ -14,13 +14,23 @@ import 'quiz_option_card_widget.dart';
 class DishPileupDiagnosisQuizStepWidget extends StatelessWidget {
   const DishPileupDiagnosisQuizStepWidget({super.key});
 
+  static int _levelFor(String? optionId) => switch (optionId) {
+    'full_day' => 1,
+    'several_days' => 2,
+    'disgust_anxiety' => 3,
+    _ => 0,
+  };
+
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<OnboardingCubit>();
     final selectedId = context.select((OnboardingCubit c) => c.state.preferences.dishPileupSeverityId);
 
     return OnboardingStepScaffoldWidget(
-      illustration: const GlassIconOrbWidget(emoji: '🧽', size: 92),
+      illustration: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.md),
+        child: DishTowerWidget(level: _levelFor(selectedId)),
+      ),
       title: context.tr('quiz_pileup_title'),
       description: context.tr('quiz_single_choice_hint'),
       ctaLabel: context.tr('continue'),

@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
+import '../../../../core/utils/app_localizations.dart';
+import '../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../manager/onboarding_cubit.dart';
@@ -101,26 +103,69 @@ class _OnboardingViewState extends State<OnboardingView> {
         listener: (context, state) => _syncPage(state),
         child: GlassScreenScaffold(
           animateBackground: true,
-          body: Column(
+          body: Stack(
             children: [
-              AnimatedSize(
-                duration: AppDurations.medium,
-                child: currentStep.showsChrome
-                    ? _OnboardingTopBar(step: currentStep)
-                    : const SizedBox(width: double.infinity),
-              ),
-              Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: OnboardingStep.values.length,
-                  itemBuilder: (context, index) => _buildStep(OnboardingStep.values[index]),
-                ),
+              // Ambient soap bubbles drift behind every step (frosted by the glass).
+              const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 7, maxBubbleSize: 30)),
+              Column(
+                children: [
+                  AnimatedSize(
+                    duration: AppDurations.medium,
+                    child: currentStep.showsChrome
+                        ? _OnboardingTopBar(step: currentStep)
+                        : const SizedBox(width: double.infinity),
+                  ),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: OnboardingStep.values.length,
+                      itemBuilder: (context, index) => _ParallaxPage(
+                        controller: _pageController,
+                        index: index,
+                        child: _buildStep(OnboardingStep.values[index]),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+/// Slides + fades + gently scales pages as they swipe in/out, so the funnel
+/// feels like one continuous motion instead of hard cuts.
+class _ParallaxPage extends StatelessWidget {
+  const _ParallaxPage({required this.controller, required this.index, required this.child});
+
+  final PageController controller;
+  final int index;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, child) {
+        var delta = 0.0;
+        if (controller.hasClients && controller.position.haveDimensions) {
+          delta = (controller.page ?? index.toDouble()) - index;
+        }
+        final distance = delta.abs().clamp(0.0, 1.0);
+        return Opacity(
+          opacity: (1 - distance * 1.4).clamp(0.0, 1.0),
+          child: Transform.translate(
+            // Content lags slightly behind the page → depth.
+            offset: Offset(MediaQuery.sizeOf(context).width * 0.18 * delta * (context.isRtl ? -1 : 1), 0),
+            child: Transform.scale(scale: 1 - 0.06 * distance, child: child),
+          ),
+        );
+      },
     );
   }
 }

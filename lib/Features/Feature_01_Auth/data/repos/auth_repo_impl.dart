@@ -17,7 +17,9 @@ class AuthRepoImpl implements AuthRepo {
 
   @override
   AppStartDestination resolveStartDestination() =>
-      _storage.plan.onboardingCompleted ? AppStartDestination.home : AppStartDestination.onboarding;
+      // TODO(design): restore one-time onboarding when design is done:
+      // _storage.plan.onboardingCompleted ? AppStartDestination.home : AppStartDestination.onboarding;
+      AppStartDestination.onboarding;
 
   @override
   Future<Either<Failure, AuthUserModel>> signIn(AuthProviderType provider) async {

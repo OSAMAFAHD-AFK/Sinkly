@@ -6,6 +6,7 @@ import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'analysis_progress_checklist_widget.dart';
+import 'animated_clock_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 import 'time_loss_comparison_chart_widget.dart';
 
@@ -32,6 +33,16 @@ class _TimeLossFrictionAnalysisStepWidgetState extends State<TimeLossFrictionAna
     final name = context.select((OnboardingCubit c) => c.state.preferences.trimmedName);
 
     return OnboardingStepScaffoldWidget(
+      // Frantic clock while analyzing, calmer once the result is shown.
+      illustration: Padding(
+        padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+        child: AnimatedClockWidget(
+          key: ValueKey(_analysisDone),
+          size: 96,
+          secondsPerTurn: _analysisDone ? 4 : 1.2,
+          accent: _analysisDone ? AppColors.danger : AppColors.primary,
+        ),
+      ),
       title: context.tr('time_loss_title', {'name': name}),
       highlight: name,
       description: context.tr('time_loss_description'),

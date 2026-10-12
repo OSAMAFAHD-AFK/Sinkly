@@ -7,6 +7,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/blockable_app_icon_widget.dart';
+import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'analysis_progress_checklist_widget.dart';
@@ -29,7 +30,7 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
     final name = preferences.trimmedName;
     final plan = preferences.toUserPlan(onboardingCompleted: false);
 
-    return OnboardingStepScaffoldWidget(
+    final step = OnboardingStepScaffoldWidget(
       title: _planReady ? context.tr('plan_ready_title', {'name': name}) : context.tr('plan_building_title'),
       highlight: name,
       ctaLabel: context.tr('plan_ready_cta'),
@@ -54,6 +55,14 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
                 },
               ),
       ),
+    );
+
+    // Confetti rains over the plan the moment it is revealed.
+    return Stack(
+      children: [
+        step,
+        if (_planReady) const Positioned.fill(child: ConfettiBurstWidget(particleCount: 70)),
+      ],
     );
   }
 }

@@ -8,6 +8,7 @@ import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
+import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../../core/widgets/glass_icon_button.dart';
 import '../../../../../core/widgets/glass_icon_orb_widget.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
@@ -73,41 +74,46 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
         AppFunctions.showSnack(context, context.tr(state.failureKey!));
         context.read<SubscriptionCubit>().clearFailure();
       },
-      child: Column(
+      child: Stack(
         children: [
-          _PaywallTopBar(showClose: _showCloseButton, onClose: () => widget.onFinished(false), onRestore: _restore),
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Center(child: GlassIconOrbWidget(icon: Icons.water_drop_rounded, size: 60))
-                      .animate()
-                      .fadeIn(duration: 400.ms)
-                      .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
-                  OnboardingStepHeaderWidget(
-                    title: widget.userName.isEmpty
-                        ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
-                        : context.tr('paywall_title', {
-                            'name': widget.userName,
-                            'days': '${AppConstants.freeTrialDays}',
-                          }),
-                    highlight: widget.userName,
-                    description: context.tr('paywall_subtitle'),
-                  ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
-                  // Plans first: both prices visible without scrolling (clarity
-                  // converts better and is what App Review expects).
-                  const SizedBox(height: AppSpacing.md + 6),
-                  const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
-                  const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
-                  const SizedBox(height: AppSpacing.md),
-                ],
+          const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 8, maxBubbleSize: 30)),
+          Column(
+            children: [
+              _PaywallTopBar(showClose: _showCloseButton, onClose: () => widget.onFinished(false), onRestore: _restore),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Center(child: GlassIconOrbWidget(icon: Icons.water_drop_rounded, size: 60))
+                          .animate()
+                          .fadeIn(duration: 400.ms)
+                          .scale(begin: const Offset(0.85, 0.85), curve: Curves.easeOutBack),
+                      OnboardingStepHeaderWidget(
+                        title: widget.userName.isEmpty
+                            ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
+                            : context.tr('paywall_title', {
+                                'name': widget.userName,
+                                'days': '${AppConstants.freeTrialDays}',
+                              }),
+                        highlight: widget.userName,
+                        description: context.tr('paywall_subtitle'),
+                      ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
+                      // Plans first: both prices visible without scrolling (clarity
+                      // converts better and is what App Review expects).
+                      const SizedBox(height: AppSpacing.md + 6),
+                      const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
+                      const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                  ),
+                ),
               ),
-            ),
+              _PaywallBottomActions(onPurchase: _purchase).animate(delay: 380.ms).fadeIn().slideY(begin: 0.3),
+            ],
           ),
-          _PaywallBottomActions(onPurchase: _purchase).animate(delay: 380.ms).fadeIn().slideY(begin: 0.3),
         ],
       ),
     );
