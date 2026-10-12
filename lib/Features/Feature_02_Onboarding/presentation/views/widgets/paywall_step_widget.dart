@@ -204,9 +204,11 @@ class _PaywallTrustChips extends StatelessWidget {
               children: [
                 Icon(icon, size: 13, color: AppColors.success),
                 const SizedBox(width: 4),
-                Text(
-                  context.tr(key),
-                  style: AppTextStyles.label.copyWith(color: AppColors.ink, fontSize: 10.5, letterSpacing: 0),
+                Flexible(
+                  child: Text(
+                    context.tr(key),
+                    style: AppTextStyles.label.copyWith(color: AppColors.ink, fontSize: 10.5, letterSpacing: 0),
+                  ),
                 ),
               ],
             ),
@@ -331,9 +333,12 @@ class _PaywallBottomActions extends StatelessWidget {
             children: [
               const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
               const SizedBox(width: 6),
-              Text(
-                context.tr('paywall_no_payment_now'),
-                style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+              Flexible(
+                child: Text(
+                  context.tr('paywall_no_payment_now'),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+                ),
               ),
             ],
           ),
@@ -355,8 +360,9 @@ class _PaywallBottomActions extends StatelessWidget {
             style: AppTextStyles.caption.copyWith(fontSize: 12),
           ),
           const SizedBox(height: 2),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               _FooterLink(label: context.tr('terms_of_use')),
               Text('·', style: AppTextStyles.caption),

@@ -14,6 +14,24 @@ class SettingsPremiumCardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Compact phones / large text: the CTA pill moves under the copy so the
+    // title never breaks mid-word.
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          _buildCard(context, stackCta: constraints.maxWidth < 300 || MediaQuery.textScalerOf(context).scale(1) > 1.15),
+    );
+  }
+
+  Widget _buildCard(BuildContext context, {required bool stackCta}) {
+    final cta = Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: const BoxDecoration(color: Colors.white, borderRadius: AppRadii.pillAll, boxShadow: AppShadows.soft),
+      child: Text(
+        context.tr('settings_premium_upsell_cta'),
+        style: AppTextStyles.label.copyWith(color: AppColors.onPrimary, letterSpacing: 0.2),
+      ),
+    );
+
     final card = Container(
       padding: const EdgeInsets.all(AppSpacing.lg - 4),
       decoration: BoxDecoration(
@@ -41,22 +59,11 @@ class SettingsPremiumCardWidget extends StatelessWidget {
                     color: isPremium ? Colors.white70 : AppColors.onPrimary.withValues(alpha: 0.75),
                   ),
                 ),
+                if (!isPremium && stackCta) ...[const SizedBox(height: AppSpacing.sm), cta],
               ],
             ),
           ),
-          if (!isPremium)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: AppRadii.pillAll,
-                boxShadow: AppShadows.soft,
-              ),
-              child: Text(
-                context.tr('settings_premium_upsell_cta'),
-                style: AppTextStyles.label.copyWith(color: AppColors.onPrimary, letterSpacing: 0.2),
-              ),
-            ),
+          if (!isPremium && !stackCta) cta,
         ],
       ),
     );

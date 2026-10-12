@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/style.dart';
+import '../../../../../core/widgets/adaptive_scene_box_widget.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import 'onboarding_step_header_widget.dart';
 
 /// Shared layout for onboarding steps:
 ///   illustration → headline/description → body (scrollable) → sticky CTA.
+/// The illustration is auto-fitted to the device (see [AdaptiveSceneBoxWidget]).
 /// Every block enters with a short staggered fade/slide for a premium feel.
 class OnboardingStepScaffoldWidget extends StatelessWidget {
   const OnboardingStepScaffoldWidget({
@@ -59,7 +61,7 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 if (illustration != null)
-                  Center(child: illustration!)
+                  Center(child: AdaptiveSceneBoxWidget(child: illustration!))
                       .animate()
                       .fadeIn(duration: 450.ms)
                       .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms),

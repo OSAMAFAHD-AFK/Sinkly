@@ -30,16 +30,20 @@ class SinklyLogoWidget extends StatelessWidget {
     return Directionality(
       // The brand wordmark always reads left-to-right.
       textDirection: TextDirection.ltr,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          badge,
-          SizedBox(width: size * 0.35),
-          Text(
-            AppConstants.appName,
-            style: AppTextStyles.display.copyWith(fontSize: size, letterSpacing: -size * 0.03),
-          ),
-        ],
+      // Large text settings / narrow phones: shrink the lockup, never clip it.
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            badge,
+            SizedBox(width: size * 0.35),
+            Text(
+              AppConstants.appName,
+              style: AppTextStyles.display.copyWith(fontSize: size, letterSpacing: -size * 0.03),
+            ),
+          ],
+        ),
       ),
     );
   }

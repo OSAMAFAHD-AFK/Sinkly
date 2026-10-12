@@ -98,7 +98,8 @@ class _HoldToCommitButtonWidgetState extends State<HoldToCommitButtonWidget> wit
                 return Transform.scale(
                   scale: 1 - value * 0.03 + (_completed ? 0.03 : 0),
                   child: Container(
-                    height: 64,
+                    // Min (not fixed) height: a 2-line label on large text grows the pill.
+                    constraints: const BoxConstraints(minHeight: 64),
                     decoration: BoxDecoration(
                       borderRadius: AppRadii.pillAll,
                       color: AppColors.glassFillStrong,
@@ -110,21 +111,24 @@ class _HoldToCommitButtonWidgetState extends State<HoldToCommitButtonWidget> wit
                     child: ClipRRect(
                       borderRadius: AppRadii.pillAll,
                       child: Stack(
+                        alignment: Alignment.center,
                         children: [
                           // Sky fill growing from the start edge.
-                          Align(
-                            alignment: AlignmentDirectional.centerStart,
-                            child: FractionallySizedBox(
-                              widthFactor: value,
-                              heightFactor: 1,
-                              child: const DecoratedBox(
-                                decoration: BoxDecoration(gradient: AppGradients.primaryButton),
+                          Positioned.fill(
+                            child: Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: FractionallySizedBox(
+                                widthFactor: value,
+                                heightFactor: 1,
+                                child: const DecoratedBox(
+                                  decoration: BoxDecoration(gradient: AppGradients.primaryButton),
+                                ),
                               ),
                             ),
                           ),
                           Center(
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+                              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
@@ -137,7 +141,8 @@ class _HoldToCommitButtonWidgetState extends State<HoldToCommitButtonWidget> wit
                                   Flexible(
                                     child: Text(
                                       _completed ? widget.completedLabel : widget.label,
-                                      maxLines: 1,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                       style: AppTextStyles.button,
                                     ),

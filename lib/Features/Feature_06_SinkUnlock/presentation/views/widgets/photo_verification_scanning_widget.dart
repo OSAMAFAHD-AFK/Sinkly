@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -15,8 +16,13 @@ class PhotoVerificationScanningWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) => _buildContent(context, constraints.maxHeight));
+  }
+
+  Widget _buildContent(BuildContext context, double availableHeight) {
     final width = MediaQuery.sizeOf(context).width - AppSpacing.screenGutter * 2;
-    final photoHeight = width * 1.1;
+    // Portrait photo, but always leave room for the status text on short phones.
+    final photoHeight = math.min(width * 1.1, availableHeight * 0.68);
     final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
     return Padding(
@@ -79,7 +85,7 @@ class PhotoVerificationScanningWidget extends StatelessWidget {
                 child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.primaryInk),
               ),
               const SizedBox(width: AppSpacing.sm),
-              Text(context.tr('verify_in_progress'), style: AppTextStyles.titleSmall),
+              Flexible(child: Text(context.tr('verify_in_progress'), style: AppTextStyles.titleSmall)),
             ],
           ),
           const SizedBox(height: 4),

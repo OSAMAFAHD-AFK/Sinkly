@@ -22,7 +22,7 @@ import '../../../../../core/utils/style.dart';
 
 enum HeroineProp { none, phone, heart, plate }
 
-enum HeroineMotion { idle, wave, scroll, scrub, cheer, stress, yawn, cherish, beckon }
+enum HeroineMotion { idle, wave, scroll, scrub, cheer, stress, yawn, cherish, beckon, jumpJoy, clap, bounce }
 
 @immutable
 class HeroinePose {
@@ -183,10 +183,13 @@ class HeroinePose {
   );
 
   // ── Paywall: persuasion poses ───────────────────────────────────────────
+  // Presenting hand sits out at waist height: the elbow rests by her side and
+  // the forearm opens toward the plans (an open-palm "here you go").
+
   /// Confident hand-on-hip, the other hand presenting the offer below her.
   static const present = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(198, 170),
+    rightHand: Offset(208, 170),
     headTilt: 0.1,
     lean: 0.03,
     smile: 0.9,
@@ -198,7 +201,7 @@ class HeroinePose {
   /// Delighted (the best-value plan is selected).
   static const presentJoy = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(200, 162),
+    rightHand: Offset(210, 164),
     headTilt: 0.12,
     lean: 0.04,
     smile: 1,
@@ -207,14 +210,49 @@ class HeroinePose {
     blush: 0.9,
   );
 
-  /// Warm but slightly thoughtful (a weaker plan is selected).
+  /// Still happy, just calmer (monthly selected): friendly hand-on-hip,
+  /// presenting hand open toward the plans.
   static const encourage = HeroinePose(
     leftHand: Offset(96, 182),
-    rightHand: Offset(190, 178),
+    rightHand: Offset(206, 174),
     headTilt: -0.08,
-    smile: 0.55,
-    brows: 0.35,
-    blush: 0.45,
+    smile: 0.8,
+    mouthOpen: 0.2,
+    happyEyes: 0.35,
+    brows: 0.25,
+    blush: 0.55,
+  );
+
+  /// Pure joy (annual picked): both arms flung up in a wide "V".
+  static const joyJump = HeroinePose(
+    leftHand: Offset(50, 42),
+    rightHand: Offset(190, 42),
+    happyEyes: 1,
+    smile: 1,
+    mouthOpen: 0.7,
+    blush: 1,
+  );
+
+  /// Delighted & touched after the joy burst: hands clasped under her chin.
+  static const adore = HeroinePose(
+    leftHand: Offset(110, 128),
+    rightHand: Offset(130, 128),
+    headTilt: 0.13,
+    happyEyes: 1,
+    smile: 1,
+    mouthOpen: 0.25,
+    blush: 1,
+  );
+
+  /// Cheerful applause (monthly picked): hands in front of her chest.
+  static const clapHappy = HeroinePose(
+    leftHand: Offset(104, 150),
+    rightHand: Offset(136, 150),
+    headTilt: -0.06,
+    happyEyes: 0.7,
+    smile: 0.9,
+    mouthOpen: 0.4,
+    blush: 0.7,
   );
 
   HeroinePose copyWith({
@@ -372,6 +410,37 @@ class HeroineRig extends ChangeNotifier {
         );
       case HeroineMotion.cherish:
         return p.copyWith(lean: p.lean + math.sin(t * 1.6) * 0.04, headTilt: p.headTilt + math.sin(t * 1.6) * 0.05);
+      case HeroineMotion.jumpJoy:
+        // Springy hops (~0.5 s each): arms stretch higher at the apex and
+        // swing open/closed like "yaaay!", head bobbing with the rhythm.
+        final hop = math.sin(t * 6.2).abs();
+        final swing = math.sin(t * 12.4) * 4;
+        return p.copyWith(
+          bodyY: p.bodyY - hop * 18,
+          leftHand: p.leftHand + Offset(-swing, -hop * 6),
+          rightHand: p.rightHand + Offset(swing, -hop * 6),
+          headTilt: p.headTilt + math.sin(t * 6.2) * 0.06,
+          mouthOpen: (p.mouthOpen + hop * 0.2).clamp(0.0, 1.0),
+        );
+      case HeroineMotion.clap:
+        // Quick claps (hands meet ~2.4×/s) with a tiny bounce on each clap.
+        final together = math.pow((math.sin(t * 2 * math.pi * 2.4) + 1) / 2, 2).toDouble();
+        return p.copyWith(
+          leftHand: p.leftHand + Offset(together * 12, -together * 2),
+          rightHand: p.rightHand + Offset(-together * 12, -together * 2),
+          bodyY: p.bodyY - together * 2.5,
+          headTilt: p.headTilt + math.sin(t * 2.4) * 0.05,
+        );
+      case HeroineMotion.bounce:
+        // Happy little bounce on her toes with a soft side-to-side sway.
+        final lift = math.sin(t * 3.6).abs();
+        return p.copyWith(
+          bodyY: p.bodyY - lift * 4,
+          lean: p.lean + math.sin(t * 1.8) * 0.035,
+          headTilt: p.headTilt + math.sin(t * 1.8) * 0.05,
+          leftHand: p.leftHand + Offset(0, -lift * 2),
+          rightHand: p.rightHand + Offset(0, -lift * 2),
+        );
     }
   }
 }
@@ -861,8 +930,11 @@ class HeroinePainter extends CustomPainter {
     return Offset(pivot.dx + dx * c - dy * s, pivot.dy + dx * s + dy * c);
   }
 
-  /// Two-bone IK. [side] = -1 for the left arm, +1 for the right arm; the
-  /// elbow is chosen on the outer side so arms never fold into the body.
+  /// Two-bone IK. [side] = -1 for the left arm, +1 for the right arm.
+  /// Of the two possible elbows, the one that hangs LOWER (gravity) and more
+  /// OUTWARD wins: raised hands keep the elbow out to the side, while a hand
+  /// held out at waist height keeps the elbow down by the body instead of
+  /// popping up into a "broken wing".
   static Offset _solveElbow(Offset shoulder, Offset hand, int side) {
     final delta = hand - shoulder;
     final rawDistance = delta.distance;
@@ -875,7 +947,8 @@ class HeroinePainter extends CustomPainter {
     final perpendicular = Offset(-direction.dy, direction.dx);
     final first = base + perpendicular * h;
     final second = base - perpendicular * h;
-    return (first.dx - shoulder.dx) * side >= (second.dx - shoulder.dx) * side ? first : second;
+    double score(Offset elbow) => (elbow.dx - shoulder.dx) * side * 0.5 + (elbow.dy - shoulder.dy);
+    return score(first) >= score(second) ? first : second;
   }
 
   static Path _heartPath(Offset center, double size) {

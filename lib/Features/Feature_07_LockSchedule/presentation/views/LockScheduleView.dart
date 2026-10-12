@@ -15,6 +15,7 @@ import '../../../Feature_02_Onboarding/presentation/views/widgets/distracting_ap
 import '../../../Feature_02_Onboarding/presentation/views/widgets/schedule_meal_picker_matrix_widget.dart';
 import '../manager/lock_schedule_cubit.dart';
 import 'widgets/unsaved_changes_bar_widget.dart';
+import '../../../../core/widgets/adaptive_tile_grid_widget.dart';
 
 /// Plan tab: edit lock days, meals, times and locked apps after onboarding.
 class LockScheduleView extends StatelessWidget {
@@ -64,17 +65,8 @@ class LockScheduleView extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 SectionHeaderWidget(title: context.tr('plan_apps_section'), leadingNumber: 4),
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: EdgeInsets.zero,
+                AdaptiveTileGridWidget(
                   itemCount: BlockableAppModel.catalog.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: AppSpacing.sm,
-                    crossAxisSpacing: AppSpacing.sm,
-                    mainAxisExtent: 66,
-                  ),
                   itemBuilder: (context, index) {
                     final app = BlockableAppModel.catalog[index];
                     return DistractingAppSelectionTileWidget(

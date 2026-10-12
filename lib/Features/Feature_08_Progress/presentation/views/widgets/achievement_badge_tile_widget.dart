@@ -48,14 +48,17 @@ class AchievementBadgeTileWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            context.tr(badge.titleKey),
-            maxLines: 2,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(
-              fontSize: 11.5,
-              color: badge.isUnlocked ? AppColors.ink : AppColors.inkMuted,
-              fontWeight: FontWeight.w700,
+          Flexible(
+            child: Text(
+              context.tr(badge.titleKey),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(
+                fontSize: 11.5,
+                color: badge.isUnlocked ? AppColors.ink : AppColors.inkMuted,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],

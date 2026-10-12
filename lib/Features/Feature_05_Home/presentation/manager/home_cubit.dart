@@ -43,9 +43,10 @@ class HomeCubit extends Cubit<HomeState> {
 
   @override
   Future<void> close() async {
-    await _dataSubscription.cancel();
+    // Stop the timer synchronously, before any await.
     _ticker.cancel();
     _lifecycleListener.dispose();
+    await _dataSubscription.cancel();
     return super.close();
   }
 }

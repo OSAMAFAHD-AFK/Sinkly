@@ -78,11 +78,12 @@ class ProgressView extends StatelessWidget {
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
             sliver: SliverGrid.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 mainAxisSpacing: AppSpacing.sm,
                 crossAxisSpacing: AppSpacing.sm,
-                mainAxisExtent: 128,
+                // Ring + paddings stay fixed; the two caption lines grow with text size.
+                mainAxisExtent: AppResponsive.scaledExtent(context, fixed: 94, text: 42),
               ),
               itemCount: overview.achievements.length,
               itemBuilder: (context, index) =>

@@ -265,7 +265,9 @@ class _StatusPill extends StatelessWidget {
               decoration: BoxDecoration(color: color, shape: BoxShape.circle),
             ),
             const SizedBox(width: 6),
-            Text(label, style: AppTextStyles.label.copyWith(color: color, fontSize: 11)),
+            Flexible(
+              child: Text(label, style: AppTextStyles.label.copyWith(color: color, fontSize: 11)),
+            ),
           ],
         ),
       ),

@@ -26,8 +26,8 @@ class WeeklyCleansBarChartWidget extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(context.tr('progress_week_chart_title'), style: AppTextStyles.titleSmall),
-              const Spacer(),
+              Expanded(child: Text(context.tr('progress_week_chart_title'), style: AppTextStyles.titleSmall)),
+              const SizedBox(width: AppSpacing.xs),
               Text(
                 context.tr('progress_week_total', {'count': '${cleansPerDay.fold<int>(0, (a, b) => a + b)}'}),
                 style: AppTextStyles.caption.copyWith(color: AppColors.primaryInk, fontWeight: FontWeight.w700),

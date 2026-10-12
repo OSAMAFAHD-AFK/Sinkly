@@ -50,10 +50,14 @@ class PaywallPlanCardWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
+                  // Wrap: on narrow phones / large text the badge drops under the title.
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 4,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Flexible(child: Text(title, style: AppTextStyles.titleSmall.copyWith(fontSize: 17))),
-                      if (plan.isBestValue) ...[const SizedBox(width: 6), const _BestValueChip()],
+                      Text(title, style: AppTextStyles.titleSmall.copyWith(fontSize: 17)),
+                      if (plan.isBestValue) const _BestValueChip(),
                     ],
                   ),
                   const SizedBox(height: 2),

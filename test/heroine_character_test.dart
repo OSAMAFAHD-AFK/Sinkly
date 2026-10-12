@@ -31,6 +31,9 @@ void main() {
     HeroinePose.present,
     HeroinePose.presentJoy,
     HeroinePose.encourage,
+    HeroinePose.joyJump,
+    HeroinePose.adore,
+    HeroinePose.clapHappy,
   ];
 
   testWidgets('heroine paints every pose × motion × prop without errors', (tester) async {

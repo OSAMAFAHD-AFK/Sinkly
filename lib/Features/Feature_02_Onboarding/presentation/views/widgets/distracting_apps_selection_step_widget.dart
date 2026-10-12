@@ -8,6 +8,7 @@ import '../../../../../core/utils/style.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'distracting_app_selection_tile_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
+import '../../../../../core/widgets/adaptive_tile_grid_widget.dart';
 
 /// Screen 9 — Select the apps that steal your time.
 class DistractingAppsSelectionStepWidget extends StatelessWidget {
@@ -25,17 +26,8 @@ class DistractingAppsSelectionStepWidget extends StatelessWidget {
       onCtaPressed: selectedIds.isEmpty ? null : cubit.nextStep,
       body: Column(
         children: [
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
+          AdaptiveTileGridWidget(
             itemCount: BlockableAppModel.catalog.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: AppSpacing.sm,
-              crossAxisSpacing: AppSpacing.sm,
-              mainAxisExtent: 66,
-            ),
             itemBuilder: (context, index) {
               final app = BlockableAppModel.catalog[index];
               return DistractingAppSelectionTileWidget(

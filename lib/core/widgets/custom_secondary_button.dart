@@ -31,9 +31,10 @@ class CustomSecondaryButton extends StatelessWidget {
       onTap: onPressed,
       semanticLabel: label,
       child: Container(
-        height: height,
+        // Min (not fixed) height: a 2-line label on large text grows the pill.
+        constraints: BoxConstraints(minHeight: height),
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
         decoration: BoxDecoration(
           borderRadius: AppRadii.pillAll,
           color: isDark ? null : AppColors.glassFillStrong,
@@ -54,7 +55,8 @@ class CustomSecondaryButton extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                maxLines: 1,
+                textAlign: TextAlign.center,
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: AppTextStyles.bodyStrong.copyWith(color: textColor),
               ),

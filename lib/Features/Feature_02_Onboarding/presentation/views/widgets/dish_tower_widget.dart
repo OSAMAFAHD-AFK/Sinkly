@@ -26,7 +26,7 @@ class DishTowerWidget extends StatelessWidget {
     final count = _plateCount;
     final isDisaster = level == 3;
     return SizedBox(
-      width: 220,
+      width: 190, // heroine (128) + gap + tower must fit the 330-wide scene
       height: 200,
       child:
           Stack(

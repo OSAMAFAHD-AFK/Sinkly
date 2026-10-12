@@ -9,6 +9,7 @@ import '../../manager/onboarding_cubit.dart';
 import 'language_card_selection_widget.dart';
 import 'language_orbit_globe_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
+import '../../../../../core/widgets/adaptive_tile_grid_widget.dart';
 
 /// Screen 1 — Preferred language. The device language is detected and its
 /// card pre-selected automatically; tapping a card previews it live.
@@ -30,17 +31,8 @@ class LanguageSelectionStepWidget extends StatelessWidget {
       description: context.tr('choose_language_subtitle'),
       ctaLabel: context.tr('continue'),
       onCtaPressed: cubit.confirmLanguage,
-      body: GridView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        padding: EdgeInsets.zero,
+      body: AdaptiveTileGridWidget(
         itemCount: SupportedLanguageModel.all.length,
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          mainAxisSpacing: AppSpacing.sm,
-          crossAxisSpacing: AppSpacing.sm,
-          mainAxisExtent: 66,
-        ),
         itemBuilder: (context, index) {
           final language = SupportedLanguageModel.all[index];
           return LanguageCardSelectionWidget(

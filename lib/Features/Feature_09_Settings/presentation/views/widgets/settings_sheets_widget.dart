@@ -7,6 +7,7 @@ import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/custom_text_field.dart';
 import '../../../../../core/widgets/glass_bottom_sheet.dart';
 import '../../../../Feature_02_Onboarding/presentation/views/widgets/language_card_selection_widget.dart';
+import '../../../../../core/widgets/adaptive_tile_grid_widget.dart';
 
 /// Glass sheet with the 10 language cards. Returns the chosen code.
 Future<String?> showLanguagePickerSheet(BuildContext context, {required String currentCode}) {
@@ -20,15 +21,10 @@ Future<String?> showLanguagePickerSheet(BuildContext context, {required String c
           Text(sheetContext.tr('choose_language_title'), style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.md),
           Flexible(
-            child: GridView.builder(
-              shrinkWrap: true,
+            child: AdaptiveTileGridWidget(
               itemCount: SupportedLanguageModel.all.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: AppSpacing.sm,
-                crossAxisSpacing: AppSpacing.sm,
-                mainAxisExtent: 64,
-              ),
+              fixedExtent: 26,
+              scrollable: true,
               itemBuilder: (context, index) {
                 final language = SupportedLanguageModel.all[index];
                 return LanguageCardSelectionWidget(
@@ -47,34 +43,56 @@ Future<String?> showLanguagePickerSheet(BuildContext context, {required String c
 
 /// Glass sheet with a name field. Returns the new name.
 Future<String?> showEditNameSheet(BuildContext context, {required String currentName}) {
-  final controller = TextEditingController(text: currentName);
   return showGlassBottomSheet<String>(
     context: context,
-    builder: (sheetContext) => Padding(
+    builder: (sheetContext) => _EditNameSheetContent(currentName: currentName),
+  );
+}
+
+/// Owns its controller so it is disposed only after the sheet's exit
+/// animation finishes (disposing on pop crashed while the sheet slid away).
+class _EditNameSheetContent extends StatefulWidget {
+  const _EditNameSheetContent({required this.currentName});
+
+  final String currentName;
+
+  @override
+  State<_EditNameSheetContent> createState() => _EditNameSheetContentState();
+}
+
+class _EditNameSheetContentState extends State<_EditNameSheetContent> {
+  late final TextEditingController _controller = TextEditingController(text: widget.currentName);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(sheetContext.tr('settings_edit_name_title'), style: AppTextStyles.title),
+          Text(context.tr('settings_edit_name_title'), style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.md),
           CustomTextField(
-            controller: controller,
+            controller: _controller,
             autofocus: true,
             maxLength: 24,
-            hintText: sheetContext.tr('name_hint'),
+            hintText: context.tr('name_hint'),
             prefixIcon: Icons.person_outline_rounded,
             textCapitalization: TextCapitalization.words,
-            onSubmitted: (value) => Navigator.of(sheetContext).pop(value),
+            onSubmitted: (value) => Navigator.of(context).pop(value),
           ),
           const SizedBox(height: AppSpacing.md),
-          CustomPrimaryButton(
-            label: sheetContext.tr('save'),
-            onPressed: () => Navigator.of(sheetContext).pop(controller.text),
-          ),
+          CustomPrimaryButton(label: context.tr('save'), onPressed: () => Navigator.of(context).pop(_controller.text)),
         ],
       ),
-    ),
-  ).whenComplete(controller.dispose);
+    );
+  }
 }
 
 /// Destructive confirmation for "Reset Sinkly".

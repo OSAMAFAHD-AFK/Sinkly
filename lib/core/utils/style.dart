@@ -83,6 +83,15 @@ abstract final class AppSpacing {
   static const double screenGutter = 22;
 }
 
+/// Sizes that must adapt to the device instead of being hard-coded.
+abstract final class AppResponsive {
+  /// Height for a fixed-extent tile/grid cell: the [fixed] part (icons,
+  /// paddings, borders) stays constant while the [text] part grows with the
+  /// user's accessibility text size, so text never gets clipped.
+  static double scaledExtent(BuildContext context, {required double fixed, required double text}) =>
+      fixed + MediaQuery.textScalerOf(context).scale(text);
+}
+
 abstract final class AppDurations {
   static const Duration fast = Duration(milliseconds: 180);
   static const Duration medium = Duration(milliseconds: 320);

@@ -62,9 +62,10 @@ class CustomPrimaryButton extends StatelessWidget {
     Widget button = AnimatedContainer(
       duration: AppDurations.medium,
       curve: Curves.easeOutCubic,
-      height: height,
+      // Min (not fixed) height: a 2-line label on large text grows the pill.
+      constraints: BoxConstraints(minHeight: height),
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
         borderRadius: AppRadii.pillAll,
         gradient: _enabled ? AppGradients.primaryButton : null,
