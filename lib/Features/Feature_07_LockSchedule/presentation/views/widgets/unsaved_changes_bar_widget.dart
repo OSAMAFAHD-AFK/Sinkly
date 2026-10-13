@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 
-/// Floating glass bar that slides up when the plan has unsaved edits.
+/// Glass bar docked just above the tab bar; it rises from behind the nav bar
+/// when the plan has unsaved edits and stays put while the plan scrolls.
 class UnsavedChangesBarWidget extends StatelessWidget {
   const UnsavedChangesBarWidget({
     super.key,
@@ -41,6 +43,19 @@ class UnsavedChangesBarWidget extends StatelessWidget {
             useSharedBackdrop: false,
             child: Row(
               children: [
+                // Soft pulsing amber dot = "pending" status.
+                Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: AppColors.warning,
+                        shape: BoxShape.circle,
+                        boxShadow: [BoxShadow(color: AppColors.warning.withValues(alpha: 0.6), blurRadius: 8)],
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .scaleXY(begin: 0.75, end: 1.15, duration: 900.ms, curve: Curves.easeInOut),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     context.tr('plan_unsaved_changes'),

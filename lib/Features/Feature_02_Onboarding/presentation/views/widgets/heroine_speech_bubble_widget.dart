@@ -3,15 +3,23 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/style.dart';
 
-/// The heroine's speech bubble: its tail (bottom-start corner) points back
-/// at her, and it floats gently. [highlight] = happy sky-gradient style,
+/// The heroine's speech bubble: its tail (bottom-start corner, or bottom-end
+/// with [tailAtEnd] when she stands on the end side) points back at her, and
+/// it floats gently. [highlight] = happy sky-gradient style,
 /// otherwise a calm white bubble (e.g. while she is sad).
 class HeroineSpeechBubbleWidget extends StatelessWidget {
-  const HeroineSpeechBubbleWidget({super.key, required this.text, this.highlight = true, this.maxWidth = 170});
+  const HeroineSpeechBubbleWidget({
+    super.key,
+    required this.text,
+    this.highlight = true,
+    this.maxWidth = 170,
+    this.tailAtEnd = false,
+  });
 
   final String text;
   final bool highlight;
   final double maxWidth;
+  final bool tailAtEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -22,11 +30,11 @@ class HeroineSpeechBubbleWidget extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: highlight ? AppGradients.primaryButton : null,
               color: highlight ? null : Colors.white,
-              borderRadius: const BorderRadiusDirectional.only(
-                topStart: Radius.circular(20),
-                topEnd: Radius.circular(20),
-                bottomEnd: Radius.circular(20),
-                bottomStart: Radius.circular(4),
+              borderRadius: BorderRadiusDirectional.only(
+                topStart: const Radius.circular(20),
+                topEnd: const Radius.circular(20),
+                bottomEnd: Radius.circular(tailAtEnd ? 4 : 20),
+                bottomStart: Radius.circular(tailAtEnd ? 20 : 4),
               ),
               border: Border.all(color: Colors.white, width: 1.5),
               boxShadow: highlight ? AppShadows.primaryGlow(strength: 0.6) : AppShadows.floating,
@@ -48,11 +56,18 @@ class HeroineSpeechBubbleWidget extends StatelessWidget {
 
 /// Pops a new bubble in (springy) whenever [text] changes.
 class HeroineSpeechBubbleSwitcherWidget extends StatelessWidget {
-  const HeroineSpeechBubbleSwitcherWidget({super.key, required this.text, this.highlight = true, this.maxWidth = 170});
+  const HeroineSpeechBubbleSwitcherWidget({
+    super.key,
+    required this.text,
+    this.highlight = true,
+    this.maxWidth = 170,
+    this.tailAtEnd = false,
+  });
 
   final String text;
   final bool highlight;
   final double maxWidth;
+  final bool tailAtEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +77,9 @@ class HeroineSpeechBubbleSwitcherWidget extends StatelessWidget {
       switchOutCurve: Curves.easeIn,
       transitionBuilder: (child, animation) => ScaleTransition(
         scale: animation,
-        alignment: AlignmentDirectional.bottomStart.resolve(Directionality.of(context)),
+        alignment: (tailAtEnd ? AlignmentDirectional.bottomEnd : AlignmentDirectional.bottomStart).resolve(
+          Directionality.of(context),
+        ),
         child: FadeTransition(opacity: animation, child: child),
       ),
       child: HeroineSpeechBubbleWidget(
@@ -70,6 +87,7 @@ class HeroineSpeechBubbleSwitcherWidget extends StatelessWidget {
         text: text,
         highlight: highlight,
         maxWidth: maxWidth,
+        tailAtEnd: tailAtEnd,
       ),
     );
   }

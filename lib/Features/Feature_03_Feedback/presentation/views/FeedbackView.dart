@@ -5,16 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
-import '../../../../core/widgets/custom_card_container.dart';
 import '../../../../core/widgets/custom_primary_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../../../../core/widgets/section_header_widget.dart';
-import '../../data/models/user_feedback_model.dart';
 import '../manager/feedback_cubit.dart';
-import 'widgets/feedback_category_chip_widget.dart';
+import 'widgets/feedback_category_grid_widget.dart';
+import 'widgets/feedback_composer_widget.dart';
+import 'widgets/feedback_hero_card_widget.dart';
 import 'widgets/feedback_success_dialog_widget.dart';
 
 /// "Help Build Sinkly" — the customer-driven roadmap screen.
@@ -26,6 +25,11 @@ class FeedbackView extends StatefulWidget {
 }
 
 class _FeedbackViewState extends State<FeedbackView> {
+  /// `Icons.send_rounded` mirrors itself in RTL (it points back at the label
+  /// in Arabic); this copy keeps the paper plane flying forward in every
+  /// language. Const, so icon tree-shaking still works.
+  static const IconData _sendIcon = IconData(0xf0147, fontFamily: 'MaterialIcons');
+
   final TextEditingController _messageController = TextEditingController();
 
   @override
@@ -86,22 +90,17 @@ class _FeedbackViewState extends State<FeedbackView> {
                     AppSpacing.lg,
                   ),
                   children: [
-                    const _FeedbackHeroHeaderCard().animate().fadeIn(duration: 400.ms).slideY(begin: 0.08),
+                    const FeedbackHeroCardWidget()
+                        .animate()
+                        .fadeIn(duration: 450.ms)
+                        .scaleXY(begin: 0.96, end: 1, duration: 600.ms, curve: Curves.easeOutCubic),
                     const SizedBox(height: AppSpacing.lg),
                     SectionHeaderWidget(title: context.tr('feedback_category_label')),
-                    const _FeedbackCategoryChipsRow()
-                        .animate(delay: 100.ms)
-                        .fadeIn()
-                        .slideX(begin: context.flipX(0.05)),
-                    const SizedBox(height: AppSpacing.lg),
-                    SectionHeaderWidget(title: context.tr('feedback_message_label')),
-                    CustomTextField(
+                    const FeedbackCategoryGridWidget().animate(delay: 140.ms).fadeIn().slideY(begin: 0.06),
+                    const SizedBox(height: AppSpacing.md),
+                    FeedbackComposerWidget(
                       controller: _messageController,
-                      maxLines: 5,
-                      maxLength: 600,
-                      hintText: context.tr('feedback_input_placeholder'),
-                      onChanged: context.read<FeedbackCubit>().updateMessage,
-                    ).animate(delay: 180.ms).fadeIn().slideY(begin: 0.06),
+                    ).animate(delay: 220.ms).fadeIn().slideY(begin: 0.06),
                   ],
                 ),
               ),
@@ -118,7 +117,7 @@ class _FeedbackViewState extends State<FeedbackView> {
                       previous.canSubmit != current.canSubmit || previous.status != current.status,
                   builder: (context, state) => CustomPrimaryButton(
                     label: context.tr('feedback_submit_cta'),
-                    icon: Icons.send_rounded,
+                    icon: _sendIcon,
                     isLoading: state.status == FeedbackSubmissionStatus.submitting,
                     onPressed: state.canSubmit ? context.read<FeedbackCubit>().submitFeedback : null,
                   ),
@@ -127,73 +126,6 @@ class _FeedbackViewState extends State<FeedbackView> {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _FeedbackHeroHeaderCard extends StatelessWidget {
-  const _FeedbackHeroHeaderCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomCardContainer(
-      padding: const EdgeInsets.all(AppSpacing.lg - 2),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-                width: 58,
-                height: 58,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  gradient: AppGradients.primaryButton,
-                  borderRadius: AppRadii.mediumAll,
-                  boxShadow: AppShadows.primaryGlow(strength: 0.6),
-                ),
-                child: const Text('🚀', style: TextStyle(fontSize: 28)),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .moveY(begin: 0, end: -4, duration: 1400.ms, curve: Curves.easeInOut),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.tr('feedback_hero_title'), style: AppTextStyles.title.copyWith(fontSize: 18)),
-                const SizedBox(height: 6),
-                Text(context.tr('feedback_hero_description'), style: AppTextStyles.body.copyWith(fontSize: 14)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedbackCategoryChipsRow extends StatelessWidget {
-  const _FeedbackCategoryChipsRow();
-
-  @override
-  Widget build(BuildContext context) {
-    final selected = context.select((FeedbackCubit c) => c.state.category);
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          for (final category in FeedbackCategory.values) ...[
-            FeedbackCategoryChipWidget(
-              emoji: category.emoji,
-              label: context.tr(category.translationKey),
-              isSelected: category == selected,
-              onTap: () => context.read<FeedbackCubit>().selectCategory(category),
-            ),
-            const SizedBox(width: AppSpacing.xs),
-          ],
-        ],
       ),
     );
   }

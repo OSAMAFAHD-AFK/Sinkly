@@ -49,7 +49,7 @@ class LockScheduleView extends StatelessWidget {
           children: [
             ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 200),
+              padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 110),
               children: [
                 Text(context.tr('plan_screen_title'), style: AppTextStyles.headline),
                 const SizedBox(height: 4),
@@ -93,10 +93,12 @@ class LockScheduleView extends StatelessWidget {
                 ),
               ].animate(interval: 40.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04),
             ),
+            // Docked just above the tab bar. The scaffold's SafeArea already
+            // lifts this Stack above the floating nav bar, so no extra inset.
             Positioned(
               left: AppSpacing.screenGutter,
               right: AppSpacing.screenGutter,
-              bottom: 100 + MediaQuery.paddingOf(context).bottom,
+              bottom: AppSpacing.sm,
               child: UnsavedChangesBarWidget(
                 visible: state.hasUnsavedChanges,
                 isSaving: state.saveStatus == LockScheduleSaveStatus.saving,
