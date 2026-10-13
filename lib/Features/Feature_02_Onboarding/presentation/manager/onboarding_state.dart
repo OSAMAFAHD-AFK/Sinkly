@@ -52,7 +52,7 @@ class OnboardingState extends Equatable {
   /// Live Screen Time status (null until checked on the permission step).
   final ScreenTimeAccessModel? screenTimeAccess;
 
-  /// Device apps for the category picker on screen 9 (Android).
+  /// Device apps for the category picker on screen 10 (Android).
   final List<BlockableAppModel> installedApps;
   final bool appsLoaded;
 

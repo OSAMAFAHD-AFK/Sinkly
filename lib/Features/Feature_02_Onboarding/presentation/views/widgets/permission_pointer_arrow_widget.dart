@@ -33,7 +33,15 @@ class PermissionPointerArrowWidget extends StatelessWidget {
           Positioned.fill(
             child: Animate(
               onPlay: (c) => c.repeat(reverse: true),
-              effects: [MoveEffect(begin: Offset.zero, end: const Offset(0, -6), duration: 900.ms, curve: Curves.easeInOut, delay: 900.ms)],
+              effects: [
+                MoveEffect(
+                  begin: Offset.zero,
+                  end: const Offset(0, -6),
+                  duration: 900.ms,
+                  curve: Curves.easeInOut,
+                  delay: 900.ms,
+                ),
+              ],
               child: Animate(
                 effects: [
                   CustomEffect(
@@ -132,7 +140,13 @@ class _ArrowPainter extends CustomPainter {
           direction.dx * math.cos(angle) - direction.dy * math.sin(angle),
           direction.dx * math.sin(angle) + direction.dy * math.cos(angle),
         );
-        canvas.drawLine(tip, tip + rotated * headLength, paint..shader = null..color = AppColors.primaryInk);
+        canvas.drawLine(
+          tip,
+          tip + rotated * headLength,
+          paint
+            ..shader = null
+            ..color = AppColors.primaryInk,
+        );
       }
     }
   }

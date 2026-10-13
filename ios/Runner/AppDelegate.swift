@@ -31,8 +31,9 @@ import UIKit
 // see Runner.entitlements). Development works right away; App Store
 // distribution needs Apple's approval: developer.apple.com/contact/request/family-controls-distribution
 
-/// Channel `sinkly/screen_time`:
-///  • requestAuthorization → Bool
+/// Channel `sinkly/screen_time` (same contract as Android's MainActivity.kt):
+///  • getAuthorizationStatus → {familyControls: Bool}
+///  • requestAuthorization → {familyControls: Bool} after Apple's alert
 ///  • getSelectionSummary → {apps, categories, webDomains}
 ///  • (native → Dart) selectionChanged {apps, categories, webDomains}
 /// Platform view `sinkly/family_activity_picker` = the embedded picker.
@@ -54,15 +55,18 @@ final class SinklyScreenTimePlugin: NSObject {
 
   private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
+    case "getAuthorizationStatus":
+      result(Self.authorizationStatus())
     case "requestAuthorization":
-      guard #available(iOS 16.0, *) else { return result(false) }
+      guard #available(iOS 16.0, *) else { return result(Self.authorizationStatus()) }
+      // Apple's Screen Time alert, centred on screen over Sinkly's framed slot.
       Task {
         do {
           try await AuthorizationCenter.shared.requestAuthorization(for: .individual)
-          await MainActor.run { result(AuthorizationCenter.shared.authorizationStatus == .approved) }
         } catch {
-          await MainActor.run { result(false) }
+          // Denied / cancelled / restricted: the status below says it all.
         }
+        await MainActor.run { result(Self.authorizationStatus()) }
       }
     case "getSelectionSummary":
       if #available(iOS 16.0, *) {
@@ -73,6 +77,11 @@ final class SinklyScreenTimePlugin: NSObject {
     default:
       result(FlutterMethodNotImplemented)
     }
+  }
+
+  private static func authorizationStatus() -> [String: Bool] {
+    guard #available(iOS 16.0, *) else { return ["familyControls": false] }
+    return ["familyControls": AuthorizationCenter.shared.authorizationStatus == .approved]
   }
 }
 

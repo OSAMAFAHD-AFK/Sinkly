@@ -10,10 +10,13 @@ import '../../../../../core/utils/style.dart';
 ///
 /// iOS draws its Screen Time alert in the middle of the screen, ABOVE every
 /// Flutter pixel, so Sinkly never paints a fake dialog: this frame sits
-/// exactly where Apple's real card appears and simply outlines it (the same
-/// trick Opal and Freedom use). Before/after the popup the frame shows
-/// [child] (a soft placeholder, or the Android Settings guide), and a
-/// success state once access is granted.
+/// exactly where Apple's real card appears and simply outlines it. On
+/// Android (no system card exists) it holds Sinkly's own card instead.
+/// Before/after the popup the frame shows [child], and a success state once
+/// access is granted. All colours come from Sinkly's sky palette.
+///
+/// Content is scaled down (never clipped) when the frame gets short on
+/// small phones / large accessibility text.
 class SystemPromptFrameWidget extends StatefulWidget {
   const SystemPromptFrameWidget({super.key, required this.child, this.isGranted = false});
 
@@ -42,23 +45,45 @@ class _SystemPromptFrameWidgetState extends State<SystemPromptFrameWidget> with 
       painter: _GlowFramePainter(animation: _controller, isGranted: widget.isGranted),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.md),
-        child: AnimatedSwitcher(
-          duration: AppDurations.slow,
-          switchInCurve: Curves.easeOutBack,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(scale: Tween(begin: 0.9, end: 1.0).animate(animation), child: child),
+        child: _ScaleDownToFit(
+          child: AnimatedSwitcher(
+            duration: AppDurations.slow,
+            switchInCurve: Curves.easeOutBack,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: Tween(begin: 0.9, end: 1.0).animate(animation), child: child),
+            ),
+            child: widget.isGranted
+                ? const _GrantedContent(key: ValueKey('granted'))
+                : KeyedSubtree(key: const ValueKey('waiting'), child: widget.child),
           ),
-          child: widget.isGranted
-              ? const _GrantedContent(key: ValueKey('granted'))
-              : KeyedSubtree(key: const ValueKey('waiting'), child: widget.child),
         ),
       ),
     );
   }
 }
 
-/// Rotating aurora border + breathing outer glow.
+/// Keeps the content at full width and natural height, centred; shrinks it
+/// uniformly only when it is taller than the frame.
+class _ScaleDownToFit extends StatelessWidget {
+  const _ScaleDownToFit({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) => Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: SizedBox(width: constraints.maxWidth, child: child),
+        ),
+      ),
+    );
+  }
+}
+
+/// Orbiting sky-blue light on the border + breathing outer glow.
 class _GlowFramePainter extends CustomPainter {
   _GlowFramePainter({required this.animation, required this.isGranted}) : super(repaint: animation);
 
@@ -67,9 +92,10 @@ class _GlowFramePainter extends CustomPainter {
 
   static const _waitingColors = [
     AppColors.primary,
-    Color(0xFFB9A8FF),
-    Color(0xFF8FE3C8),
+    Color(0xFFDDF1FC),
+    Color(0xFF96CBFF),
     AppColors.primaryDeep,
+    AppColors.primaryInk,
     AppColors.primary,
   ];
   static const _grantedColors = [
@@ -109,7 +135,7 @@ class _GlowFramePainter extends CustomPainter {
         ).createShader(rect),
     );
 
-    // Aurora border, slowly orbiting.
+    // Brand-sky border, slowly orbiting.
     canvas.drawRRect(
       rrect.deflate(1),
       Paint()
@@ -141,38 +167,31 @@ class _GrantedContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              decoration: BoxDecoration(
-                gradient: AppGradients.success,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.success.withValues(alpha: 0.35),
-                    blurRadius: 24,
-                    spreadRadius: -4,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.check_rounded, color: Colors.white, size: 42),
-            ).animate().scale(begin: const Offset(0.4, 0.4), duration: 600.ms, curve: Curves.elasticOut),
-            const SizedBox(height: AppSpacing.sm),
-            Text(context.tr('permission_connected'), textAlign: TextAlign.center, style: AppTextStyles.title),
-            const SizedBox(height: AppSpacing.xxs),
-            Text(
-              context.tr('permission_connected_body'),
-              textAlign: TextAlign.center,
-              style: AppTextStyles.caption,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              gradient: AppGradients.success,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.success.withValues(alpha: 0.35),
+                  blurRadius: 24,
+                  spreadRadius: -4,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
-          ],
-        ),
+            child: const Icon(Icons.check_rounded, color: Colors.white, size: 42),
+          ).animate().scale(begin: const Offset(0.4, 0.4), duration: 600.ms, curve: Curves.elasticOut),
+          const SizedBox(height: AppSpacing.sm),
+          Text(context.tr('permission_connected'), textAlign: TextAlign.center, style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.xxs),
+          Text(context.tr('permission_connected_body'), textAlign: TextAlign.center, style: AppTextStyles.caption),
+        ],
       ),
     );
   }

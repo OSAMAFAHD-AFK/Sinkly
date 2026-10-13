@@ -9,7 +9,7 @@ import '../../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platf
 import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
-/// Screen 9 — Select the apps that steal your time, Screen-Time style:
+/// Screen 10 — Select the apps that steal your time, Screen-Time style:
 /// whole categories or single apps.
 ///
 /// * Android: the apps installed on this phone, grouped by category.

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
@@ -11,10 +10,14 @@ import '../../../data/models/screen_time_access_model.dart';
 /// apps" and "Usage access" are switches inside Settings. This mini replica
 /// of the exact Settings page Sinkly is about to open (app row + switch,
 /// with a looping tap) shows the user what to do there.
+///
+/// When [openingIn] is set, a progress line fills for that long ("Opening
+/// Settings…") before Sinkly opens the page by itself.
 class AndroidSettingsToggleGuideWidget extends StatelessWidget {
-  const AndroidSettingsToggleGuideWidget({super.key, required this.access});
+  const AndroidSettingsToggleGuideWidget({super.key, required this.access, this.openingIn});
 
   final ScreenTimeAccessModel access;
+  final Duration? openingIn;
 
   static String titleKey(ScreenTimeRequirement requirement) => requirement == ScreenTimeRequirement.usageAccess
       ? 'permission_android_usage_title'
@@ -35,45 +38,79 @@ class AndroidSettingsToggleGuideWidget extends StatelessWidget {
     final current = (access.requirements.indexOf(requirement) + 1).clamp(1, total);
 
     return Center(
-      child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
-        child: AnimatedSwitcher(
-          duration: AppDurations.slow,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween(begin: const Offset(0.12, 0), end: Offset.zero).animate(animation),
-              child: child,
-            ),
-          ),
-          child: Column(
-            key: ValueKey(requirement),
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (total > 1)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
-                  decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: AppRadii.pillAll),
-                  child: Text(
-                    context.tr('permission_android_step_counter', {'current': '$current', 'total': '$total'}),
-                    style: AppTextStyles.label.copyWith(color: AppColors.primaryInk, letterSpacing: 0.2),
-                  ),
-                ),
-              const SizedBox(height: AppSpacing.sm),
-              _SettingsPageReplica(
-                title: context.tr(titleKey(requirement)),
-                toggleLabel: context.tr(toggleKey(requirement)),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                context.tr('permission_android_find_hint'),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700, color: AppColors.ink),
-              ),
-            ],
+      child: AnimatedSwitcher(
+        duration: AppDurations.slow,
+        transitionBuilder: (child, animation) => FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween(begin: const Offset(0.12, 0), end: Offset.zero).animate(animation),
+            child: child,
           ),
         ),
+        child: Column(
+          key: ValueKey(requirement),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (total > 1)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 4),
+                decoration: const BoxDecoration(color: AppColors.primarySoft, borderRadius: AppRadii.pillAll),
+                child: Text(
+                  context.tr('permission_android_step_counter', {'current': '$current', 'total': '$total'}),
+                  style: AppTextStyles.label.copyWith(color: AppColors.primaryInk, letterSpacing: 0.2),
+                ),
+              ),
+            const SizedBox(height: AppSpacing.sm),
+            _SettingsPageReplica(
+              title: context.tr(titleKey(requirement)),
+              toggleLabel: context.tr(toggleKey(requirement)),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              context.tr('permission_android_find_hint'),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700, color: AppColors.ink),
+            ),
+            if (openingIn != null) ...[
+              const SizedBox(height: AppSpacing.xs),
+              _OpeningSettingsProgress(duration: openingIn!),
+            ],
+          ],
+        ),
       ),
+    );
+  }
+}
+
+class _OpeningSettingsProgress extends StatelessWidget {
+  const _OpeningSettingsProgress({required this.duration});
+
+  final Duration duration;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(context.tr('permission_opening_settings'), style: AppTextStyles.caption.copyWith(fontSize: 12)),
+        const SizedBox(height: 6),
+        SizedBox(
+          width: 140,
+          child: ClipRRect(
+            borderRadius: AppRadii.pillAll,
+            child: TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0, end: 1),
+              duration: duration,
+              builder: (context, value, _) => LinearProgressIndicator(
+                value: value,
+                minHeight: 4,
+                backgroundColor: AppColors.primarySoft,
+                valueColor: const AlwaysStoppedAnimation(AppColors.primaryInk),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -337,7 +374,9 @@ class _ChecklistRow extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: isDone ? AppGradients.success : null,
-                border: isDone ? null : Border.all(color: isActive ? AppColors.primaryInk : AppColors.inkMuted, width: 2),
+                border: isDone
+                    ? null
+                    : Border.all(color: isActive ? AppColors.primaryInk : AppColors.inkMuted, width: 2),
               ),
               child: isDone ? const Icon(Icons.check_rounded, size: 16, color: Colors.white) : null,
             ),

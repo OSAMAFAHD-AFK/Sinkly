@@ -19,9 +19,12 @@ import java.util.concurrent.Executors
 class MainActivity : FlutterActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var screenTimeAccess: ScreenTimeAccessBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // "Screen Time" on Android: Display over other apps + Usage access.
+        screenTimeAccess = ScreenTimeAccessBridge(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sinkly/installed_apps")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -98,6 +101,22 @@ class MainActivity : FlutterActivity() {
         }
     } catch (_: Exception) {
         null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        screenTimeAccess?.onResume()
+    }
+
+    override fun onPause() {
+        screenTimeAccess?.onPause()
+        super.onPause()
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        screenTimeAccess?.dispose()
+        screenTimeAccess = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 
     override fun onDestroy() {

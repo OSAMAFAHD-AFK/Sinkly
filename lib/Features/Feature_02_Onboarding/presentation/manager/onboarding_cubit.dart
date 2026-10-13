@@ -17,7 +17,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     : _repo = repo,
       _localeController = localeController,
       super(_initialState(repo, localeController)) {
-    _loadInstalledApps(); // early, so screen 9 opens instantly
+    _loadInstalledApps(); // early, so screen 10 opens instantly
   }
 
   final OnboardingRepo _repo;

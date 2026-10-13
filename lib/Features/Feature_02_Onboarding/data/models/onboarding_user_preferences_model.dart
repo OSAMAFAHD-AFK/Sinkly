@@ -23,7 +23,7 @@ class OnboardingUserPreferencesModel extends Equatable {
   final String? mainStruggleId;
   final WeeklyLockScheduleModel schedule;
 
-  /// Apps / categories to lock (screen 9).
+  /// Apps / categories to lock (screen 10).
   final AppSelectionModel appSelection;
   List<String> get blockedAppIds => appSelection.appIds;
   final bool screenTimePermissionGranted;

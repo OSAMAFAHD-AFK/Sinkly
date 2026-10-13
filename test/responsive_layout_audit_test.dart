@@ -169,8 +169,13 @@ void main() {
                   for (final option in OnboardingQuizOptionModel.dishwashingStruggleOptions.map((o) => o.id)) {
                     await visit('onboarding/6-struggle($option)', () async => onboarding.selectMainStruggle(option));
                   }
+                case OnboardingStep.screenTimePermission:
+                  // Mock flow: first of the two Android switches granted.
+                  await visit('onboarding/9-permission(step2)', () async {
+                    onboarding.requestScreenTimePermission();
+                  }, ms: 1400);
                 case OnboardingStep.distractingAppsSelection:
-                  await visit('onboarding/9-apps(all)', () async {
+                  await visit('onboarding/10-apps(all)', () async {
                     for (final id in BlockableAppModel.catalog.map((a) => a.id)) {
                       if (!onboarding.state.preferences.blockedAppIds.contains(id)) onboarding.toggleBlockedApp(id);
                     }
@@ -185,9 +190,9 @@ void main() {
                       await tester.tap(label.first, warnIfMissed: false);
                     }
                   }
-                  await visit('onboarding/9-apps(expanded)', () async {}, ms: 900);
+                  await visit('onboarding/10-apps(expanded)', () async {}, ms: 900);
                   await tester.enterText(find.byType(TextField).first, 'ta');
-                  await visit('onboarding/9-apps(search)', () async {}, ms: 700);
+                  await visit('onboarding/10-apps(search)', () async {}, ms: 700);
                   await tester.enterText(find.byType(TextField).first, '');
                   FocusManager.instance.primaryFocus?.unfocus();
                   await settle(400);

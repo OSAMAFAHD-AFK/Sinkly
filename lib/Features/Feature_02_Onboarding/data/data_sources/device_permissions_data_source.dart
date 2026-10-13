@@ -39,14 +39,16 @@ class PlatformDevicePermissionsDataSource extends MockDevicePermissionsDataSourc
   Future<ScreenTimeAccessModel> getScreenTimeAccess() => _invoke('getAuthorizationStatus', super.getScreenTimeAccess);
 
   @override
-  Future<ScreenTimeAccessModel> requestScreenTimeAccess() => _invoke('requestAuthorization', super.requestScreenTimeAccess);
+  Future<ScreenTimeAccessModel> requestScreenTimeAccess() =>
+      _invoke('requestAuthorization', super.requestScreenTimeAccess);
 
   Future<ScreenTimeAccessModel> _invoke(String method, Future<ScreenTimeAccessModel> Function() fallback) async {
     if (!_isMobile) return fallback();
     try {
       final status = await _screenTime.invokeMethod<Map<Object?, Object?>>(method);
       final access = ScreenTimeAccessModel.fromMap(status ?? const {});
-      return access.requirements.isEmpty ? fallback() : access;
+      if (access.requirements.isEmpty) return await fallback();
+      return access;
     } on MissingPluginException {
       return fallback();
     }
@@ -55,12 +57,13 @@ class PlatformDevicePermissionsDataSource extends MockDevicePermissionsDataSourc
 
 /// Desktop / tests: simulates the platform flow in memory.
 class MockDevicePermissionsDataSource extends DevicePermissionsDataSource {
-  ScreenTimeAccessModel? _mockAccess;
+  Set<ScreenTimeRequirement> _mockGranted = {};
 
-  ScreenTimeAccessModel get _access => _mockAccess ??= ScreenTimeAccessModel(
+  ScreenTimeAccessModel get _access => ScreenTimeAccessModel(
     requirements: defaultTargetPlatform == TargetPlatform.iOS
         ? const [ScreenTimeRequirement.familyControls]
         : const [ScreenTimeRequirement.displayOverApps, ScreenTimeRequirement.usageAccess],
+    granted: _mockGranted,
   );
 
   @override
@@ -71,7 +74,7 @@ class MockDevicePermissionsDataSource extends DevicePermissionsDataSource {
     // Simulates the system popup / Settings round-trip.
     await Future<void>.delayed(const Duration(milliseconds: 900));
     final next = _access.nextMissing;
-    if (next != null) _mockAccess = _access.grant(next);
+    if (next != null) _mockGranted = {..._mockGranted, next};
     return _access;
   }
 

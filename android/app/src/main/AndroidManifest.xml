@@ -1,6 +1,17 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Google Fonts download + future API calls (AI photo verification, sync). -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- App blocking ("Screen Time" on Android, ScreenTimeAccessBridge.kt).
+         Both are special accesses the user switches on in Settings:
+         • Display over other apps → draws the lock screen over a locked app.
+         • Usage access → knows which app just came to the foreground.
+         Without this declaration Sinkly wouldn't even appear in the
+         Usage access list. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission
+        android:name="android.permission.PACKAGE_USAGE_STATS"
+        tools:ignore="ProtectedPermissions" />
     <application
         android:label="Sinkly"
         android:name="${applicationName}"
