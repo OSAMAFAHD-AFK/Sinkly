@@ -34,6 +34,10 @@ abstract final class AppConstants {
   static const String adaptySettingsPlacementId = 'settings_upgrade';
   static const String adaptyOnboardingFlowPlacementId = 'onboarding_flow';
 
+  /// Discounted annual plan offered every time the user taps "X" on the
+  /// paywall (a separate product: `sinkly_premium_annual_special`).
+  static const String adaptyExitOfferPlacementId = 'paywall_exit_offer';
+
   /// Access level granted by an active subscription.
   static const String premiumAccessLevelId = 'premium';
 

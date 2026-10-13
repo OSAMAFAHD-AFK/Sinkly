@@ -20,9 +20,24 @@ import '../../../../../core/utils/style.dart';
 ///  Character space is 240 × 300 (feet at the bottom); the painter scales it.
 /// ─────────────────────────────────────────────────────────────────────────
 
-enum HeroineProp { none, phone, heart, plate }
+enum HeroineProp { none, phone, heart, plate, gift }
 
-enum HeroineMotion { idle, wave, scroll, scrub, cheer, stress, yawn, cherish, beckon, jumpJoy, clap, bounce }
+enum HeroineMotion {
+  idle,
+  wave,
+  scroll,
+  scrub,
+  cheer,
+  stress,
+  yawn,
+  cherish,
+  beckon,
+  jumpJoy,
+  clap,
+  bounce,
+  sob,
+  plead,
+}
 
 @immutable
 class HeroinePose {
@@ -40,6 +55,7 @@ class HeroinePose {
     this.blush = 0.35,
     this.sweat = 0,
     this.bodyY = 0,
+    this.tears = 0,
   });
 
   final Offset leftHand;
@@ -61,6 +77,10 @@ class HeroinePose {
   final double blush;
   final double sweat;
   final double bodyY;
+
+  /// 0 = dry … 1 = crying (watery eyes, tear streams, falling drops). Above
+  /// 0.5 her hands are drawn in front of the face (rubbing her eyes).
+  final double tears;
 
   static const Offset _idleLeft = Offset(74, 206);
   static const Offset _idleRight = Offset(166, 206);
@@ -254,6 +274,47 @@ class HeroinePose {
     blush: 0.75,
   );
 
+  // ── Paywall exit offer: heartbroken → hopeful ───────────────────────────
+
+  /// Crying, fists rubbing both eyes (right after the user taps "X").
+  static const sob = HeroinePose(
+    leftHand: Offset(101, 80),
+    rightHand: Offset(139, 80),
+    lookDown: 0.3,
+    eyeOpen: 0.75,
+    smile: -0.9,
+    mouthOpen: 0.7,
+    brows: -1,
+    blush: 0.75,
+    tears: 1,
+  );
+
+  /// Big watery eyes, hands clasped under her chin: "please…"
+  static const plead = HeroinePose(
+    leftHand: Offset(108, 130),
+    rightHand: Offset(132, 130),
+    headTilt: -0.12,
+    eyeOpen: 1.12,
+    smile: -0.55,
+    mouthOpen: 0.12,
+    brows: -1,
+    blush: 0.6,
+    tears: 0.9,
+  );
+
+  /// Still a little teary, hopefully holding out a gift.
+  static const offerGift = HeroinePose(
+    leftHand: Offset(100, 166),
+    rightHand: Offset(140, 166),
+    headTilt: 0.1,
+    eyeOpen: 1.05,
+    smile: 0.35,
+    mouthOpen: 0.12,
+    brows: -0.45,
+    blush: 0.85,
+    tears: 0.35,
+  );
+
   HeroinePose copyWith({
     Offset? leftHand,
     Offset? rightHand,
@@ -262,6 +323,7 @@ class HeroinePose {
     double? eyeOpen,
     double? mouthOpen,
     double? bodyY,
+    double? tears,
   }) => HeroinePose(
     leftHand: leftHand ?? this.leftHand,
     rightHand: rightHand ?? this.rightHand,
@@ -276,6 +338,7 @@ class HeroinePose {
     blush: blush,
     sweat: sweat,
     bodyY: bodyY ?? this.bodyY,
+    tears: tears ?? this.tears,
   );
 
   static HeroinePose lerp(HeroinePose a, HeroinePose b, double t) => HeroinePose(
@@ -292,6 +355,7 @@ class HeroinePose {
     blush: lerpDouble(a.blush, b.blush, t)!,
     sweat: lerpDouble(a.sweat, b.sweat, t)!,
     bodyY: lerpDouble(a.bodyY, b.bodyY, t)!,
+    tears: lerpDouble(a.tears, b.tears, t)!,
   );
 }
 
@@ -440,6 +504,28 @@ class HeroineRig extends ChangeNotifier {
           leftHand: p.leftHand + Offset(0, -lift * 2),
           rightHand: p.rightHand + Offset(0, -lift * 2),
         );
+      case HeroineMotion.sob:
+        // Fists rub her eyes in little circles; shoulders hitch with each sob.
+        final rub = t * 9;
+        final hitch = math.pow(math.sin(t * 2 * math.pi / 1.3).abs(), 6).toDouble();
+        return p.copyWith(
+          leftHand: p.leftHand + Offset(math.cos(rub) * 2.5, math.sin(rub) * 2 - hitch * 3),
+          rightHand: p.rightHand + Offset(math.cos(rub + math.pi) * 2.5, math.sin(rub + math.pi) * 2 - hitch * 3),
+          bodyY: p.bodyY - hitch * 3,
+          headTilt: p.headTilt + math.sin(t * 13) * 0.012 + hitch * 0.03,
+          mouthOpen: (p.mouthOpen + math.sin(t * 6) * 0.08 + hitch * 0.15).clamp(0.0, 1.2),
+        );
+      case HeroineMotion.plead:
+        // "Please, please": clasped hands bob, a small sniffle every ~2.2 s.
+        final bob = math.sin(t * 6.5);
+        final sniff = math.pow(math.max(0.0, math.sin(t * 2 * math.pi / 2.2)), 12).toDouble();
+        return p.copyWith(
+          leftHand: p.leftHand + Offset(0, bob * 3.5),
+          rightHand: p.rightHand + Offset(0, bob * 3.5),
+          lean: p.lean + math.sin(t * 1.4) * 0.025,
+          headTilt: p.headTilt + math.sin(t * 1.4) * 0.04 - sniff * 0.04,
+          bodyY: p.bodyY - sniff * 2.5,
+        );
     }
   }
 }
@@ -498,12 +584,20 @@ class HeroinePainter extends CustomPainter {
     _drawArm(canvas, leftShoulder, leftElbow, pose.leftHand);
     _drawArm(canvas, rightShoulder, rightElbow, pose.rightHand);
     // The heart is held up in FRONT of the hands; other props sit behind them.
-    final propInFront = rig.prop == HeroineProp.heart;
+    final propInFront = rig.prop == HeroineProp.heart || rig.prop == HeroineProp.gift;
+    // Crying: fists come up in front of the face (rubbing her eyes).
+    final handsOverFace = pose.tears > 0.5;
     if (!propInFront) _drawProp(canvas, pose, t);
-    _drawHand(canvas, pose.leftHand);
-    _drawHand(canvas, pose.rightHand);
+    if (!handsOverFace) {
+      _drawHand(canvas, pose.leftHand);
+      _drawHand(canvas, pose.rightHand);
+    }
     if (propInFront) _drawProp(canvas, pose, t);
     _drawHead(canvas, headPivot, headRotation, pose, t);
+    if (handsOverFace) {
+      _drawHand(canvas, pose.leftHand, outlined: true);
+      _drawHand(canvas, pose.rightHand, outlined: true);
+    }
 
     canvas.restore();
   }
@@ -626,8 +720,20 @@ class HeroinePainter extends CustomPainter {
     );
   }
 
-  void _drawHand(Canvas canvas, Offset hand) {
+  /// [outlined]: in front of the face (same skin tone) the fist needs a
+  /// soft edge to read as a hand.
+  void _drawHand(Canvas canvas, Offset hand, {bool outlined = false}) {
     canvas.drawCircle(hand, 8.5, Paint()..color = _skin);
+    if (outlined) {
+      canvas.drawCircle(
+        hand,
+        8.5,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.8
+          ..color = _skinShade,
+      );
+    }
     canvas.drawCircle(hand.translate(-2, -2), 3, Paint()..color = Colors.white.withValues(alpha: 0.25));
   }
 
@@ -700,6 +806,7 @@ class HeroinePainter extends CustomPainter {
       ..drawOval(Rect.fromCenter(center: const Offset(140, 84), width: 13, height: 7), blush);
 
     _drawEyes(canvas, pose, t);
+    if (pose.tears > 0.02) _drawTears(canvas, pose, t);
     _drawBrows(canvas, pose);
     _drawMouth(canvas, pose);
 
@@ -761,6 +868,80 @@ class HeroinePainter extends CustomPainter {
             ..strokeCap = StrokeCap.round
             ..color = _hair.withValues(alpha: joy),
         );
+      }
+    }
+  }
+
+  /// Watery eyes, glistening streams down the cheeks and drops that fall
+  /// from the outer corners (two per eye, out of phase).
+  void _drawTears(Canvas canvas, HeroinePose pose, double t) {
+    final amount = pose.tears.clamp(0.0, 1.0);
+    final open = pose.eyeOpen.clamp(0.3, 1.3);
+    final eyeY = 74 + pose.lookDown * 3;
+    const tearBlue = Color(0xFF8FD3F7);
+
+    for (final (x, side) in const [(107.0, -1.0), (133.0, 1.0)]) {
+      // Water pooling on the lower lid + an extra sparkle (glassy eyes).
+      final center = Offset(x, eyeY);
+      canvas.drawPath(
+        Path()
+          ..moveTo(center.dx - 5.5, center.dy + 4 * open)
+          ..quadraticBezierTo(center.dx, center.dy + 9 * open, center.dx + 5.5, center.dy + 4 * open),
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.6
+          ..strokeCap = StrokeCap.round
+          ..color = tearBlue.withValues(alpha: 0.85 * amount),
+      );
+      if (pose.happyEyes < 0.5 && open > 0.5) {
+        canvas.drawCircle(
+          center.translate(1.8, 2.2 * open),
+          1.3,
+          Paint()..color = Colors.white.withValues(alpha: 0.9 * amount),
+        );
+      }
+
+      // Stream down the cheek from the outer corner.
+      final start = Offset(x + side * 4, eyeY + 6 * open);
+      final stream = Path()
+        ..moveTo(start.dx, start.dy)
+        ..quadraticBezierTo(start.dx + side * 3, start.dy + 10, start.dx + side * 1.5, start.dy + 22 * amount);
+      canvas
+        ..drawPath(
+          stream,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 3.4
+            ..strokeCap = StrokeCap.round
+            ..color = tearBlue.withValues(alpha: 0.55 * amount),
+        )
+        ..drawPath(
+          stream,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1
+            ..strokeCap = StrokeCap.round
+            ..color = Colors.white.withValues(alpha: 0.6 * amount),
+        );
+
+      // Falling drops (only when really crying).
+      if (amount < 0.5) continue;
+      for (final offset in const [0.0, 0.5]) {
+        final phase = ((t / 1.1) + offset + (side > 0 ? 0.27 : 0)) % 1.0;
+        final fall = Curves.easeIn.transform(phase);
+        final drop = start.translate(side * (1.5 + fall * 4), 18 + fall * 30);
+        final alpha = amount * (phase < 0.8 ? 1.0 : (1 - phase) / 0.2);
+        final r = 2.6 + (1 - phase) * 0.8;
+        canvas
+          ..drawPath(
+            Path()
+              ..moveTo(drop.dx, drop.dy - r * 2.2)
+              ..quadraticBezierTo(drop.dx + r * 1.2, drop.dy - r * 0.2, drop.dx, drop.dy + r)
+              ..quadraticBezierTo(drop.dx - r * 1.2, drop.dy - r * 0.2, drop.dx, drop.dy - r * 2.2)
+              ..close(),
+            Paint()..color = tearBlue.withValues(alpha: alpha),
+          )
+          ..drawCircle(drop.translate(-0.8, -0.6), 0.8, Paint()..color = Colors.white.withValues(alpha: alpha));
       }
     }
   }
@@ -850,7 +1031,58 @@ class HeroinePainter extends CustomPainter {
             ),
             Paint()..color = const Color(0xFFFFC857),
           );
+      case HeroineProp.gift:
+        _drawGift(canvas, center.translate(0, -14), t);
     }
+  }
+
+  /// Sky-blue gift box with a pink ribbon bow, softly glowing and wiggling.
+  void _drawGift(Canvas canvas, Offset center, double t) {
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(math.sin(t * 3.2) * 0.05);
+    canvas.drawCircle(
+      Offset.zero,
+      40,
+      Paint()
+        ..shader = const RadialGradient(colors: [Color(0x66FFE4A3), Color(0x00FFE4A3)])
+            .createShader(Rect.fromCircle(center: Offset.zero, radius: 40)),
+    );
+    const ribbon = Color(0xFFFF8FB1);
+    final body = RRect.fromRectAndRadius(const Rect.fromLTWH(-17, -8, 34, 26), const Radius.circular(5));
+    canvas
+      ..drawRRect(
+        body,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFA6DCF5), AppColors.primaryDeep],
+          ).createShader(body.outerRect),
+      )
+      ..drawRRect(
+        RRect.fromRectAndRadius(const Rect.fromLTWH(-19.5, -15, 39, 9), const Radius.circular(4)),
+        Paint()..color = AppColors.primary,
+      )
+      ..drawRect(const Rect.fromLTWH(-3.5, -15, 7, 33), Paint()..color = ribbon);
+    // Bow.
+    final bow = Paint()..color = ribbon;
+    canvas
+      ..drawPath(
+        Path()
+          ..moveTo(0, -15)
+          ..cubicTo(-14, -30, -18, -14, 0, -15),
+        bow,
+      )
+      ..drawPath(
+        Path()
+          ..moveTo(0, -15)
+          ..cubicTo(14, -30, 18, -14, 0, -15),
+        bow,
+      )
+      ..drawCircle(const Offset(0, -15), 3.2, Paint()..color = const Color(0xFFFF6F9A))
+      ..drawCircle(const Offset(-10, -3), 2.4, Paint()..color = Colors.white.withValues(alpha: 0.45));
+    canvas.restore();
   }
 
   void _drawPhone(Canvas canvas, Offset center, double t) {

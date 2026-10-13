@@ -19,6 +19,7 @@ class PaywallView extends StatelessWidget {
       body: PaywallStepWidget(
         userName: userName,
         closeButtonDelay: const Duration(milliseconds: 600),
+        isDismissible: true,
         onFinished: (_) => context.canPop() ? context.pop() : null,
       ),
     );

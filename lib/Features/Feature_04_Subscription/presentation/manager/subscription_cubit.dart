@@ -42,10 +42,35 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   void selectPlan(String planId) => emit(state.copyWith(selectedPlanId: planId));
 
+  // ── Paywall exit offer (opens every time the user taps "X") ─────────────
+  /// Preloads the discounted plan so the sheet opens instantly.
+  Future<void> loadExitOffer() async {
+    if (state.exitOffer != null) return;
+    final result = await _repo.fetchPaywallPlans(placementId: AppConstants.adaptyExitOfferPlacementId);
+    if (isClosed) return;
+    result.fold((_) {}, (plans) {
+      if (plans.isNotEmpty) emit(state.copyWith(exitOffer: plans.first));
+    });
+  }
+
+  /// Call when the exit-offer sheet appears (Adapty analytics).
+  void exitOfferShown() {
+    _repo.logPaywallShown(placementId: AppConstants.adaptyExitOfferPlacementId);
+  }
+
+  Future<bool> purchaseExitOffer() async {
+    final offer = state.exitOffer;
+    return offer == null ? false : _purchase(offer);
+  }
+
   /// Returns `true` when premium is active after the purchase.
   Future<bool> purchaseSelectedPlan() async {
     final plan = state.selectedPlan;
-    if (plan == null || state.isBusy) return false;
+    return plan == null ? false : _purchase(plan);
+  }
+
+  Future<bool> _purchase(SubscriptionPlanModel plan) async {
+    if (state.isBusy) return false;
     emit(state.copyWith(status: SubscriptionStatus.purchasing, clearFailure: true));
     final result = await _repo.purchase(plan);
     return result.fold(

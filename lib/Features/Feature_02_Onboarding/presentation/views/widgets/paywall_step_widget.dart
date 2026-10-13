@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
@@ -13,6 +14,7 @@ import '../../../../../core/widgets/glass_icon_button.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'onboarding_step_header_widget.dart';
+import 'paywall_exit_offer_sheet_widget.dart';
 import 'paywall_heroine_hero_widget.dart';
 import 'paywall_plan_card_widget.dart';
 
@@ -26,20 +28,31 @@ import 'paywall_plan_card_widget.dart';
 /// Conversion choreography: the heroine presents the offer and reacts to the
 /// selected plan, the best-value card glows, the CTA breathes, trust chips
 /// remove payment anxiety, and a successful purchase is celebrated.
+///
+/// STRICT paywall: there is no way past it except a purchase / restore.
+/// "X" (or system back) opens the exit offer ([showPaywallExitOfferSheet]):
+/// the heroine cries, then offers an extra discount on the annual plan. The
+/// sheet has no decline button; swiping it away just returns here.
+/// The standalone PaywallView ([isDismissible]) is only reachable from inside
+/// the app, so there "X" simply closes it.
 class PaywallStepWidget extends StatefulWidget {
   const PaywallStepWidget({
     super.key,
     required this.userName,
     required this.onFinished,
     this.closeButtonDelay = const Duration(seconds: 3),
+    this.isDismissible = false,
   });
 
   final String userName;
 
-  /// Called with `true` after a successful purchase/restore, `false` when
-  /// the user dismisses the paywall.
+  /// Called with `true` after a successful purchase/restore (and with `false`
+  /// only when [isDismissible] and the user closes the paywall).
   final ValueChanged<bool> onFinished;
   final Duration closeButtonDelay;
+
+  /// Standalone paywall opened from inside the app: "X" just closes it.
+  final bool isDismissible;
 
   @override
   State<PaywallStepWidget> createState() => _PaywallStepWidgetState();
@@ -48,13 +61,18 @@ class PaywallStepWidget extends StatefulWidget {
 class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _showCloseButton = false;
   bool _celebrating = false;
+  bool _exitOfferOpen = false;
+
+  late final SubscriptionCubit _cubit = context.read<SubscriptionCubit>();
 
   @override
   void initState() {
     super.initState();
-    context.read<SubscriptionCubit>()
+    _cubit
       ..loadPaywall()
       ..paywallShown();
+    // Preloaded so the exit offer opens instantly.
+    _cubit.loadExitOffer();
     // A delayed close button keeps focus on the offer (common paywall practice).
     Future<void>.delayed(widget.closeButtonDelay, () {
       if (mounted) setState(() => _showCloseButton = true);
@@ -62,9 +80,13 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _purchase() async {
-    final purchased = await context.read<SubscriptionCubit>().purchaseSelectedPlan();
+    final purchased = await _cubit.purchaseSelectedPlan();
     if (!purchased || !mounted) return;
     AppFunctions.successHaptic();
+    await _celebrate();
+  }
+
+  Future<void> _celebrate() async {
     // Let the heroine celebrate with the user before moving on.
     setState(() => _celebrating = true);
     await Future<void>.delayed(const Duration(milliseconds: 1800));
@@ -72,8 +94,20 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _restore() async {
-    final restored = await context.read<SubscriptionCubit>().restorePurchases();
+    final restored = await _cubit.restorePurchases();
     if (restored) widget.onFinished(true);
+  }
+
+  /// "X" or system back: always the exit offer (strict paywall — the only
+  /// way past it is buying; swiping the sheet away stays on the paywall).
+  Future<void> _onExitAttempt() async {
+    if (!_showCloseButton || _exitOfferOpen || _celebrating || _cubit.state.isBusy) return;
+    if (widget.isDismissible) return widget.onFinished(false);
+    setState(() => _exitOfferOpen = true);
+    final purchased = await showPaywallExitOfferSheet(context);
+    if (!mounted) return;
+    setState(() => _exitOfferOpen = false);
+    if (purchased) await _celebrate();
   }
 
   @override
@@ -84,51 +118,68 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
         AppFunctions.showSnack(context, context.tr(state.failureKey!));
         context.read<SubscriptionCubit>().clearFailure();
       },
-      child: Stack(
-        children: [
-          const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 8, maxBubbleSize: 30)),
-          Column(
-            children: [
-              _PaywallTopBar(showClose: _showCloseButton, onClose: () => widget.onFinished(false), onRestore: _restore),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      PaywallHeroineHeroWidget(celebrating: _celebrating)
-                          .animate()
-                          .fadeIn(duration: 450.ms)
-                          .slideY(begin: 0.06, curve: Curves.easeOutCubic),
-                      OnboardingStepHeaderWidget(
-                        title: widget.userName.isEmpty
-                            ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
-                            : context.tr('paywall_title', {
-                                'name': widget.userName,
-                                'days': '${AppConstants.freeTrialDays}',
-                              }),
-                        highlight: widget.userName,
-                        description: context.tr('paywall_subtitle'),
-                        textAlign: TextAlign.center,
-                      ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
-                      // Plans first: both prices visible without scrolling (clarity
-                      // converts better and is what App Review expects).
-                      const SizedBox(height: AppSpacing.md + 6),
-                      const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
-                      const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
-                      const SizedBox(height: AppSpacing.md),
-                      const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
-                      const SizedBox(height: AppSpacing.md),
-                    ],
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (!didPop) _onExitAttempt();
+        },
+        child: Stack(
+          children: [
+            const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 8, maxBubbleSize: 30)),
+            Column(
+              children: [
+                _PaywallTopBar(showClose: _showCloseButton, onClose: _onExitAttempt, onRestore: _restore),
+                Expanded(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Hidden while the exit sheet shows her crying (one heroine at a time).
+                        AnimatedOpacity(
+                          opacity: _exitOfferOpen ? 0 : 1,
+                          duration: AppDurations.medium,
+                          child: PaywallHeroineHeroWidget(celebrating: _celebrating),
+                        ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
+                        OnboardingStepHeaderWidget(
+                          title: widget.userName.isEmpty
+                              ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
+                              : context.tr('paywall_title', {
+                                  // Bidi isolate: a Latin name inside Arabic text stays one
+                                  // unit, so its letters and the punctuation keep their order.
+                                  'name': '\u2068${widget.userName}\u2069',
+                                  'days': '${AppConstants.freeTrialDays}',
+                                }),
+                          highlight: widget.userName,
+                          description: context.tr('paywall_subtitle'),
+                          textAlign: TextAlign.center,
+                        ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
+                        // Plans first: both prices visible without scrolling (clarity
+                        // converts better and is what App Review expects).
+                        const SizedBox(height: AppSpacing.md + 6),
+                        const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
+                        const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
+                        const SizedBox(height: AppSpacing.md),
+                        const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
+                        const SizedBox(height: AppSpacing.md),
+                        // Auto-renewal disclosure (App Store 3.1.2 / Google Play subscriptions policy).
+                        Text(
+                          context.tr('paywall_auto_renew_note'),
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.caption.copyWith(fontSize: 11, color: AppColors.inkMuted),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              _PaywallBottomActions(onPurchase: _purchase).animate(delay: 380.ms).fadeIn().slideY(begin: 0.3),
-            ],
-          ),
-          if (_celebrating) const Positioned.fill(child: ConfettiBurstWidget(particleCount: 90)),
-        ],
+                _PaywallBottomActions(onPurchase: _purchase).animate(delay: 380.ms).fadeIn().slideY(begin: 0.3),
+              ],
+            ),
+            if (_celebrating) const Positioned.fill(child: ConfettiBurstWidget(particleCount: 90)),
+          ],
+        ),
       ),
     );
   }
@@ -365,9 +416,9 @@ class _PaywallBottomActions extends StatelessWidget {
             alignment: WrapAlignment.center,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              _FooterLink(label: context.tr('terms_of_use')),
+              _FooterLink(label: context.tr('terms_of_use'), url: AppConstants.termsUrl),
               Text('·', style: AppTextStyles.caption),
-              _FooterLink(label: context.tr('privacy_policy')),
+              _FooterLink(label: context.tr('privacy_policy'), url: AppConstants.privacyUrl),
             ],
           ),
         ],
@@ -377,16 +428,17 @@ class _PaywallBottomActions extends StatelessWidget {
 }
 
 class _FooterLink extends StatelessWidget {
-  const _FooterLink({required this.label});
+  const _FooterLink({required this.label, required this.url});
 
   final String label;
+  final String url;
 
   @override
   Widget build(BuildContext context) {
     return TextButton(
       style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8), minimumSize: const Size(0, 30)),
-      // TODO(legal): open AppConstants.termsUrl / privacyUrl with url_launcher.
-      onPressed: () {},
+      // Both stores require working Terms / Privacy links on the paywall.
+      onPressed: () => launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView),
       child: Text(label, style: AppTextStyles.caption.copyWith(fontSize: 11.5, decoration: TextDecoration.underline)),
     );
   }

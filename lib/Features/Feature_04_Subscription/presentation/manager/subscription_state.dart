@@ -9,6 +9,7 @@ class SubscriptionState extends Equatable {
     this.selectedPlanId,
     this.isPremium = false,
     this.failureKey,
+    this.exitOffer,
   });
 
   final SubscriptionStatus status;
@@ -16,6 +17,9 @@ class SubscriptionState extends Equatable {
   final String? selectedPlanId;
   final bool isPremium;
   final String? failureKey;
+
+  /// One-time discounted annual plan offered when leaving the paywall.
+  final SubscriptionPlanModel? exitOffer;
 
   bool get isBusy => status == SubscriptionStatus.purchasing || status == SubscriptionStatus.restoring;
 
@@ -33,14 +37,16 @@ class SubscriptionState extends Equatable {
     bool? isPremium,
     String? failureKey,
     bool clearFailure = false,
+    SubscriptionPlanModel? exitOffer,
   }) => SubscriptionState(
     status: status ?? this.status,
     plans: plans ?? this.plans,
     selectedPlanId: selectedPlanId ?? this.selectedPlanId,
     isPremium: isPremium ?? this.isPremium,
     failureKey: clearFailure ? null : failureKey ?? this.failureKey,
+    exitOffer: exitOffer ?? this.exitOffer,
   );
 
   @override
-  List<Object?> get props => [status, plans, selectedPlanId, isPremium, failureKey];
+  List<Object?> get props => [status, plans, selectedPlanId, isPremium, failureKey, exitOffer];
 }

@@ -19,6 +19,7 @@ import 'package:sinkly/Features/Feature_02_Onboarding/data/models/onboarding_qui
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/manager/onboarding_cubit.dart';
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/OnboardingView.dart';
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/widgets/hold_to_commit_button_widget.dart';
+import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/widgets/paywall_exit_offer_sheet_widget.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/manager/sink_unlock_cubit.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/widgets/sprint_duration_picker_widget.dart';
@@ -207,6 +208,17 @@ void main() {
                   await visit('onboarding/12-commit(confirmed)', () async => onboarding.confirmCommitment(), ms: 2000);
                 case OnboardingStep.paywall:
                   await settle(1500);
+                  // Exit offer (the "X" appears after 3 s): crying → gift.
+                  await settle(2000);
+                  final close = find.byIcon(Icons.close_rounded);
+                  if (close.evaluate().isNotEmpty) {
+                    await visit('onboarding/15-exit-offer', () async {
+                      await tester.tap(close.first, warnIfMissed: false);
+                    }, ms: 2600);
+                    final sheet = find.byType(PaywallExitOfferSheetWidget);
+                    if (sheet.evaluate().isNotEmpty) Navigator.of(tester.element(sheet)).pop();
+                    await settle(600);
+                  }
                 default:
                   break;
               }

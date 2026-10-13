@@ -34,22 +34,40 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
   @override
   Future<List<SubscriptionPlanModel>> fetchPaywallPlans({required String placementId}) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
+    // Placeholder prices (the real ones come from the stores via Adapty).
+    if (placementId == AppConstants.adaptyExitOfferPlacementId) {
+      // One-time exit offer: the SAME annual plan, 20% cheaper. In the stores
+      // this is its own product in the same subscription group.
+      return const [
+        SubscriptionPlanModel(
+          id: 'annual_exit_offer',
+          vendorProductId: 'sinkly_premium_annual_special',
+          period: SubscriptionPeriod.annual,
+          localizedPrice: r'$31.99',
+          localizedPricePerWeek: r'$0.62',
+          trialDays: AppConstants.freeTrialDays,
+          discountPercent: 20,
+          originalLocalizedPrice: r'$39.99',
+        ),
+      ];
+    }
     return const [
       SubscriptionPlanModel(
         id: 'annual',
         vendorProductId: 'sinkly_premium_annual',
         period: SubscriptionPeriod.annual,
-        localizedPrice: r'$29.99',
-        localizedPricePerWeek: r'$0.58',
+        localizedPrice: r'$39.99',
+        localizedPricePerWeek: r'$0.77',
         trialDays: AppConstants.freeTrialDays,
-        discountPercent: 50,
+        // $39.99 vs. 52 × $6.99 = $363.48 → 89% less.
+        discountPercent: 89,
       ),
       SubscriptionPlanModel(
-        id: 'monthly',
-        vendorProductId: 'sinkly_premium_monthly',
-        period: SubscriptionPeriod.monthly,
-        localizedPrice: r'$4.99',
-        localizedPricePerWeek: r'$1.15',
+        id: 'weekly',
+        vendorProductId: 'sinkly_premium_weekly',
+        period: SubscriptionPeriod.weekly,
+        localizedPrice: r'$6.99',
+        localizedPricePerWeek: r'$6.99',
         trialDays: AppConstants.freeTrialDays,
       ),
     ];

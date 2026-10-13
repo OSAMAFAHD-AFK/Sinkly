@@ -17,7 +17,7 @@ import 'rising_emoji_particles_widget.dart';
 ///  • Presents the offer (hand on hip, other hand open toward the plans).
 ///  • Annual picked → she JUMPS FOR JOY (both arms up, hearts rising), then
 ///    settles into a touched "hands under the chin" bounce.
-///  • Monthly picked → still happy, calmer: a quick applause, then a friendly
+///  • Weekly picked → still happy, calmer: a quick applause, then a friendly
 ///    hand-on-hip while the bubble gently nudges toward Annual.
 ///  • Every few seconds of hesitation she waves "psst… 3 days free".
 ///  • While the purchase runs she hugs a heart; on success she cheers.
@@ -86,7 +86,9 @@ class _PaywallHeroineHeroWidgetState extends State<PaywallHeroineHeroWidget> {
     final purchasing = state.status == SubscriptionStatus.purchasing;
 
     final annual = selected?.isBestValue ?? false;
-    final planBubble = annual ? 'paywall_bubble_annual' : 'paywall_bubble_monthly';
+    final planBubble = annual ? 'paywall_bubble_annual' : 'paywall_bubble_weekly';
+    // Real saving of the annual plan (never a hard-coded number).
+    final annualSaving = state.plans.where((plan) => plan.isBestValue).firstOrNull?.discountPercent;
     final (pose, motion, prop, bubbleKey) = widget.celebrating
         ? (HeroinePose.cheer, HeroineMotion.cheer, HeroineProp.none, 'paywall_bubble_success')
         : purchasing
@@ -180,7 +182,11 @@ class _PaywallHeroineHeroWidgetState extends State<PaywallHeroineHeroWidget> {
                   alignment: AlignmentDirectional.bottomStart.resolve(Directionality.of(context)),
                   child: FadeTransition(opacity: animation, child: child),
                 ),
-                child: _SpeechBubble(key: ValueKey(bubbleKey), text: context.tr(bubbleKey), highlight: warm),
+                child: _SpeechBubble(
+                  key: ValueKey(bubbleKey),
+                  text: context.tr(bubbleKey, {'percent': '${annualSaving ?? ''}'}),
+                  highlight: warm,
+                ),
               ),
             ),
           ],

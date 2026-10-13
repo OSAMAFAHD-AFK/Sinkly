@@ -9,26 +9,60 @@ import '../../../../../core/widgets/animated_pressable_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../Feature_04_Subscription/data/models/subscription_plan_model.dart';
 
-/// Selectable glass plan card (Annual / Monthly).
+/// Selectable glass plan card (Annual / Weekly; also the exit-offer tile).
 ///
 /// Selected state is unmistakable and premium: the card lifts, a light runs
-/// around its border, the radio springs in and the per-week price grows.
+/// around its border, the radio springs in and the price grows.
 /// The "Save X%" ribbon shimmers to anchor attention on the best value.
+///
+/// Store compliance: the BILLED price ([SubscriptionPlanModel.localizedPrice]
+/// + its period) is the biggest price on the card; the per-week equivalent is
+/// a small secondary line, and the trial terms are spelled out.
 class PaywallPlanCardWidget extends StatelessWidget {
-  const PaywallPlanCardWidget({super.key, required this.plan, required this.isSelected, required this.onTap});
+  const PaywallPlanCardWidget({
+    super.key,
+    required this.plan,
+    required this.isSelected,
+    required this.onTap,
+    this.badgeText,
+  });
 
   final SubscriptionPlanModel plan;
   final bool isSelected;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
+
+  /// Overrides the default "SAVE X%" ribbon (e.g. "20% EXTRA OFF").
+  final String? badgeText;
+
+  static String titleKey(SubscriptionPeriod period) => switch (period) {
+    SubscriptionPeriod.annual => 'plan_annual_title',
+    SubscriptionPeriod.monthly => 'plan_monthly_title',
+    SubscriptionPeriod.weekly => 'plan_weekly_title',
+  };
+
+  static String trialLineKey(SubscriptionPeriod period) => switch (period) {
+    SubscriptionPeriod.annual => 'plan_trial_then_year',
+    SubscriptionPeriod.monthly => 'plan_trial_then_month',
+    SubscriptionPeriod.weekly => 'plan_trial_then_week',
+  };
+
+  static String perPeriodKey(SubscriptionPeriod period) => switch (period) {
+    SubscriptionPeriod.annual => 'plan_per_year',
+    SubscriptionPeriod.monthly => 'plan_per_month',
+    SubscriptionPeriod.weekly => 'plan_per_week',
+  };
 
   @override
   Widget build(BuildContext context) {
-    final isAnnual = plan.period == SubscriptionPeriod.annual;
-    final title = context.tr(isAnnual ? 'plan_annual_title' : 'plan_monthly_title');
-    final priceLine = context.tr(isAnnual ? 'plan_trial_then_year' : 'plan_trial_then_month', {
+    final title = context.tr(titleKey(plan.period));
+    final priceLine = context.tr(trialLineKey(plan.period), {
       'days': '${plan.trialDays}',
       'price': plan.localizedPrice,
     });
+    final showWeeklyEquivalent = plan.period != SubscriptionPeriod.weekly;
+    final ribbon =
+        badgeText ??
+        (plan.discountPercent == null ? null : context.tr('plan_save_badge', {'percent': '${plan.discountPercent}'}));
 
     final card = AnimatedContainer(
       duration: AppDurations.medium,
@@ -62,6 +96,15 @@ class PaywallPlanCardWidget extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(priceLine, style: AppTextStyles.caption.copyWith(fontSize: 12.5)),
+                  if (showWeeklyEquivalent)
+                    Text(
+                      context.tr('plan_per_week_equivalent', {'price': plan.localizedPricePerWeek}),
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.primaryInk,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -73,11 +116,21 @@ class PaywallPlanCardWidget extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  if (plan.originalLocalizedPrice != null)
+                    Text(
+                      plan.originalLocalizedPrice!,
+                      style: AppTextStyles.caption.copyWith(
+                        fontSize: 12.5,
+                        decoration: TextDecoration.lineThrough,
+                        decorationColor: AppColors.inkMuted,
+                        color: AppColors.inkMuted,
+                      ),
+                    ),
                   Text(
-                    plan.localizedPricePerWeek,
+                    plan.localizedPrice,
                     style: AppTextStyles.title.copyWith(color: isSelected ? AppColors.primaryInk : AppColors.ink),
                   ),
-                  Text(context.tr('plan_per_week'), style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
+                  Text(context.tr(perPeriodKey(plan.period)), style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
                 ],
               ),
             ),
@@ -97,7 +150,7 @@ class PaywallPlanCardWidget extends StatelessWidget {
           clipBehavior: Clip.none,
           children: [
             if (isSelected) _RunningLightBorder(child: card) else card,
-            if (plan.discountPercent != null)
+            if (ribbon != null)
               PositionedDirectional(
                 top: -12,
                 end: 18,
@@ -109,10 +162,7 @@ class PaywallPlanCardWidget extends StatelessWidget {
                             borderRadius: AppRadii.pillAll,
                             boxShadow: AppShadows.soft,
                           ),
-                          child: Text(
-                            context.tr('plan_save_badge', {'percent': '${plan.discountPercent}'}),
-                            style: AppTextStyles.label.copyWith(color: Colors.white, fontSize: 10.5),
-                          ),
+                          child: Text(ribbon, style: AppTextStyles.label.copyWith(color: Colors.white, fontSize: 10.5)),
                         )
                         .animate(onPlay: (c) => c.repeat())
                         .shimmer(delay: 1600.ms, duration: 1200.ms, color: Colors.white.withValues(alpha: 0.6)),
