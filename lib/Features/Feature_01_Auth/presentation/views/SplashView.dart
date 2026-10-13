@@ -3,11 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/app_router.dart';
-import '../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../data/repos/auth_repo.dart';
 import '../manager/auth_cubit.dart';
-import 'widgets/splash_animated_logo_widget.dart';
+import 'widgets/splash_kitchen_scene_widget.dart';
 
 /// Brand splash + session gate (onboarding vs. home).
 class SplashView extends StatefulWidget {
@@ -22,7 +21,7 @@ class _SplashViewState extends State<SplashView> {
   void initState() {
     super.initState();
     // Leave the full brand animation on screen before routing.
-    Future<void>.delayed(SplashAnimatedLogoWidget.totalDuration, _navigate);
+    Future<void>.delayed(SplashKitchenSceneWidget.totalDuration, _navigate);
   }
 
   void _navigate() {
@@ -33,14 +32,7 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   Widget build(BuildContext context) {
-    return const GlassScreenScaffold(
-      animateBackground: true,
-      body: Stack(
-        children: [
-          Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 12, maxBubbleSize: 42)),
-          Center(child: SplashAnimatedLogoWidget()),
-        ],
-      ),
-    );
+    // Full-bleed illustrated scene: the sink sits on the bottom edge.
+    return const GlassScreenScaffold(animateBackground: true, useSafeArea: false, body: SplashKitchenSceneWidget());
   }
 }

@@ -4,12 +4,16 @@ import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
 
 /// The Sinkly "Sink-Lock" mark: a padlock whose body is a glossy sink basin
-/// and whose shackle is the faucet. A drop falls, the basin fills and the
-/// shackle lifts open — "clean the sink → your apps unlock".
+/// and whose shackle is the faucet — "clean the sink → your apps unlock".
 ///
 /// Drawn in a 200 × 200 design space. [intro] runs 0 → 1 for the splash
-/// sequence (1 = final, slightly-open lock); [idle] is seconds since the
-/// intro finished and drives the gentle water sway + sparkle twinkle.
+/// story (1 = final, slightly-open lock = the static icon):
+///   1. a clearly CLOSED padlock pops in (symmetric shackle, no spout);
+///   2. the key turns (keyhole rotates + glint) → click;
+///   3. the shackle springs open and its free end becomes the faucet;
+///   4. a drop falls from the faucet, the basin fills, soap foam forms;
+///   5. sparkles.
+/// [idle] is seconds since the intro finished (water sway, twinkle, foam).
 class SinklyLogoMarkPainter extends CustomPainter {
   SinklyLogoMarkPainter({
     this.intro = 1,
@@ -17,6 +21,7 @@ class SinklyLogoMarkPainter extends CustomPainter {
     this.background = SinklyLogoBackground.roundedTile,
     this.glyphScale = 1,
     this.showGlyph = true,
+    this.showSuds = false,
     super.repaint,
   });
 
@@ -30,6 +35,9 @@ class SinklyLogoMarkPainter extends CustomPainter {
   /// `false` paints only the sky backdrop (Android adaptive-icon background
   /// layer — the glyph lives in the separate foreground layer).
   final bool showGlyph;
+
+  /// Soap foam on the water (splash only; the static icon stays clean).
+  final bool showSuds;
 
   static const double designSize = 200;
   static const Color navy = Color(0xFF26305A);
@@ -52,8 +60,8 @@ class SinklyLogoMarkPainter extends CustomPainter {
     canvas.save();
     canvas.scale(size.width / designSize, size.height / designSize);
 
-    // Whole mark pops in.
-    final pop = _seg(intro, 0, 0.25);
+    // Whole mark pops in (closed).
+    final pop = _seg(intro, 0, 0.16);
     final popScale = pop < 0.7
         ? lerpDouble(0.6, 1.06, Curves.easeOut.transform(pop / 0.7))!
         : lerpDouble(1.06, 1, (pop - 0.7) / 0.3)!;
@@ -120,22 +128,22 @@ class SinklyLogoMarkPainter extends CustomPainter {
   }
 
   void _paintShackle(Canvas canvas) {
-    // Closed (sunk 16 into the rim) → lifts with a little overshoot → rests
-    // slightly open (rotated −10° around the left leg).
+    // Closed (both legs sunk into the rim) until the key turns → springs up
+    // with an overshoot → rests slightly open (−10° around the left leg).
     final t = intro;
     double lift;
     double angle;
-    if (t < 0.55) {
+    if (t < 0.34) {
       lift = 16;
       angle = 0;
-    } else if (t < 0.75) {
-      final k = Curves.easeOutBack.transform(_seg(t, 0.55, 0.75));
-      lift = lerpDouble(16, -3, k)!;
-      angle = lerpDouble(0, -12, k)!;
+    } else if (t < 0.5) {
+      final k = Curves.easeOutBack.transform(_seg(t, 0.34, 0.5));
+      lift = lerpDouble(16, -4, k)!;
+      angle = lerpDouble(0, -13, k)!;
     } else {
-      final k = Curves.easeInOut.transform(_seg(t, 0.75, 1));
-      lift = lerpDouble(-3, 0, k)!;
-      angle = lerpDouble(-12, -10, k)!;
+      final k = Curves.easeInOut.transform(_seg(t, 0.5, 0.6));
+      lift = lerpDouble(-4, 0, k)!;
+      angle = lerpDouble(-13, -10, k)!;
     }
 
     canvas.save();
@@ -161,25 +169,34 @@ class SinklyLogoMarkPainter extends CustomPainter {
           stops: [0, 0.55, 1],
         ).createShader(const Rect.fromLTWH(58, 34, 84, 74)),
     );
-    // Faucet spout tip.
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(const Rect.fromLTWH(119, 82, 18, 9), const Radius.circular(4.5)),
-      Paint()..color = const Color(0xFFE9F5FD),
-    );
+    // Faucet spout: hidden while it's a plain padlock, grows as it opens.
+    final spout = Curves.easeOutBack.transform(_seg(t, 0.4, 0.54));
+    if (spout > 0) {
+      canvas
+        ..save()
+        ..translate(128, 86.5)
+        ..scale(spout)
+        ..translate(-128, -86.5)
+        ..drawRRect(
+          RRect.fromRectAndRadius(const Rect.fromLTWH(119, 82, 18, 9), const Radius.circular(4.5)),
+          Paint()..color = const Color(0xFFE9F5FD),
+        )
+        ..restore();
+    }
     canvas.restore();
   }
 
   void _paintDrop(Canvas canvas) {
     final t = intro;
-    if (t <= 0 || t >= 0.62) return;
-    // Sky drop forms at the faucet tip, falls into the basin, then merges.
-    final appear = Curves.easeOut.transform(_seg(t, 0.08, 0.25));
-    final fall = Curves.easeIn.transform(_seg(t, 0.25, 0.55));
-    final opacity = t < 0.55 ? appear : 1 - _seg(t, 0.55, 0.62);
+    if (t <= 0.52 || t >= 0.76) return;
+    // Sky drop forms at the (now open) faucet tip, falls into the basin.
+    final appear = Curves.easeOut.transform(_seg(t, 0.52, 0.6));
+    final fall = Curves.easeIn.transform(_seg(t, 0.6, 0.71));
+    final opacity = t < 0.71 ? appear : 1 - _seg(t, 0.71, 0.76);
     if (opacity <= 0) return;
     canvas.save();
     canvas
-      ..translate(128, 104 + lerpDouble(-4, 0, appear)! + fall * 26)
+      ..translate(126, 98 + lerpDouble(-4, 0, appear)! + fall * 34)
       ..scale(lerpDouble(0.2, 1, appear)!)
       ..translate(-128, -108);
     final drop = Path()
@@ -217,7 +234,7 @@ class SinklyLogoMarkPainter extends CustomPainter {
     );
 
     // Water rises inside the basin (clipped to the bowl) and sways at rest.
-    final rise = _seg(intro, 0.45, 1);
+    final rise = _seg(intro, 0.68, 0.98);
     final lift = rise < 0.78
         ? lerpDouble(36, -2, Curves.easeOut.transform(rise / 0.78))!
         : lerpDouble(-2, 0, (rise - 0.78) / 0.22)!;
@@ -251,10 +268,11 @@ class SinklyLogoMarkPainter extends CustomPainter {
         ..strokeWidth = 2.5
         ..color = Colors.white.withValues(alpha: 0.7),
     );
+    if (showSuds) _paintSuds(canvas);
     canvas.restore();
 
     // Splash ring where the drop lands.
-    final ring = _seg(intro, 0.5, 1);
+    final ring = _seg(intro, 0.71, 1);
     if (ring > 0 && ring < 1) {
       final scale = lerpDouble(0.2, 1.6, ring)!;
       canvas.drawOval(
@@ -278,9 +296,60 @@ class SinklyLogoMarkPainter extends CustomPainter {
       );
   }
 
+  /// Soap foam clusters along the water line (pop in, then wobble softly).
+  void _paintSuds(Canvas canvas) {
+    const foam = [
+      (62.0, 6.0, 0.0),
+      (71.0, 8.0, 0.05),
+      (81.0, 5.5, 0.1),
+      (117.0, 6.5, 0.04),
+      (128.0, 8.5, 0.09),
+      (139.0, 6.0, 0.14),
+      (90.0, 4.0, 0.16),
+      (109.0, 4.5, 0.12),
+    ];
+    for (final (index, (x, radius, delay)) in foam.indexed) {
+      final appear = Curves.easeOutBack.transform(_seg(intro, 0.8 + delay, 0.92 + delay));
+      if (appear <= 0) continue;
+      final wobble = math.sin(idle * 2.2 + index) * 0.8;
+      final center = Offset(x, 134 - radius * 0.35 + wobble);
+      final r = radius * appear;
+      canvas
+        ..drawCircle(center, r, Paint()..color = Colors.white.withValues(alpha: 0.92))
+        ..drawCircle(
+          center,
+          r,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 0.8
+            ..color = const Color(0xFFBFDDF2),
+        )
+        ..drawCircle(center.translate(-r * 0.35, -r * 0.35), r * 0.25, Paint()..color = const Color(0xFFE8F6FD));
+    }
+  }
+
   void _paintKeyhole(Canvas canvas) {
+    // The key turns (0.16–0.34): rotate 90° and back with a click, plus a glint.
+    final turn = _seg(intro, 0.16, 0.36);
+    final angle = math.sin(turn * math.pi) * math.pi / 2;
+    final glint = _seg(intro, 0.3, 0.5);
+    if (glint > 0 && glint < 1) {
+      final g = Curves.easeOutCubic.transform(glint);
+      canvas.drawCircle(
+        const Offset(100, 136),
+        10 + 18 * g,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.5 * (1 - g) + 0.5
+          ..color = const Color(0xFF5AAFE6).withValues(alpha: 0.8 * (1 - g)),
+      );
+    }
     final keyPaint = Paint()..color = navy;
     canvas
+      ..save()
+      ..translate(100, 136)
+      ..rotate(angle)
+      ..translate(-100, -136)
       ..drawCircle(const Offset(100, 128), 7.5, keyPaint)
       ..drawPath(
         Path()
@@ -290,13 +359,14 @@ class SinklyLogoMarkPainter extends CustomPainter {
           ..lineTo(93.5, 147)
           ..close(),
         keyPaint,
-      );
+      )
+      ..restore();
   }
 
   void _paintSparkles(Canvas canvas) {
     final twinkle = 0.8 + 0.2 * math.cos(idle * 2 * math.pi / 2.4); // 1 at rest
-    _sparkle(canvas, const Offset(158, 52), 12, _popScale(_seg(intro, 0.73, 0.94)) * twinkle);
-    _sparkle(canvas, const Offset(40, 70), 6, _popScale(_seg(intro, 0.81, 1)));
+    _sparkle(canvas, const Offset(158, 52), 12, _popScale(_seg(intro, 0.84, 0.97)) * twinkle);
+    _sparkle(canvas, const Offset(40, 70), 6, _popScale(_seg(intro, 0.9, 1)));
   }
 
   static double _popScale(double t) =>
@@ -322,7 +392,8 @@ class SinklyLogoMarkPainter extends CustomPainter {
       oldDelegate.idle != idle ||
       oldDelegate.background != background ||
       oldDelegate.glyphScale != glyphScale ||
-      oldDelegate.showGlyph != showGlyph;
+      oldDelegate.showGlyph != showGlyph ||
+      oldDelegate.showSuds != showSuds;
 }
 
 /// Shape of the sky backdrop behind the mark.
