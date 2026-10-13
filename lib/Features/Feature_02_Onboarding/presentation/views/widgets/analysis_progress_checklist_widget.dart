@@ -235,11 +235,17 @@ class _TaskRow extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 34,
-                height: 34,
+                width: 40,
+                height: 40,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: Text(emoji, style: const TextStyle(fontSize: 17)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: AppColors.primary.withValues(alpha: 0.12), blurRadius: 8, offset: const Offset(0, 2)),
+                  ],
+                ),
+                child: Text(emoji, style: const TextStyle(fontSize: 20)),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -284,7 +290,7 @@ class _TaskRow extends StatelessWidget {
             duration: AppDurations.fast,
             child: working
                 ? Padding(
-                    padding: const EdgeInsetsDirectional.only(top: 8, start: 46),
+                    padding: const EdgeInsetsDirectional.only(top: 8, start: 52),
                     child: ClipRRect(
                       borderRadius: AppRadii.pillAll,
                       child: SizedBox(

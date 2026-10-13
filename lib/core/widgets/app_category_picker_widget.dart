@@ -5,6 +5,7 @@ import '../models/shared_core_models.dart';
 import '../utils/app_localizations.dart';
 import '../utils/functions/app_functions.dart';
 import '../utils/style.dart';
+import 'app_category_icon_widget.dart';
 import 'blockable_app_icon_widget.dart';
 import 'custom_card_container.dart';
 
@@ -98,7 +99,7 @@ class _AppCategoryPickerWidgetState extends State<AppCategoryPickerWidget> {
       children: [
         _PickerRow(
           leading: _CheckCircle(state: allSelected ? _CheckState.on : _CheckState.off),
-          icon: const _CategoryTile(emoji: null),
+          icon: const AppCategoryIconWidget(),
           title: context.tr('apps_picker_all'),
           isHeader: true,
           onTap: () => _emit(selection.toggleAll(widget.apps)),
@@ -131,7 +132,7 @@ class _AppCategoryPickerWidgetState extends State<AppCategoryPickerWidget> {
       children: [
         _PickerRow(
           leading: _CheckCircle(state: checkState),
-          icon: _CategoryTile(emoji: category.emoji),
+          icon: AppCategoryIconWidget(category: category),
           title: context.tr(category.translationKey),
           trailingHint: whole
               ? context.tr('apps_picker_all_label')
@@ -272,9 +273,9 @@ class _PickerRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: ConstrainedBox(
-          constraints: BoxConstraints(minHeight: indent ? 54 : 60),
+          constraints: BoxConstraints(minHeight: indent ? 54 : 68),
           child: Padding(
-            padding: EdgeInsetsDirectional.fromSTEB(indent ? AppSpacing.lg : AppSpacing.xs, 4, AppSpacing.sm, 4),
+            padding: EdgeInsetsDirectional.fromSTEB(indent ? AppSpacing.lg : AppSpacing.xs, 6, AppSpacing.sm, 6),
             child: Row(
               children: [
                 // Bigger tap target than the circle itself.
@@ -357,31 +358,6 @@ class _CheckCircle extends StatelessWidget {
           _CheckState.off => const SizedBox.shrink(key: ValueKey('off')),
         },
       ),
-    );
-  }
-}
-
-class _CategoryTile extends StatelessWidget {
-  const _CategoryTile({required this.emoji});
-
-  /// null = the "all apps" stack icon.
-  final String? emoji;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 32,
-      height: 32,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(9),
-        gradient: emoji == null ? AppGradients.primaryButton : null,
-        color: emoji == null ? null : AppColors.primarySoft,
-        border: Border.all(color: Colors.white, width: 1.2),
-      ),
-      child: emoji == null
-          ? const Icon(Icons.layers_rounded, size: 18, color: AppColors.onPrimary)
-          : Text(emoji!, style: const TextStyle(fontSize: 17)),
     );
   }
 }

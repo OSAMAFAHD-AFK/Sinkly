@@ -20,6 +20,8 @@ class SinklySolutionExplainerStepWidget extends StatelessWidget {
       description: context.tr('solution_description'),
       ctaLabel: context.tr('solution_cta'),
       onCtaPressed: context.read<OnboardingCubit>().nextStep,
+      contentTopSpacing: 28,
+      balanceContentInSpace: true,
       body: SinklyFormulaFlowWidget(blockedApps: BlockableAppModel.fromIds(appIds)),
     );
   }

@@ -46,11 +46,13 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
             ? _PlanSummaryCard(plan: plan, name: name)
             : AnalysisProgressChecklistWidget(
                 title: context.tr('plan_building_subtitle'),
-                duration: const Duration(milliseconds: 3200),
-                emojis: const ['🗓️', '🛡️', '🔔'],
+                duration: const Duration(milliseconds: 4800),
+                emojis: const ['📅', '🛡️', '📸', '🔒', '🔔'],
                 items: [
                   context.tr('plan_building_item_schedule'),
                   context.tr('plan_building_item_apps'),
+                  context.tr('plan_building_item_camera'),
+                  context.tr('plan_building_item_protection'),
                   context.tr('plan_building_item_reminders'),
                 ],
                 onCompleted: () {
