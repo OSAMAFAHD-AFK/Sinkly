@@ -58,7 +58,7 @@ class LockScheduleView extends StatelessWidget {
                 ScheduleMealPickerMatrixWidget(
                   schedule: draft.schedule,
                   onDayToggled: cubit.toggleDay,
-                  onMealCountChanged: cubit.setMealCount,
+                  onMealToggled: cubit.setMealEnabled,
                   onMealTimeChanged: cubit.setMealTime,
                   onSyncAllDaysWith: cubit.syncAllDaysWith,
                 ),

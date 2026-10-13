@@ -45,8 +45,8 @@ class LockScheduleCubit extends Cubit<LockScheduleState> {
 
   void toggleDay(int weekday) => _updateSchedule(state.draft.schedule.toggleDay(weekday));
   void togglePreset(DaySelectionPreset preset) => _updateSchedule(state.draft.schedule.togglePreset(preset));
-  void setMealCount(List<int> weekdays, int count) =>
-      _updateSchedule(state.draft.schedule.withMealCount(weekdays, count));
+  void setMealEnabled(List<int> weekdays, MealType type, bool enabled) =>
+      _updateSchedule(state.draft.schedule.withMealEnabled(weekdays, type, enabled: enabled));
   void setMealTime(List<int> weekdays, int index, int minutes) =>
       _updateSchedule(state.draft.schedule.withMealTime(weekdays, index, minutes));
   void syncAllDaysWith(int weekday) => _updateSchedule(state.draft.schedule.syncAllActiveDaysWith(weekday));

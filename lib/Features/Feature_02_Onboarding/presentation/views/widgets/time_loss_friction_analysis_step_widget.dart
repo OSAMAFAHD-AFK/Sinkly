@@ -57,6 +57,7 @@ class _TimeLossFrictionAnalysisStepWidgetState extends State<TimeLossFrictionAna
             ? const TimeLossComparisonChartWidget()
             : AnalysisProgressChecklistWidget(
                 title: context.tr('analysis_title'),
+                emojis: const ['📝', '⏳', '🎯'],
                 items: [
                   context.tr('analysis_item_answers'),
                   context.tr('analysis_item_avoidance'),

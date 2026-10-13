@@ -16,8 +16,9 @@ import '../../../../../core/widgets/glass_bottom_sheet.dart';
 ///  1. **Days** — seven day capsules, all on by default (work weeks differ
 ///     per country, so no presets): tap a day to turn it off/on. Each
 ///     capsule shows its meals as dots.
-///  2. **Meals** — sliding 1 / 2 / 3 selector, a morning→night ribbon showing
-///     exactly when the apps lock, and one row per meal with its time.
+///  2. **Meals** — Breakfast / Lunch / Dinner toggle chips (any combination),
+///     a morning→night ribbon showing exactly when the apps lock, and one
+///     row per meal with its time.
 /// Plus a live "locks per week" summary. "Different meals on some days"
 /// switches meal edits from all days to one chosen day.
 class ScheduleMealPickerMatrixWidget extends StatefulWidget {
@@ -25,14 +26,14 @@ class ScheduleMealPickerMatrixWidget extends StatefulWidget {
     super.key,
     required this.schedule,
     required this.onDayToggled,
-    required this.onMealCountChanged,
+    required this.onMealToggled,
     required this.onMealTimeChanged,
     required this.onSyncAllDaysWith,
   });
 
   final WeeklyLockScheduleModel schedule;
   final ValueChanged<int> onDayToggled;
-  final void Function(List<int> weekdays, int mealCount) onMealCountChanged;
+  final void Function(List<int> weekdays, MealType type, bool enabled) onMealToggled;
   final void Function(List<int> weekdays, int mealIndex, int minutesOfDay) onMealTimeChanged;
   final ValueChanged<int> onSyncAllDaysWith;
 
@@ -139,12 +140,9 @@ class _ScheduleMealPickerMatrixWidgetState extends State<ScheduleMealPickerMatri
                               )
                             : const SizedBox(width: double.infinity),
                       ),
-                      _SlidingSegmentedControl(
-                        labels: [
-                          for (final count in const [1, 2, 3]) context.tr('schedule_meals_option_$count'),
-                        ],
-                        selectedIndex: referencePlan.meals.length - 1,
-                        onSelected: (index) => widget.onMealCountChanged(_targetWeekdays, index + 1),
+                      _MealChoiceChips(
+                        selected: {for (final meal in referencePlan.meals) meal.type},
+                        onToggled: (type, enabled) => widget.onMealToggled(_targetWeekdays, type, enabled),
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       _DayRibbon(meals: referencePlan.meals),
@@ -227,90 +225,136 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
-/// iOS-style segmented control with a sliding white thumb.
-/// [selectedIndex] null = nothing matches (thumb fades out).
-class _SlidingSegmentedControl extends StatelessWidget {
-  const _SlidingSegmentedControl({required this.labels, required this.selectedIndex, required this.onSelected});
+/// Breakfast / Lunch / Dinner toggles — any combination. The last selected
+/// meal can't be switched off (it shakes gently instead).
+class _MealChoiceChips extends StatefulWidget {
+  const _MealChoiceChips({required this.selected, required this.onToggled});
 
-  final List<String> labels;
-  final int? selectedIndex;
-  final ValueChanged<int> onSelected;
+  final Set<MealType> selected;
+  final void Function(MealType type, bool enabled) onToggled;
+
+  @override
+  State<_MealChoiceChips> createState() => _MealChoiceChipsState();
+}
+
+class _MealChoiceChipsState extends State<_MealChoiceChips> {
+  MealType? _shaking;
+  int _shakeTick = 0;
+
+  void _onTap(MealType type) {
+    final isOn = widget.selected.contains(type);
+    if (isOn && widget.selected.length == 1) {
+      AppFunctions.lightHaptic();
+      setState(() {
+        _shaking = type;
+        _shakeTick++;
+      });
+      return;
+    }
+    AppFunctions.selectionHaptic();
+    widget.onToggled(type, !isOn);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final textScale = MediaQuery.textScalerOf(context).scale(1);
-    final height = 40 + 8 * (textScale - 1).clamp(0.0, 1.0) * 2;
-    return Container(
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: AppColors.primarySoft.withValues(alpha: 0.7), borderRadius: AppRadii.pillAll),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final segment = constraints.maxWidth / labels.length;
-          final index = selectedIndex ?? 0;
-          return SizedBox(
-            height: height,
-            child: Stack(
-              children: [
-                AnimatedPositionedDirectional(
-                  duration: const Duration(milliseconds: 320),
-                  curve: Curves.easeOutCubic,
-                  start: segment * index,
-                  top: 0,
-                  bottom: 0,
-                  width: segment,
-                  child: AnimatedOpacity(
-                    opacity: selectedIndex == null ? 0 : 1,
-                    duration: AppDurations.fast,
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: AppRadii.pillAll,
-                        boxShadow: AppShadows.soft,
+    return Row(
+      children: [
+        for (final (index, type) in MealType.values.indexed) ...[
+          if (index > 0) const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child:
+                _MealChip(
+                      emoji: _MealRow.emojiFor(type),
+                      label: context.tr(type.translationKey),
+                      isOn: widget.selected.contains(type),
+                      onTap: () => _onTap(type),
+                    )
+                    .animate(key: ValueKey('${type.name}_$_shakeTick'), autoPlay: _shaking == type && _shakeTick > 0)
+                    .shakeX(hz: 6, amount: 4, duration: 380.ms),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _MealChip extends StatelessWidget {
+  const _MealChip({required this.emoji, required this.label, required this.isOn, required this.onTap});
+
+  final String emoji;
+  final String label;
+  final bool isOn;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      toggled: isOn,
+      label: label,
+      child: AnimatedPressableWidget(
+        onTap: onTap,
+        pressedScale: 0.94,
+        semanticLabel: label,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+          decoration: BoxDecoration(
+            gradient: isOn
+                ? const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFA8DDF8), Color(0xFF5AAFE6)],
+                  )
+                : null,
+            color: isOn ? null : Colors.white,
+            borderRadius: AppRadii.mediumAll,
+            border: Border.all(color: isOn ? Colors.white : AppColors.divider, width: 1.4),
+            boxShadow: isOn ? AppShadows.primaryGlow(strength: 0.4) : const [],
+          ),
+          child: Column(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Text(emoji, style: const TextStyle(fontSize: 24)),
+                  PositionedDirectional(
+                    end: -12,
+                    top: -6,
+                    child: AnimatedScale(
+                      scale: isOn ? 1 : 0,
+                      duration: AppDurations.fast,
+                      curve: Curves.easeOutBack,
+                      child: Container(
+                        width: 16,
+                        height: 16,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.primary, width: 1.2),
+                        ),
+                        child: const Icon(Icons.check_rounded, size: 11, color: AppColors.primaryInk),
                       ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    fontSize: 13.5,
+                    color: isOn ? Colors.white : AppColors.inkMuted,
+                  ),
                 ),
-                Row(
-                  children: [
-                    for (final (i, label) in labels.indexed)
-                      Expanded(
-                        child: Semantics(
-                          button: true,
-                          selected: i == selectedIndex,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              if (i == selectedIndex) return;
-                              AppFunctions.selectionHaptic();
-                              onSelected(i);
-                            },
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4),
-                                child: AnimatedDefaultTextStyle(
-                                  duration: AppDurations.fast,
-                                  style: AppTextStyles.bodyStrong.copyWith(
-                                    fontSize: 13.5,
-                                    color: i == selectedIndex ? AppColors.ink : AppColors.inkMuted,
-                                  ),
-                                  child: Text(
-                                    label,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

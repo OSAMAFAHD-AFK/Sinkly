@@ -98,8 +98,8 @@ class OnboardingCubit extends Cubit<OnboardingState> {
 
   void toggleDayPreset(DaySelectionPreset preset) => _updateSchedule(state.preferences.schedule.togglePreset(preset));
 
-  void setMealCount(List<int> weekdays, int count) =>
-      _updateSchedule(state.preferences.schedule.withMealCount(weekdays, count));
+  void setMealEnabled(List<int> weekdays, MealType type, bool enabled) =>
+      _updateSchedule(state.preferences.schedule.withMealEnabled(weekdays, type, enabled: enabled));
 
   void setMealTime(List<int> weekdays, int mealIndex, int minutesOfDay) =>
       _updateSchedule(state.preferences.schedule.withMealTime(weekdays, mealIndex, minutesOfDay));

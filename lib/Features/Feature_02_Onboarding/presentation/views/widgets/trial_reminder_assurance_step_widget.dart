@@ -5,15 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
+import '../../../../../core/widgets/adaptive_scene_box_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
-import '../../../../../core/widgets/glass_icon_orb_widget.dart';
-import '../../../../../core/widgets/pulse_rings_widget.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
+import 'trial_reminder_phone_widget.dart';
 
-/// Screen 14 — Pre-paywall assurance: a transparent trial timeline and a
-/// promise to remind the user 24h before the trial ends (reduces anxiety,
-/// increases trial starts).
+/// Screen 14 — Pre-paywall assurance: a short promise, a lock-screen preview
+/// of the exact reminder, and the transparent 3-step trial timeline.
+/// Reduces anxiety, increases trial starts.
 class TrialReminderAssuranceStepWidget extends StatelessWidget {
   const TrialReminderAssuranceStepWidget({super.key});
 
@@ -26,47 +26,52 @@ class TrialReminderAssuranceStepWidget extends StatelessWidget {
     const trialDays = AppConstants.freeTrialDays;
 
     return OnboardingStepScaffoldWidget(
-      illustration: PulseRingsWidget(
-        size: 200,
-        child: const GlassIconOrbWidget(icon: Icons.notifications_active_rounded, size: 88, floating: false)
-            .animate(onPlay: (c) => c.repeat(), delay: 600.ms)
-            .shake(hz: 4, rotation: 0.06, duration: 700.ms)
-            // No-op effect that adds a pause between rings.
-            .then()
-            .scaleXY(begin: 1, end: 1, duration: 1800.ms),
-      ),
-      title: context.tr('trial_reminder_title'),
-      description: context.tr('trial_reminder_description'),
+      title: context.tr('trial_reminder_title_short'),
       ctaLabel: context.tr('trial_reminder_cta'),
       isCtaLoading: isRequesting,
       onCtaPressed: cubit.acceptTrialReminder,
-      body: CustomCardContainer(
-        padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.xs),
-        child: Column(
-          children:
-              [
-                    _TimelineRow(
-                      icon: Icons.lock_open_rounded,
-                      title: context.tr('trial_timeline_today_title'),
-                      subtitle: context.tr('trial_timeline_today_subtitle'),
-                      isHighlighted: true,
-                    ),
-                    _TimelineRow(
-                      icon: Icons.notifications_rounded,
-                      title: context.tr('trial_timeline_reminder_title', {'day': '${trialDays - 1}'}),
-                      subtitle: context.tr('trial_timeline_reminder_subtitle'),
-                    ),
-                    _TimelineRow(
-                      icon: Icons.star_rounded,
-                      title: context.tr('trial_timeline_end_title', {'day': '$trialDays'}),
-                      subtitle: context.tr('trial_timeline_end_subtitle'),
-                      isLast: true,
-                    ),
-                  ]
-                  .animate(interval: 160.ms, delay: 250.ms)
-                  .fadeIn(duration: 350.ms)
-                  .slideX(begin: context.flipX(0.08), curve: Curves.easeOutCubic),
+      secondaryAction: Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          context.tr('trial_reminder_note'),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption.copyWith(fontSize: 12),
         ),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Scales down on short phones so the timeline stays in view.
+          const Center(child: AdaptiveSceneBoxWidget(maxHeightFraction: 0.42, child: TrialReminderPhoneWidget())),
+          CustomCardContainer(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.lg, AppSpacing.md, AppSpacing.xs),
+            child: Column(
+              children:
+                  [
+                        _TimelineRow(
+                          icon: Icons.lock_open_rounded,
+                          title: context.tr('trial_timeline_today_title'),
+                          subtitle: context.tr('trial_timeline_today_subtitle'),
+                          isHighlighted: true,
+                        ),
+                        _TimelineRow(
+                          icon: Icons.notifications_rounded,
+                          title: context.tr('trial_timeline_reminder_title', {'day': '${trialDays - 1}'}),
+                          subtitle: context.tr('trial_timeline_reminder_subtitle'),
+                        ),
+                        _TimelineRow(
+                          icon: Icons.star_rounded,
+                          title: context.tr('trial_timeline_end_title', {'day': '$trialDays'}),
+                          subtitle: context.tr('trial_timeline_end_subtitle'),
+                          isLast: true,
+                        ),
+                      ]
+                      .animate(interval: 160.ms, delay: 1300.ms)
+                      .fadeIn(duration: 350.ms)
+                      .slideX(begin: context.flipX(0.08), curve: Curves.easeOutCubic),
+            ),
+          ),
+        ],
       ),
     );
   }

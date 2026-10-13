@@ -88,6 +88,18 @@ class DayMealPlanModel extends Equatable {
     return copyWith(meals: updated);
   }
 
+  /// Turns one meal on/off (any combination; the last meal can't be removed).
+  /// Meals stay in day order: breakfast → lunch → dinner.
+  DayMealPlanModel withMealEnabled(MealType type, {required bool enabled}) {
+    final has = meals.any((meal) => meal.type == type);
+    if (enabled == has) return this;
+    if (!enabled && meals.length <= 1) return this;
+    final updated = enabled
+        ? ([...meals, MealSlotModel.defaultFor(type)]..sort((a, b) => a.type.index.compareTo(b.type.index)))
+        : meals.where((meal) => meal.type != type).toList();
+    return copyWith(meals: List.unmodifiable(updated));
+  }
+
   DayMealPlanModel withMealTime(int mealIndex, int minutesOfDay) {
     if (mealIndex < 0 || mealIndex >= meals.length) return this;
     final updated = [...meals];
@@ -164,6 +176,11 @@ class WeeklyLockScheduleModel extends Equatable {
 
   WeeklyLockScheduleModel withMealCount(Iterable<int> targetWeekdays, int count) =>
       _replace({for (final weekday in targetWeekdays) weekday: dayPlan(weekday).withMealCount(count)});
+
+  WeeklyLockScheduleModel withMealEnabled(Iterable<int> targetWeekdays, MealType type, {required bool enabled}) =>
+      _replace({
+        for (final weekday in targetWeekdays) weekday: dayPlan(weekday).withMealEnabled(type, enabled: enabled),
+      });
 
   WeeklyLockScheduleModel withMealTime(Iterable<int> targetWeekdays, int mealIndex, int minutesOfDay) =>
       _replace({for (final weekday in targetWeekdays) weekday: dayPlan(weekday).withMealTime(mealIndex, minutesOfDay)});

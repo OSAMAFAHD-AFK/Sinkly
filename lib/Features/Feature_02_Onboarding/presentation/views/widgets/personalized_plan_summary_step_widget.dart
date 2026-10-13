@@ -6,9 +6,10 @@ import '../../../../../core/models/shared_core_models.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/blockable_app_icon_widget.dart';
+import '../../../../../core/widgets/app_icons_wrap_widget.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
+import '../../../../../core/widgets/sinkly_logo_mark_painter.dart';
 import '../../manager/onboarding_cubit.dart';
 import 'analysis_progress_checklist_widget.dart';
 import 'heroine_character_painter.dart';
@@ -41,10 +42,11 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
       body: AnimatedSwitcher(
         duration: AppDurations.slow,
         child: _planReady
-            ? _PlanSummaryCard(plan: plan)
+            ? _PlanSummaryCard(plan: plan, name: name)
             : AnalysisProgressChecklistWidget(
                 title: context.tr('plan_building_subtitle'),
-                duration: const Duration(milliseconds: 2800),
+                duration: const Duration(milliseconds: 3200),
+                emojis: const ['🗓️', '🛡️', '🔔'],
                 items: [
                   context.tr('plan_building_item_schedule'),
                   context.tr('plan_building_item_apps'),
@@ -69,136 +71,394 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
   }
 }
 
+/// The reveal: the heroine cheers, a sky card counts up the hours
+/// reclaimed, and the plan itself "prints" as a membership ticket.
 class _PlanSummaryCard extends StatelessWidget {
-  const _PlanSummaryCard({required this.plan});
+  const _PlanSummaryCard({required this.plan, required this.name});
 
   final UserPlanModel plan;
-
-  String _daysLabel(BuildContext context) {
-    final schedule = plan.schedule;
-    final active = schedule.activeWeekdays;
-    // No "workdays/weekends" wording: work weeks differ from country to country.
-    if (active.length == 7) return context.tr('preset_all_week');
-    if (active.length <= 3) {
-      return active.map((weekday) => context.tr(AppFunctions.weekdayLongKey(weekday))).join(context.isRtl ? '، ' : ', ');
-    }
-    return context.tr('plan_days_count', {'count': '${active.length}'});
-  }
-
-  String _mealsLabel(BuildContext context) {
-    final schedule = plan.schedule;
-    if (!schedule.hasActiveDays) return '—';
-    if (!schedule.isUniformAcrossActiveDays) {
-      return context.tr('plan_meals_custom', {'count': '${schedule.weeklyMealCount}'});
-    }
-    final meals = schedule.dayPlan(schedule.activeWeekdays.first).meals;
-    final times = meals
-        .map(
-          (meal) =>
-              '${context.tr(meal.type.translationKey)} ${AppFunctions.formatMinutesOfDay(context, meal.minutesOfDay)}',
-        )
-        .join(' · ');
-    return '${context.tr('plan_meals_count', {'count': '${meals.length}'})}\n$times';
-  }
+  final String name;
 
   @override
   Widget build(BuildContext context) {
-    final apps = plan.blockedApps;
-    final rows = <Widget>[
-      _SummaryRow(emoji: '📅', label: context.tr('plan_row_days'), value: _daysLabel(context)),
-      _SummaryRow(emoji: '🍽️', label: context.tr('plan_row_meals'), value: _mealsLabel(context)),
-      _SummaryRow(
-        emoji: '🔒',
-        label: context.tr('plan_row_apps'),
-        value: apps.map((app) => app.displayName).join(', '),
-        trailing: Wrap(
-          spacing: 4,
-          children: [for (final app in apps.take(4)) BlockableAppIconWidget(app: app, size: 24)],
-        ),
-      ),
-      _SummaryRow(emoji: '🎁', label: context.tr('plan_row_bonus'), value: context.tr('plan_bonus_value')),
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // She celebrates the plan with the user.
         const Center(
-          child: HeroineCharacterWidget(width: 118, pose: HeroinePose.cheer, motion: HeroineMotion.cheer),
+          child: HeroineCharacterWidget(width: 112, pose: HeroinePose.cheer, motion: HeroineMotion.cheer),
         ),
-        // Hero stat: hours reclaimed per week.
-        CustomCardContainer(
-          gradient: const LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Color(0xF2FFFFFF), Color(0xE6E8F6FD)],
-          ),
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg, horizontal: AppSpacing.md),
-          child: Column(
-            children: [
-              Text(context.tr('plan_reclaimed_label'), style: AppTextStyles.label),
-              const SizedBox(height: AppSpacing.xs),
-              TweenAnimationBuilder<int>(
-                tween: IntTween(begin: 0, end: plan.estimatedHoursReclaimedPerWeek),
-                duration: const Duration(milliseconds: 1200),
-                curve: Curves.easeOutCubic,
-                builder: (context, value, _) => Text(
-                  context.tr('plan_reclaimed_value', {'h': '$value'}),
-                  style: AppTextStyles.statNumber.copyWith(color: AppColors.primaryInk),
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(context.tr('plan_reclaimed_caption'), style: AppTextStyles.caption),
-            ],
-          ),
-        ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95), curve: Curves.easeOutBack),
+        _ReclaimedTimeCard(hours: plan.estimatedHoursReclaimedPerWeek)
+            .animate()
+            .fadeIn(duration: 400.ms)
+            .scale(begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack, duration: 600.ms),
         const SizedBox(height: AppSpacing.md),
-        CustomCardContainer(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-          child: Column(
-            children: [
-              for (var i = 0; i < rows.length; i++) ...[
-                if (i > 0) const Divider(height: 1),
-                rows[i].animate(delay: (150 + i * 120).ms).fadeIn().slideX(begin: context.flipX(0.06)),
-              ],
-            ],
-          ),
-        ),
+        _PlanTicket(plan: plan, name: name)
+            .animate(delay: 250.ms)
+            .fadeIn(duration: 400.ms)
+            .slideY(begin: 0.12, curve: Curves.easeOutCubic, duration: 600.ms),
       ],
     );
   }
 }
 
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.emoji, required this.label, required this.value, this.trailing});
+/// Sky gradient card: "7 hours every week" counting up, with soft rings.
+class _ReclaimedTimeCard extends StatelessWidget {
+  const _ReclaimedTimeCard({required this.hours});
+
+  final int hours;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: AppRadii.cardAll,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF9FD8F6), Color(0xFF4FA3E0)],
+          ),
+          borderRadius: AppRadii.cardAll,
+          boxShadow: AppShadows.primaryGlow(strength: 0.6),
+        ),
+        child: Stack(
+          children: [
+            // Decorative clock rings drifting slowly.
+            for (final (index, size) in const [150.0, 220.0].indexed)
+              PositionedDirectional(
+                end: -size / 3,
+                top: -size / 3,
+                child:
+                    Container(
+                          width: size,
+                          height: size,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withValues(alpha: 0.18), width: 14),
+                          ),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true), delay: (index * 500).ms)
+                        .scaleXY(begin: 0.95, end: 1.05, duration: 2400.ms, curve: Curves.easeInOut),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
+                    ),
+                    child: const Icon(Icons.hourglass_top_rounded, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          context.tr('plan_reclaimed_label'),
+                          style: AppTextStyles.label.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                        ),
+                        const SizedBox(height: 4),
+                        TweenAnimationBuilder<int>(
+                          tween: IntTween(begin: 0, end: hours),
+                          duration: const Duration(milliseconds: 1400),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) => Text(
+                            context.tr('plan_reclaimed_value', {'h': '$value'}),
+                            style: AppTextStyles.statNumber.copyWith(color: Colors.white, fontSize: 36),
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          context.tr('plan_reclaimed_caption'),
+                          style: AppTextStyles.bodyStrong.copyWith(color: Colors.white, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The plan as a membership ticket: header with the user's name, a
+/// perforated tear line, then days · meals · apps · bonus.
+class _PlanTicket extends StatelessWidget {
+  const _PlanTicket({required this.plan, required this.name});
+
+  final UserPlanModel plan;
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    final schedule = plan.schedule;
+    final apps = plan.blockedApps;
+    final sections = <Widget>[
+      _TicketSection(
+        emoji: '📅',
+        label: context.tr('plan_row_days'),
+        child: _WeekDots(schedule: schedule),
+      ),
+      _TicketSection(
+        emoji: '🍽️',
+        label: context.tr('plan_row_meals'),
+        child: _MealChips(schedule: schedule),
+      ),
+      _TicketSection(
+        emoji: '🔒',
+        label: context.tr('plan_row_apps'),
+        child: apps.isEmpty
+            ? Text(context.tr('plan_apps_system_picked'), style: AppTextStyles.bodyStrong.copyWith(fontSize: 14))
+            : AppIconsWrapWidget(apps: apps, size: 32, maxIcons: 7, spacing: 6),
+      ),
+      _TicketSection(
+        emoji: '🎁',
+        label: context.tr('plan_row_bonus'),
+        child: Text(context.tr('plan_bonus_value'), style: AppTextStyles.bodyStrong.copyWith(fontSize: 14)),
+      ),
+    ];
+
+    return CustomCardContainer(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
+            child: Row(
+              children: [
+                const SizedBox.square(dimension: 38, child: CustomPaint(painter: _TicketMarkPainter())),
+                const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(context.tr('plan_ticket_title'), style: AppTextStyles.titleSmall),
+                      Text(
+                        name.isEmpty ? context.tr('plan_ticket_subtitle_generic') : name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyles.caption.copyWith(color: AppColors.primaryInk, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: const BoxDecoration(color: AppColors.successSoft, borderRadius: AppRadii.pillAll),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified_rounded, size: 14, color: AppColors.success),
+                      const SizedBox(width: 4),
+                      Text(
+                        context.tr('plan_ticket_ready'),
+                        style: AppTextStyles.label.copyWith(color: AppColors.success, letterSpacing: 0),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const _PerforatedDivider(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.xs, AppSpacing.md, AppSpacing.sm),
+            child: Column(
+              children: [
+                for (final (index, section) in sections.indexed)
+                  section
+                      .animate(delay: (450 + index * 140).ms)
+                      .fadeIn(duration: 320.ms)
+                      .slideX(begin: context.flipX(0.08), curve: Curves.easeOutCubic),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TicketSection extends StatelessWidget {
+  const _TicketSection({required this.emoji, required this.label, required this.child});
 
   final String emoji;
   final String label;
-  final String value;
-  final Widget? trailing;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs + 2),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 20)),
+          Container(
+            width: 34,
+            height: 34,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(10)),
+            child: Text(emoji, style: const TextStyle(fontSize: 17)),
+          ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label.toUpperCase(), style: AppTextStyles.label.copyWith(fontSize: 10.5)),
-                const SizedBox(height: 3),
-                Text(value, style: AppTextStyles.bodyStrong.copyWith(fontSize: 14)),
+                Text(label, style: AppTextStyles.label.copyWith(fontSize: 11)),
+                const SizedBox(height: 5),
+                child,
               ],
             ),
           ),
-          if (trailing != null) ...[const SizedBox(width: AppSpacing.xs), trailing!],
         ],
       ),
     );
   }
+}
+
+/// The week as seven letters; active days are sky-filled.
+class _WeekDots extends StatelessWidget {
+  const _WeekDots({required this.schedule});
+
+  final WeeklyLockScheduleModel schedule;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 5,
+      runSpacing: 5,
+      children: [
+        for (final (index, weekday) in WeeklyLockScheduleModel.weekdays.indexed)
+          Container(
+                width: 28,
+                height: 28,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: schedule.dayPlan(weekday).isActive ? AppGradients.primaryButton : null,
+                  color: schedule.dayPlan(weekday).isActive ? null : AppColors.divider.withValues(alpha: 0.6),
+                ),
+                child: Text(
+                  context.tr(AppFunctions.weekdayShortKey(weekday)),
+                  style: AppTextStyles.label.copyWith(
+                    letterSpacing: 0,
+                    color: schedule.dayPlan(weekday).isActive ? AppColors.onPrimary : AppColors.inkMuted,
+                  ),
+                ),
+              )
+              .animate(delay: (600 + index * 50).ms)
+              .scaleXY(begin: 0.4, curve: Curves.easeOutBack, duration: 380.ms)
+              .fadeIn(duration: 200.ms),
+      ],
+    );
+  }
+}
+
+/// Meals with their lock times as chips (or a "custom per day" line).
+class _MealChips extends StatelessWidget {
+  const _MealChips({required this.schedule});
+
+  final WeeklyLockScheduleModel schedule;
+
+  static String _emoji(MealType type) => switch (type) {
+    MealType.breakfast => '🥐',
+    MealType.lunch => '🥗',
+    MealType.dinner => '🍝',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    if (!schedule.hasActiveDays) return Text('—', style: AppTextStyles.bodyStrong);
+    if (!schedule.isUniformAcrossActiveDays) {
+      return Text(
+        context.tr('plan_meals_custom', {'count': '${schedule.weeklyMealCount}'}),
+        style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+      );
+    }
+    final meals = schedule.dayPlan(schedule.activeWeekdays.first).meals;
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final meal in meals)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: AppRadii.pillAll,
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_emoji(meal.type), style: const TextStyle(fontSize: 14)),
+                const SizedBox(width: 5),
+                Text(
+                  '${context.tr(meal.type.translationKey)} · '
+                  '${AppFunctions.formatMinutesOfDay(context, meal.minutesOfDay)}',
+                  style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// Ticket tear line: notches on both edges + a dashed line.
+class _PerforatedDivider extends StatelessWidget {
+  const _PerforatedDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(height: 20, child: CustomPaint(painter: _PerforationPainter()));
+  }
+}
+
+class _PerforationPainter extends CustomPainter {
+  const _PerforationPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final y = size.height / 2;
+    final notch = Paint()..color = const Color(0xFFEAF4FB);
+    canvas
+      ..drawCircle(Offset(0, y), 10, notch)
+      ..drawCircle(Offset(size.width, y), 10, notch);
+    final dash = Paint()
+      ..color = AppColors.divider
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+    for (var x = 18.0; x < size.width - 18; x += 9) {
+      canvas.drawLine(Offset(x, y), Offset(x + 4, y), dash);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+/// Small Sinkly mark for the ticket header.
+class _TicketMarkPainter extends CustomPainter {
+  const _TicketMarkPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) => SinklyLogoMarkPainter().paint(canvas, size);
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
