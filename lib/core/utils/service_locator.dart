@@ -20,6 +20,7 @@ import '../../Features/Feature_05_Home/data/data_sources/home_local_data_source.
 import '../../Features/Feature_05_Home/data/repos/home_repo.dart';
 import '../../Features/Feature_05_Home/data/repos/home_repo_impl.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/app_blocking_platform_data_source.dart';
+import '../../Features/Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_photo_capture_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_photo_verification_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_session_local_data_source.dart';
@@ -52,15 +53,21 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<ApiService>(() => ApiService(Dio()))
     ..registerLazySingleton<ImagePicker>(ImagePicker.new)
     // ── Shared platform data sources (MOCKS) ─────────────────────────────
-    ..registerLazySingleton<DevicePermissionsDataSource>(MockDevicePermissionsDataSource.new)
+    ..registerLazySingleton<DevicePermissionsDataSource>(PlatformDevicePermissionsDataSource.new)
     ..registerLazySingleton<AppBlockingPlatformDataSource>(MockAppBlockingPlatformDataSource.new)
+    // REAL: Android device app list (MainActivity.kt) · iOS uses Apple's picker.
+    ..registerLazySingleton<InstalledAppsPlatformDataSource>(MethodChannelInstalledAppsDataSource.new)
     // ── Feature 01 · Auth ────────────────────────────────────────────────
     ..registerLazySingleton<AuthRemoteDataSource>(() => MockAuthRemoteDataSource(getIt()))
     ..registerLazySingleton<AuthRepo>(() => AuthRepoImpl(remoteDataSource: getIt(), storage: getIt()))
     // ── Feature 02 · Onboarding ──────────────────────────────────────────
     ..registerLazySingleton<OnboardingLocalDataSource>(() => OnboardingLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<OnboardingRepo>(
-      () => OnboardingRepoImpl(localDataSource: getIt(), permissionsDataSource: getIt()),
+      () => OnboardingRepoImpl(
+        localDataSource: getIt(),
+        permissionsDataSource: getIt(),
+        installedAppsDataSource: getIt(),
+      ),
     )
     // ── Feature 03 · Feedback ────────────────────────────────────────────
     ..registerLazySingleton<FeedbackLocalDataSource>(() => FeedbackLocalDataSourceImpl(getIt()))
@@ -86,7 +93,8 @@ Future<void> setupServiceLocator() async {
     // ── Feature 07 · Lock Schedule ───────────────────────────────────────
     ..registerLazySingleton<LockScheduleLocalDataSource>(() => LockScheduleLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<LockScheduleRepo>(
-      () => LockScheduleRepoImpl(localDataSource: getIt(), blockingDataSource: getIt()),
+      () =>
+          LockScheduleRepoImpl(localDataSource: getIt(), blockingDataSource: getIt(), installedAppsDataSource: getIt()),
     )
     // ── Feature 08 · Progress ────────────────────────────────────────────
     ..registerLazySingleton<ProgressLocalDataSource>(() => ProgressLocalDataSourceImpl(getIt()))

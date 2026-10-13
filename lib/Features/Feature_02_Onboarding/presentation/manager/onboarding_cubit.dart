@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/shared_core_models.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../data/models/onboarding_user_preferences_model.dart';
+import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../data/repos/onboarding_repo.dart';
 
 part 'onboarding_state.dart';
@@ -14,7 +15,9 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   OnboardingCubit({required OnboardingRepo repo, required LocaleController localeController})
     : _repo = repo,
       _localeController = localeController,
-      super(_initialState(repo, localeController));
+      super(_initialState(repo, localeController)) {
+    _loadInstalledApps(); // early, so screen 9 opens instantly
+  }
 
   final OnboardingRepo _repo;
   final LocaleController _localeController;
@@ -27,6 +30,24 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     final draft = repo.restoreDraft(languageCode: languageCode);
     final safeIndex = draft.stepIndex.clamp(0, OnboardingStep.values.length - 1);
     return OnboardingState(currentStep: OnboardingStep.values[safeIndex], preferences: draft.preferences);
+  }
+
+  AppPickerMode get appPickerMode => _repo.appPickerMode;
+
+  Future<void> _loadInstalledApps() async {
+    final apps = await _repo.loadInstalledApps();
+    if (isClosed) return;
+    // Default picks (TikTok, Instagram…) only stay if they're installed.
+    final selection = apps.isEmpty
+        ? state.preferences.appSelection
+        : state.preferences.appSelection.keepInstalled(apps);
+    emit(
+      state.copyWith(
+        installedApps: apps,
+        appsLoaded: true,
+        preferences: state.preferences.copyWith(appSelection: selection),
+      ),
+    );
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────
@@ -86,10 +107,14 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   void syncAllDaysWith(int weekday) => _updateSchedule(state.preferences.schedule.syncAllActiveDaysWith(weekday));
 
   // ── Screen 9: Apps ─────────────────────────────────────────────────────
+  void updateAppSelection(AppSelectionModel selection) =>
+      _updatePreferences(state.preferences.copyWith(appSelection: selection));
+
+  /// Quick toggle of a single app by id (tests / shortcuts).
   void toggleBlockedApp(String appId) {
-    final current = state.preferences.blockedAppIds;
-    final updated = current.contains(appId) ? current.where((id) => id != appId).toList() : [...current, appId];
-    _updatePreferences(state.preferences.copyWith(blockedAppIds: List.unmodifiable(updated)));
+    final app = BlockableAppModel.byId(appId);
+    if (app == null) return;
+    updateAppSelection(state.preferences.appSelection.toggleApp(app, state.installedApps));
   }
 
   // ── Screen 10: Screen Time permission ──────────────────────────────────

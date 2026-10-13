@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/models/shared_core_models.dart';
 import '../../data/models/lock_schedule_draft_model.dart';
+import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../data/repos/lock_schedule_repo.dart';
 
 part 'lock_schedule_state.dart';
@@ -17,6 +18,14 @@ class LockScheduleCubit extends Cubit<LockScheduleState> {
       final keepDraft = state.hasUnsavedChanges;
       emit(state.copyWith(savedPlan: plan, draft: keepDraft ? state.draft : LockScheduleDraftModel.fromPlan(plan)));
     });
+    _loadInstalledApps();
+  }
+
+  AppPickerMode get appPickerMode => _repo.appPickerMode;
+
+  Future<void> _loadInstalledApps() async {
+    final apps = await _repo.loadInstalledApps();
+    if (!isClosed) emit(state.copyWith(installedApps: apps, appsLoaded: true));
   }
 
   final LockScheduleRepo _repo;
@@ -42,16 +51,12 @@ class LockScheduleCubit extends Cubit<LockScheduleState> {
       _updateSchedule(state.draft.schedule.withMealTime(weekdays, index, minutes));
   void syncAllDaysWith(int weekday) => _updateSchedule(state.draft.schedule.syncAllActiveDaysWith(weekday));
 
-  void toggleApp(String appId) {
-    final ids = state.draft.blockedAppIds;
-    final updated = ids.contains(appId) ? ids.where((id) => id != appId).toList() : [...ids, appId];
-    emit(
-      state.copyWith(
-        draft: state.draft.copyWith(blockedAppIds: List.unmodifiable(updated)),
-        saveStatus: LockScheduleSaveStatus.idle,
-      ),
-    );
-  }
+  void updateAppSelection(AppSelectionModel selection) => emit(
+    state.copyWith(
+      draft: state.draft.copyWith(appSelection: selection),
+      saveStatus: LockScheduleSaveStatus.idle,
+    ),
+  );
 
   void discardChanges() => emit(state.copyWith(draft: LockScheduleDraftModel.fromPlan(state.savedPlan)));
 

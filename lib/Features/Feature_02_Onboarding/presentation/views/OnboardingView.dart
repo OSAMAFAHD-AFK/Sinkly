@@ -200,10 +200,7 @@ class _OnboardingTopBar extends StatelessWidget {
               ),
             ),
             // Short centered track (reference layout); keep Sinkly bar styling.
-            SizedBox(
-              width: 148,
-              child: OnboardingProgressBarWidget(progress: progress),
-            ),
+            SizedBox(width: 148, child: OnboardingProgressBarWidget(progress: progress)),
           ],
         ),
       ),

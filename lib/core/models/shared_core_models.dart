@@ -1,6 +1,8 @@
 /// Barrel file: import this single file to access every shared core model.
 library;
 
+export 'app_category_model.dart';
+export 'app_selection_model.dart';
 export 'blockable_app_model.dart';
 export 'lock_status_model.dart';
 export 'sink_cleaning_session_model.dart';

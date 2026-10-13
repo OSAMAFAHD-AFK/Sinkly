@@ -6,6 +6,7 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/blockable_app_icon_widget.dart';
+import '../../../../../core/widgets/app_icons_wrap_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 
@@ -125,11 +126,7 @@ class _LockedContent extends StatelessWidget {
           const SizedBox(height: 4),
           Text(context.tr('home_locked_subtitle'), style: AppTextStyles.body.copyWith(fontSize: 14)),
           const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [for (final app in blockedApps) BlockableAppIconWidget(app: app, size: 38, showLockBadge: true)],
-          ),
+          AppIconsWrapWidget(apps: blockedApps, size: 38, showLockBadge: true),
           const SizedBox(height: AppSpacing.lg),
           CustomPrimaryButton(
             label: context.tr('home_start_sprint_cta', {'duration': context.minutes(sprintMinutes)}),

@@ -142,7 +142,9 @@ class WeeklyLockScheduleModel extends Equatable {
 
   WeeklyLockScheduleModel toggleDay(int weekday) {
     final current = dayPlan(weekday);
-    return _replace({weekday: current.copyWith(isActive: !current.isActive)});
+    // A newly added day inherits the meals of the other days (consistent week).
+    final template = !current.isActive && hasActiveDays ? dayPlan(activeWeekdays.first).meals : null;
+    return _replace({weekday: current.copyWith(isActive: !current.isActive, meals: template)});
   }
 
   /// Multi-select preset behaviour: tapping a selected preset clears its days,

@@ -77,14 +77,12 @@ class _PlanSummaryCard extends StatelessWidget {
   String _daysLabel(BuildContext context) {
     final schedule = plan.schedule;
     final active = schedule.activeWeekdays;
+    // No "workdays/weekends" wording: work weeks differ from country to country.
     if (active.length == 7) return context.tr('preset_all_week');
-    if (active.length == 5 && schedule.isPresetSelected(DaySelectionPreset.workdays)) {
-      return context.tr('preset_workdays');
+    if (active.length <= 3) {
+      return active.map((weekday) => context.tr(AppFunctions.weekdayLongKey(weekday))).join(context.isRtl ? '، ' : ', ');
     }
-    if (active.length == 2 && schedule.isPresetSelected(DaySelectionPreset.weekends)) {
-      return context.tr('preset_weekends');
-    }
-    return active.map((weekday) => context.tr(AppFunctions.weekdayShortKey(weekday))).join(', ');
+    return context.tr('plan_days_count', {'count': '${active.length}'});
   }
 
   String _mealsLabel(BuildContext context) {

@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../utils/app_constants.dart';
+import 'app_selection_model.dart';
 import 'blockable_app_model.dart';
 import 'weekly_lock_schedule_model.dart';
 
@@ -12,6 +13,8 @@ class UserPlanModel extends Equatable {
     required this.languageCode,
     required this.schedule,
     required this.blockedAppIds,
+    this.blockedCategoryIds = const [],
+    this.systemPickerCount = 0,
     this.dishPileupSeverityId,
     this.mainStruggleId,
     this.onboardingCompleted = false,
@@ -25,6 +28,12 @@ class UserPlanModel extends Equatable {
   final String languageCode;
   final WeeklyLockScheduleModel schedule;
   final List<String> blockedAppIds;
+
+  /// Whole categories locked (also covers apps installed later).
+  final List<String> blockedCategoryIds;
+
+  /// iOS: apps + categories chosen in Apple's picker (tokens stored natively).
+  final int systemPickerCount;
 
   /// Quiz answers kept for personalization & analytics segmentation.
   final String? dishPileupSeverityId;
@@ -49,7 +58,18 @@ class UserPlanModel extends Equatable {
     blockedAppIds: BlockableAppModel.defaultSelectedIds,
   );
 
-  List<BlockableAppModel> get blockedApps => BlockableAppModel.fromIds(blockedAppIds);
+  /// Every app covered by the selection (explicit apps + selected categories).
+  List<BlockableAppModel> get blockedApps =>
+      BlockableAppModel.resolveSelection(appIds: blockedAppIds, categoryIds: blockedCategoryIds);
+
+  AppSelectionModel get appSelection =>
+      AppSelectionModel(appIds: blockedAppIds, categoryIds: blockedCategoryIds, systemPickerCount: systemPickerCount);
+
+  UserPlanModel withAppSelection(AppSelectionModel selection) => copyWith(
+    blockedAppIds: selection.appIds,
+    blockedCategoryIds: selection.categoryIds,
+    systemPickerCount: selection.systemPickerCount,
+  );
 
   String get displayName => userName.trim().isEmpty ? '' : userName.trim();
 
@@ -63,6 +83,8 @@ class UserPlanModel extends Equatable {
     String? languageCode,
     WeeklyLockScheduleModel? schedule,
     List<String>? blockedAppIds,
+    List<String>? blockedCategoryIds,
+    int? systemPickerCount,
     String? dishPileupSeverityId,
     String? mainStruggleId,
     bool? onboardingCompleted,
@@ -75,6 +97,8 @@ class UserPlanModel extends Equatable {
     languageCode: languageCode ?? this.languageCode,
     schedule: schedule ?? this.schedule,
     blockedAppIds: blockedAppIds ?? this.blockedAppIds,
+    blockedCategoryIds: blockedCategoryIds ?? this.blockedCategoryIds,
+    systemPickerCount: systemPickerCount ?? this.systemPickerCount,
     dishPileupSeverityId: dishPileupSeverityId ?? this.dishPileupSeverityId,
     mainStruggleId: mainStruggleId ?? this.mainStruggleId,
     onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
@@ -93,6 +117,10 @@ class UserPlanModel extends Equatable {
         ? WeeklyLockScheduleModel.fromJson(Map<String, dynamic>.from(json['schedule'] as Map))
         : WeeklyLockScheduleModel.initial(),
     blockedAppIds: List<String>.unmodifiable((json['blockedAppIds'] as List?)?.cast<String>() ?? const <String>[]),
+    blockedCategoryIds: List<String>.unmodifiable(
+      (json['blockedCategoryIds'] as List?)?.cast<String>() ?? const <String>[],
+    ),
+    systemPickerCount: (json['systemPickerCount'] as num?)?.toInt() ?? 0,
     dishPileupSeverityId: json['dishPileupSeverityId'] as String?,
     mainStruggleId: json['mainStruggleId'] as String?,
     onboardingCompleted: json['onboardingCompleted'] as bool? ?? false,
@@ -110,6 +138,8 @@ class UserPlanModel extends Equatable {
     'languageCode': languageCode,
     'schedule': schedule.toJson(),
     'blockedAppIds': blockedAppIds,
+    'blockedCategoryIds': blockedCategoryIds,
+    'systemPickerCount': systemPickerCount,
     'dishPileupSeverityId': dishPileupSeverityId,
     'mainStruggleId': mainStruggleId,
     'onboardingCompleted': onboardingCompleted,
@@ -125,6 +155,8 @@ class UserPlanModel extends Equatable {
     languageCode,
     schedule,
     blockedAppIds,
+    blockedCategoryIds,
+    systemPickerCount,
     dishPileupSeverityId,
     mainStruggleId,
     onboardingCompleted,

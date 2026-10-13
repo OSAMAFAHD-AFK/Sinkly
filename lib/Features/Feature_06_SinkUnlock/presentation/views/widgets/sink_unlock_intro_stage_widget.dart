@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/blockable_app_icon_widget.dart';
+import '../../../../../core/widgets/app_icons_wrap_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/glass_icon_orb_widget.dart';
@@ -49,14 +49,11 @@ class SinkUnlockIntroStageWidget extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
               if (state.blockedApps.isNotEmpty)
-                Wrap(
+                AppIconsWrapWidget(
+                  apps: state.blockedApps,
+                  showLockBadge: isLocked,
                   alignment: WrapAlignment.center,
                   spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    for (final app in state.blockedApps)
-                      BlockableAppIconWidget(app: app, size: 46, showLockBadge: isLocked),
-                  ],
                 ).animate().fadeIn(delay: 150.ms).scaleXY(begin: 0.9, curve: Curves.easeOutBack),
               const SizedBox(height: AppSpacing.lg),
               CustomCardContainer(

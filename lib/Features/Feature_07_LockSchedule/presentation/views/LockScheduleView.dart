@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/models/blockable_app_model.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
@@ -11,11 +10,12 @@ import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/custom_secondary_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/section_header_widget.dart';
-import '../../../Feature_02_Onboarding/presentation/views/widgets/distracting_app_selection_tile_widget.dart';
+import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../../Feature_02_Onboarding/presentation/views/widgets/schedule_meal_picker_matrix_widget.dart';
 import '../manager/lock_schedule_cubit.dart';
 import 'widgets/unsaved_changes_bar_widget.dart';
-import '../../../../core/widgets/adaptive_tile_grid_widget.dart';
+import '../../../../core/widgets/app_category_picker_widget.dart';
+import '../../../../core/widgets/system_app_picker_widget.dart';
 
 /// Plan tab: edit lock days, meals, times and locked apps after onboarding.
 class LockScheduleView extends StatelessWidget {
@@ -58,24 +58,26 @@ class LockScheduleView extends StatelessWidget {
                 ScheduleMealPickerMatrixWidget(
                   schedule: draft.schedule,
                   onDayToggled: cubit.toggleDay,
-                  onPresetToggled: cubit.togglePreset,
                   onMealCountChanged: cubit.setMealCount,
                   onMealTimeChanged: cubit.setMealTime,
                   onSyncAllDaysWith: cubit.syncAllDaysWith,
                 ),
                 const SizedBox(height: AppSpacing.xl),
-                SectionHeaderWidget(title: context.tr('plan_apps_section'), leadingNumber: 4),
-                AdaptiveTileGridWidget(
-                  itemCount: BlockableAppModel.catalog.length,
-                  itemBuilder: (context, index) {
-                    final app = BlockableAppModel.catalog[index];
-                    return DistractingAppSelectionTileWidget(
-                      app: app,
-                      isSelected: draft.blockedAppIds.contains(app.id),
-                      onTap: () => cubit.toggleApp(app.id),
-                    );
-                  },
-                ),
+                SectionHeaderWidget(title: context.tr('plan_apps_section')),
+                // Same Screen-Time-style picker as onboarding (Apple's on iOS).
+                if (cubit.appPickerMode == AppPickerMode.systemPicker)
+                  SystemAppPickerWidget(
+                    height: MediaQuery.sizeOf(context).height * 0.55,
+                    onCountChanged: (picked) =>
+                        cubit.updateAppSelection(draft.appSelection.copyWith(systemPickerCount: picked)),
+                  )
+                else
+                  AppCategoryPickerWidget(
+                    apps: state.installedApps,
+                    selection: draft.appSelection,
+                    isLoading: !state.appsLoaded,
+                    onChanged: cubit.updateAppSelection,
+                  ),
                 const SizedBox(height: AppSpacing.xl),
                 SectionHeaderWidget(title: context.tr('plan_try_section')),
                 CustomSecondaryButton(

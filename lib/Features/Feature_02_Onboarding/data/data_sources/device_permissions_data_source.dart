@@ -1,6 +1,12 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+
 /// OS permission requests needed by Sinkly.
 ///
-/// MOCK for now. Native wiring plan (via a MethodChannel / Pigeon plugin):
+/// iOS Screen Time is REAL (`sinkly/screen_time`, AppDelegate.swift); the
+/// rest is still mocked. Native wiring plan (via a MethodChannel / Pigeon plugin):
 ///  * iOS  — `AuthorizationCenter.shared.requestAuthorization(for: .individual)`
 ///           from the FamilyControls framework (requires the Family Controls
 ///           entitlement), then ManagedSettings/DeviceActivity for locking.
@@ -10,6 +16,25 @@
 abstract class DevicePermissionsDataSource {
   Future<bool> requestScreenTimeAuthorization();
   Future<bool> requestNotificationPermission();
+}
+
+/// iOS: real Screen Time authorization (FamilyControls). Everything else
+/// still goes through [MockDevicePermissionsDataSource] until wired.
+class PlatformDevicePermissionsDataSource extends MockDevicePermissionsDataSource {
+  static const MethodChannel _screenTime = MethodChannel('sinkly/screen_time');
+
+  @override
+  Future<bool> requestScreenTimeAuthorization() async {
+    if (kIsWeb || !Platform.isIOS) return super.requestScreenTimeAuthorization();
+    try {
+      return await _screenTime.invokeMethod<bool>('requestAuthorization') ?? false;
+    } on PlatformException catch (error) {
+      debugPrint('[ScreenTime] $error');
+      return false;
+    } on MissingPluginException {
+      return super.requestScreenTimeAuthorization();
+    }
+  }
 }
 
 class MockDevicePermissionsDataSource implements DevicePermissionsDataSource {

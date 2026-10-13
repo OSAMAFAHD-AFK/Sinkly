@@ -6,7 +6,7 @@ import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
-import '../../../../../core/widgets/blockable_app_icon_widget.dart';
+import '../../../../../core/widgets/app_icons_wrap_widget.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
@@ -63,16 +63,14 @@ class UnlockRewardCelebrationWidget extends StatelessWidget {
                     style: AppTextStyles.body,
                   ).animate(delay: 300.ms).fadeIn(),
                   const SizedBox(height: AppSpacing.lg),
-                  Wrap(
+                  AppIconsWrapWidget(
+                    apps: unlockedApps,
+                    size: 50,
                     alignment: WrapAlignment.center,
                     spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      for (final (index, app) in unlockedApps.indexed)
-                        BlockableAppIconWidget(app: app, size: 50)
-                            .animate(delay: (400 + index * 90).ms)
-                            .scaleXY(begin: 0, end: 1, duration: 500.ms, curve: Curves.elasticOut),
-                    ],
+                    iconBuilder: (index, icon) => icon
+                        .animate(delay: (400 + index * 90).ms)
+                        .scaleXY(begin: 0, end: 1, duration: 500.ms, curve: Curves.elasticOut),
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   Row(

@@ -10,8 +10,8 @@ import '../../manager/onboarding_cubit.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
 /// Screen 10 — Screen Time permission. Shows a friendly preview of the
-/// system dialog and the 3 trust promises before triggering the real
-/// request (mocked in [DevicePermissionsDataSource] for now).
+/// system dialog before triggering the real request (mocked in
+/// [DevicePermissionsDataSource] for now).
 class ScreenTimePermissionStepWidget extends StatelessWidget {
   const ScreenTimePermissionStepWidget({super.key});
 
@@ -38,6 +38,7 @@ class ScreenTimePermissionStepWidget extends StatelessWidget {
         illustration: _PermissionDialogPreview(isGranted: isGranted),
         title: context.tr('permission_title'),
         description: context.tr('permission_description'),
+        headerAlign: TextAlign.center,
         ctaLabel: justGranted
             ? context.tr('permission_granted')
             : alreadyGranted
@@ -49,13 +50,6 @@ class ScreenTimePermissionStepWidget extends StatelessWidget {
             : alreadyGranted
             ? cubit.nextStep
             : cubit.requestScreenTimePermission,
-        body: Column(
-          children: [
-            _TrustPromiseRow(icon: Icons.lock_rounded, text: context.tr('permission_promise_only_selected')),
-            _TrustPromiseRow(icon: Icons.shield_rounded, text: context.tr('permission_promise_private')),
-            _TrustPromiseRow(icon: Icons.bolt_rounded, text: context.tr('permission_promise_instant_unlock')),
-          ],
-        ),
         secondaryAction: isGranted
             ? null
             : TextButton(
@@ -78,7 +72,7 @@ class _PermissionDialogPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      padding: const EdgeInsets.fromLTRB(0, AppSpacing.sm, 0, AppSpacing.xl),
       child: SizedBox(
         width: 280,
         child: Stack(
@@ -167,32 +161,6 @@ class _PermissionDialogPreview extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _TrustPromiseRow extends StatelessWidget {
-  const _TrustPromiseRow({required this.icon, required this.text});
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-      child: Row(
-        children: [
-          Container(
-            width: 38,
-            height: 38,
-            decoration: const BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
-            child: Icon(icon, color: AppColors.primaryInk, size: 19),
-          ),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(text, style: AppTextStyles.bodyStrong.copyWith(fontSize: 14))),
-        ],
       ),
     );
   }

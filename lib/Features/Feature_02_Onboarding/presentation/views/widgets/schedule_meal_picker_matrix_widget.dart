@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/models/weekly_lock_schedule_model.dart';
 import '../../../../../core/utils/app_localizations.dart';
@@ -7,22 +8,23 @@ import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/animated_pressable_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/glass_bottom_sheet.dart';
-import '../../../../../core/widgets/section_header_widget.dart';
 
-/// The unified "days × meals × lock times" matrix (screen 8, reused by the
-/// Plan tab). Purely presentational: all data comes in, all edits go out
-/// through callbacks, so it works with any cubit.
+/// Weekly lock schedule editor (onboarding screen 8, reused by the Plan tab).
+/// Purely presentational: data in, edits out through callbacks.
 ///
-///  1. Days     — preset chips (multi-select) + 7 toggleable day bubbles
-///  2. Meals    — 1 / 2 / 3 meals segmented cards
-///  3. Times    — meal end-time tiles opening an iOS wheel picker
-///  "Customize each day" switches edits from all active days to one day.
+/// Two calm cards instead of a form:
+///  1. **Days** — seven day capsules, all on by default (work weeks differ
+///     per country, so no presets): tap a day to turn it off/on. Each
+///     capsule shows its meals as dots.
+///  2. **Meals** — sliding 1 / 2 / 3 selector, a morning→night ribbon showing
+///     exactly when the apps lock, and one row per meal with its time.
+/// Plus a live "locks per week" summary. "Different meals on some days"
+/// switches meal edits from all days to one chosen day.
 class ScheduleMealPickerMatrixWidget extends StatefulWidget {
   const ScheduleMealPickerMatrixWidget({
     super.key,
     required this.schedule,
     required this.onDayToggled,
-    required this.onPresetToggled,
     required this.onMealCountChanged,
     required this.onMealTimeChanged,
     required this.onSyncAllDaysWith,
@@ -30,7 +32,6 @@ class ScheduleMealPickerMatrixWidget extends StatefulWidget {
 
   final WeeklyLockScheduleModel schedule;
   final ValueChanged<int> onDayToggled;
-  final ValueChanged<DaySelectionPreset> onPresetToggled;
   final void Function(List<int> weekdays, int mealCount) onMealCountChanged;
   final void Function(List<int> weekdays, int mealIndex, int minutesOfDay) onMealTimeChanged;
   final ValueChanged<int> onSyncAllDaysWith;
@@ -45,7 +46,7 @@ class _ScheduleMealPickerMatrixWidgetState extends State<ScheduleMealPickerMatri
 
   WeeklyLockScheduleModel get _schedule => widget.schedule;
 
-  /// The day whose meals are displayed in sections 2 & 3.
+  /// The day whose meals are shown in the meals card.
   int? get _referenceWeekday {
     final active = _schedule.activeWeekdays;
     if (active.isEmpty) return null;
@@ -53,7 +54,7 @@ class _ScheduleMealPickerMatrixWidgetState extends State<ScheduleMealPickerMatri
     return active.first;
   }
 
-  /// Days affected by edits in sections 2 & 3.
+  /// Days affected by meal edits.
   List<int> get _targetWeekdays {
     final reference = _referenceWeekday;
     if (reference == null) return const [];
@@ -63,7 +64,7 @@ class _ScheduleMealPickerMatrixWidgetState extends State<ScheduleMealPickerMatri
   void _setCustomizePerDay(bool value) {
     AppFunctions.selectionHaptic();
     final reference = _referenceWeekday;
-    // Leaving per-day mode: make all days match the day being viewed.
+    // Back to "same every day": every day copies the day being viewed.
     if (!value && reference != null && !_schedule.isUniformAcrossActiveDays) widget.onSyncAllDaysWith(reference);
     setState(() {
       _customizePerDay = value;
@@ -88,330 +89,545 @@ class _ScheduleMealPickerMatrixWidgetState extends State<ScheduleMealPickerMatri
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // ── 1. Days ────────────────────────────────────────────────────
-        SectionHeaderWidget(title: context.tr('schedule_section_days'), leadingNumber: 1),
-        CustomCardContainer(
-          padding: const EdgeInsets.all(AppSpacing.md),
-          child: Column(
-            children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                child: Row(
-                  children: [
-                    for (final preset in DaySelectionPreset.values) ...[
-                      _PresetChip(
-                        label: context.tr(preset.translationKey),
-                        isSelected: _schedule.isPresetSelected(preset),
-                        onTap: () => widget.onPresetToggled(preset),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  // Bubbles shrink on narrow phones (iPhone SE) to avoid overflow.
-                  final bubbleSize = ((constraints.maxWidth - 6 * 4) / 7).clamp(30.0, 42.0);
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      for (final weekday in WeeklyLockScheduleModel.weekdays)
-                        _DayBubble(
-                          size: bubbleSize,
-                          label: context.tr(AppFunctions.weekdayShortKey(weekday)),
-                          isActive: _schedule.dayPlan(weekday).isActive,
-                          onTap: () => widget.onDayToggled(weekday),
-                        ),
-                    ],
-                  );
-                },
-              ),
-            ],
+        // ── Days ───────────────────────────────────────────────────────
+        _SectionCard(
+          icon: Icons.calendar_month_rounded,
+          title: context.tr('schedule_section_days'),
+          subtitle: context.tr('schedule_days_subtitle'),
+          child: _WeekStrip(
+            schedule: _schedule,
+            highlightedWeekday: _customizePerDay ? reference : null,
+            onDayTapped: widget.onDayToggled,
           ),
         ),
-        const SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: AppSpacing.md),
 
-        if (referencePlan == null)
-          _EmptyDaysHint(message: context.tr('schedule_pick_one_day'))
-        else ...[
-          // Per-day customization toggle + day tabs.
-          _CustomizeEachDayRow(value: _customizePerDay, onChanged: _setCustomizePerDay),
-          AnimatedSize(
-            duration: AppDurations.medium,
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: _customizePerDay
-                ? Padding(
-                    padding: const EdgeInsets.only(top: AppSpacing.sm),
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      child: Row(
-                        children: [
-                          for (final weekday in _schedule.activeWeekdays) ...[
-                            _PresetChip(
-                              label: context.tr(AppFunctions.weekdayLongKey(weekday)),
-                              isSelected: weekday == reference,
-                              onTap: () => setState(() => _editingWeekday = weekday),
-                            ),
-                            const SizedBox(width: AppSpacing.xs),
-                          ],
-                        ],
+        // ── Meals ──────────────────────────────────────────────────────
+        AnimatedSwitcher(
+          duration: AppDurations.medium,
+          switchInCurve: Curves.easeOutCubic,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SizeTransition(sizeFactor: animation, alignment: Alignment.topCenter, child: child),
+          ),
+          child: referencePlan == null
+              ? _EmptyDaysHint(key: const ValueKey('empty'), message: context.tr('schedule_pick_one_day'))
+              : _SectionCard(
+                  key: const ValueKey('meals'),
+                  icon: Icons.restaurant_rounded,
+                  title: context.tr('schedule_section_meals'),
+                  subtitle: context.tr('schedule_meals_subtitle'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Which day is being edited (only in per-day mode).
+                      AnimatedSize(
+                        duration: AppDurations.medium,
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: _customizePerDay
+                            ? Padding(
+                                padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                                child: _DayTabs(
+                                  weekdays: _schedule.activeWeekdays,
+                                  selected: reference!,
+                                  onSelected: (weekday) {
+                                    AppFunctions.selectionHaptic();
+                                    setState(() => _editingWeekday = weekday);
+                                  },
+                                ),
+                              )
+                            : const SizedBox(width: double.infinity),
                       ),
-                    ),
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // ── 2. Meals per day ─────────────────────────────────────────
-          SectionHeaderWidget(title: context.tr('schedule_section_meals'), leadingNumber: 2),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(start: 4, bottom: AppSpacing.sm),
-            child: Text(context.tr('schedule_meals_question'), style: AppTextStyles.caption),
-          ),
-          Row(
-            children: [
-              for (final count in const [1, 2, 3]) ...[
-                Expanded(
-                  child: _MealCountCard(
-                    count: count,
-                    emoji: switch (count) {
-                      1 => '🍲',
-                      2 => '🥐',
-                      _ => '🍳',
-                    },
-                    label: context.tr('schedule_meal_count_$count'),
-                    isSelected: referencePlan.meals.length == count,
-                    onTap: () => widget.onMealCountChanged(_targetWeekdays, count),
+                      _SlidingSegmentedControl(
+                        labels: [
+                          for (final count in const [1, 2, 3]) context.tr('schedule_meals_option_$count'),
+                        ],
+                        selectedIndex: referencePlan.meals.length - 1,
+                        onSelected: (index) => widget.onMealCountChanged(_targetWeekdays, index + 1),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      _DayRibbon(meals: referencePlan.meals),
+                      const SizedBox(height: AppSpacing.md),
+                      AnimatedSize(
+                        duration: AppDurations.medium,
+                        curve: Curves.easeOutCubic,
+                        alignment: Alignment.topCenter,
+                        child: Column(
+                          children: [
+                            for (final (index, meal) in referencePlan.meals.indexed)
+                              _MealRow(
+                                    key: ValueKey('${reference}_${meal.type.name}'),
+                                    meal: meal,
+                                    timeLabel: AppFunctions.formatMinutesOfDay(context, meal.minutesOfDay),
+                                    isLast: index == referencePlan.meals.length - 1,
+                                    onTap: () => _pickTime(index, meal),
+                                  )
+                                  .animate(key: ValueKey('${reference}_${meal.type.name}_in'))
+                                  .fadeIn(duration: 260.ms, delay: (60 * index).ms)
+                                  .slideY(begin: 0.25, curve: Curves.easeOutCubic),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      _CustomizeToggle(value: _customizePerDay, onChanged: _setCustomizePerDay),
+                    ],
                   ),
                 ),
-                if (count != 3) const SizedBox(width: AppSpacing.xs),
-              ],
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-
-          // ── 3. Lock times ────────────────────────────────────────────
-          SectionHeaderWidget(title: context.tr('schedule_section_times'), leadingNumber: 3),
-          Padding(
-            padding: const EdgeInsetsDirectional.only(start: 4, bottom: AppSpacing.sm),
-            child: Text(context.tr('schedule_times_question'), style: AppTextStyles.caption),
-          ),
-          CustomCardContainer(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-            child: Column(
-              children: [
-                for (final (index, meal) in referencePlan.meals.indexed) ...[
-                  if (index > 0) const Divider(height: 1),
-                  _MealTimeRow(
-                    meal: meal,
-                    timeLabel: AppFunctions.formatMinutesOfDay(context, meal.minutesOfDay),
-                    onTap: () => _pickTime(index, meal),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _WeeklyLocksSummary(text: context.tr('schedule_weekly_locks', {'count': '${_schedule.weeklyMealCount}'})),
-        ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (referencePlan != null) _WeeklyLocksSummary(count: _schedule.weeklyMealCount),
       ],
     );
   }
 }
 
-class _PresetChip extends StatelessWidget {
-  const _PresetChip({required this.label, required this.isSelected, required this.onTap});
+// ── Building blocks ─────────────────────────────────────────────────────
 
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
+class _SectionCard extends StatelessWidget {
+  const _SectionCard({super.key, required this.icon, required this.title, required this.subtitle, required this.child});
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedPressableWidget(
-      onTap: onTap,
-      semanticLabel: label,
-      child: AnimatedContainer(
-        duration: AppDurations.medium,
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          gradient: isSelected ? AppGradients.ink : null,
-          color: isSelected ? null : Colors.white,
-          borderRadius: AppRadii.pillAll,
-          border: Border.all(color: isSelected ? Colors.transparent : AppColors.divider),
-          boxShadow: isSelected ? AppShadows.soft : const [],
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isSelected) ...[
-              const Icon(Icons.check_rounded, size: 15, color: Colors.white),
-              const SizedBox(width: 5),
-            ],
-            Text(
-              label,
-              style: AppTextStyles.caption.copyWith(
-                color: isSelected ? Colors.white : AppColors.ink,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DayBubble extends StatelessWidget {
-  const _DayBubble({required this.size, required this.label, required this.isActive, required this.onTap});
-
-  final double size;
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedPressableWidget(
-      onTap: onTap,
-      pressedScale: 0.88,
-      semanticLabel: label,
-      child: AnimatedContainer(
-        duration: AppDurations.medium,
-        curve: Curves.easeOutBack,
-        width: size,
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: isActive ? AppGradients.primaryButton : null,
-          color: isActive ? null : Colors.white,
-          border: Border.all(color: isActive ? Colors.white : AppColors.divider, width: 1.5),
-          boxShadow: isActive ? AppShadows.primaryGlow(strength: 0.55) : const [],
-        ),
-        child: Text(
-          label,
-          style: AppTextStyles.label.copyWith(
-            color: isActive ? AppColors.onPrimary : AppColors.inkMuted,
-            fontSize: 12,
-            letterSpacing: 0,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CustomizeEachDayRow extends StatelessWidget {
-  const _CustomizeEachDayRow({required this.value, required this.onChanged});
-
-  final bool value;
-  final ValueChanged<bool> onChanged;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
     return CustomCardContainer(
-      padding: const EdgeInsetsDirectional.fromSTEB(AppSpacing.md, 6, 8, 6),
-      borderRadius: AppRadii.pillAll,
-      shadows: AppShadows.soft,
-      child: Row(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Icon(Icons.tune_rounded, size: 20, color: AppColors.primaryInk),
-          const SizedBox(width: AppSpacing.xs),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.tr('schedule_customize_each_day'), style: AppTextStyles.bodyStrong.copyWith(fontSize: 14)),
-                Text(
-                  context.tr('schedule_customize_each_day_hint'),
-                  style: AppTextStyles.caption.copyWith(fontSize: 11.5),
+          Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(11)),
+                child: Icon(icon, size: 20, color: AppColors.primaryInk),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTextStyles.titleSmall),
+                    Text(subtitle, style: AppTextStyles.caption.copyWith(fontSize: 12.5)),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Switch.adaptive(value: value, onChanged: onChanged, activeTrackColor: AppColors.primary),
+          const SizedBox(height: AppSpacing.md),
+          child,
         ],
       ),
     );
   }
 }
 
-class _MealCountCard extends StatelessWidget {
-  const _MealCountCard({
-    required this.count,
-    required this.emoji,
+/// iOS-style segmented control with a sliding white thumb.
+/// [selectedIndex] null = nothing matches (thumb fades out).
+class _SlidingSegmentedControl extends StatelessWidget {
+  const _SlidingSegmentedControl({required this.labels, required this.selectedIndex, required this.onSelected});
+
+  final List<String> labels;
+  final int? selectedIndex;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final textScale = MediaQuery.textScalerOf(context).scale(1);
+    final height = 40 + 8 * (textScale - 1).clamp(0.0, 1.0) * 2;
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(color: AppColors.primarySoft.withValues(alpha: 0.7), borderRadius: AppRadii.pillAll),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final segment = constraints.maxWidth / labels.length;
+          final index = selectedIndex ?? 0;
+          return SizedBox(
+            height: height,
+            child: Stack(
+              children: [
+                AnimatedPositionedDirectional(
+                  duration: const Duration(milliseconds: 320),
+                  curve: Curves.easeOutCubic,
+                  start: segment * index,
+                  top: 0,
+                  bottom: 0,
+                  width: segment,
+                  child: AnimatedOpacity(
+                    opacity: selectedIndex == null ? 0 : 1,
+                    duration: AppDurations.fast,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: AppRadii.pillAll,
+                        boxShadow: AppShadows.soft,
+                      ),
+                    ),
+                  ),
+                ),
+                Row(
+                  children: [
+                    for (final (i, label) in labels.indexed)
+                      Expanded(
+                        child: Semantics(
+                          button: true,
+                          selected: i == selectedIndex,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (i == selectedIndex) return;
+                              AppFunctions.selectionHaptic();
+                              onSelected(i);
+                            },
+                            child: Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4),
+                                child: AnimatedDefaultTextStyle(
+                                  duration: AppDurations.fast,
+                                  style: AppTextStyles.bodyStrong.copyWith(
+                                    fontSize: 13.5,
+                                    color: i == selectedIndex ? AppColors.ink : AppColors.inkMuted,
+                                  ),
+                                  child: Text(
+                                    label,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+/// Seven tall day capsules; active ones are sky-filled and show one dot per
+/// meal, so the whole week reads at a glance.
+class _WeekStrip extends StatelessWidget {
+  const _WeekStrip({required this.schedule, required this.highlightedWeekday, required this.onDayTapped});
+
+  final WeeklyLockScheduleModel schedule;
+  final int? highlightedWeekday;
+  final ValueChanged<int> onDayTapped;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const gap = 6.0;
+        final width = ((constraints.maxWidth - gap * 6) / 7).clamp(30.0, 52.0);
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (final weekday in WeeklyLockScheduleModel.weekdays)
+              _DayCapsule(
+                width: width,
+                label: context.tr(AppFunctions.weekdayShortKey(weekday)),
+                semanticLabel: context.tr(AppFunctions.weekdayLongKey(weekday)),
+                plan: schedule.dayPlan(weekday),
+                isHighlighted: weekday == highlightedWeekday,
+                onTap: () {
+                  AppFunctions.selectionHaptic();
+                  onDayTapped(weekday);
+                },
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _DayCapsule extends StatelessWidget {
+  const _DayCapsule({
+    required this.width,
     required this.label,
-    required this.isSelected,
+    required this.semanticLabel,
+    required this.plan,
+    required this.isHighlighted,
     required this.onTap,
   });
 
-  final int count;
-  final String emoji;
+  final double width;
   final String label;
-  final bool isSelected;
+  final String semanticLabel;
+  final DayMealPlanModel plan;
+  final bool isHighlighted;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedPressableWidget(
-      onTap: onTap,
-      semanticLabel: label,
-      child: AnimatedContainer(
-        duration: AppDurations.medium,
-        curve: Curves.easeOutCubic,
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primarySoft : AppColors.glassFillStrong,
-          borderRadius: AppRadii.mediumAll,
-          border: Border.all(color: isSelected ? AppColors.primary : Colors.white, width: isSelected ? 1.8 : 1.2),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    spreadRadius: -6,
-                    offset: const Offset(0, 10),
+    final active = plan.isActive;
+    return Semantics(
+      button: true,
+      toggled: active,
+      label: semanticLabel,
+      child: AnimatedPressableWidget(
+        onTap: onTap,
+        pressedScale: 0.9,
+        semanticLabel: semanticLabel,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.easeOutCubic,
+          width: width,
+          height: width * 1.45,
+          decoration: BoxDecoration(
+            gradient: active
+                ? const LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xFFA8DDF8), Color(0xFF5AAFE6)],
+                  )
+                : null,
+            color: active ? null : Colors.white,
+            borderRadius: BorderRadius.circular(width / 2),
+            border: Border.all(
+              color: isHighlighted ? AppColors.ink : (active ? Colors.white : AppColors.divider),
+              width: isHighlighted ? 2 : 1.4,
+            ),
+            boxShadow: active ? AppShadows.primaryGlow(strength: 0.45) : const [],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              FittedBox(
+                child: Text(
+                  label,
+                  style: AppTextStyles.bodyStrong.copyWith(
+                    fontSize: 14,
+                    color: active ? Colors.white : AppColors.inkMuted,
                   ),
-                ]
-              : AppShadows.soft,
-        ),
-        child: Column(
-          children: [
-            Text(emoji, style: const TextStyle(fontSize: 24)),
-            const SizedBox(height: 6),
-            Text(
-              '$count',
-              style: AppTextStyles.title.copyWith(color: isSelected ? AppColors.primaryInk : AppColors.ink),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              style: AppTextStyles.caption.copyWith(fontSize: 11, height: 1.25),
-            ),
-          ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              // One dot per meal (fades when the day is off).
+              AnimatedOpacity(
+                opacity: active ? 1 : 0,
+                duration: AppDurations.fast,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (var i = 0; i < plan.meals.length; i++)
+                      Container(
+                        width: 5,
+                        height: 5,
+                        margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _MealTimeRow extends StatelessWidget {
-  const _MealTimeRow({required this.meal, required this.timeLabel, required this.onTap});
+/// Active days as chips — picks which day the meals card edits.
+class _DayTabs extends StatelessWidget {
+  const _DayTabs({required this.weekdays, required this.selected, required this.onSelected});
+
+  final List<int> weekdays;
+  final int selected;
+  final ValueChanged<int> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          context.tr('schedule_editing_day', {'day': context.tr(AppFunctions.weekdayLongKey(selected))}),
+          style: AppTextStyles.caption.copyWith(color: AppColors.primaryInk, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              for (final weekday in weekdays) ...[
+                AnimatedPressableWidget(
+                  onTap: () => onSelected(weekday),
+                  semanticLabel: context.tr(AppFunctions.weekdayLongKey(weekday)),
+                  child: AnimatedContainer(
+                    duration: AppDurations.fast,
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: weekday == selected ? AppGradients.ink : null,
+                      color: weekday == selected ? null : Colors.white,
+                      borderRadius: AppRadii.pillAll,
+                      border: Border.all(color: weekday == selected ? Colors.transparent : AppColors.divider),
+                    ),
+                    child: Text(
+                      context.tr(AppFunctions.weekdayLongKey(weekday)),
+                      style: AppTextStyles.caption.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: weekday == selected ? Colors.white : AppColors.ink,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Morning → night ribbon with a marker at every meal end: shows at a glance
+/// *when* the apps lock. Markers glide when a time changes.
+class _DayRibbon extends StatelessWidget {
+  const _DayRibbon({required this.meals});
+
+  final List<MealSlotModel> meals;
+
+  static const int _startMinutes = 6 * 60;
+  static const int _endMinutes = 24 * 60;
+
+  static double _fraction(int minutes) => ((minutes - _startMinutes) / (_endMinutes - _startMinutes)).clamp(0.0, 1.0);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 58,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              const marker = 30.0;
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // The day itself.
+                  PositionedDirectional(
+                    start: 0,
+                    end: 0,
+                    bottom: 8,
+                    height: 10,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        borderRadius: AppRadii.pillAll,
+                        gradient: LinearGradient(
+                          begin: AlignmentDirectional.centerStart,
+                          end: AlignmentDirectional.centerEnd,
+                          colors: [Color(0xFFFFE29A), Color(0xFFA7DBF7), Color(0xFF9A93F0), Color(0xFF3D4B7A)],
+                          stops: [0, 0.4, 0.75, 1],
+                        ),
+                      ),
+                    ),
+                  ),
+                  for (final meal in meals)
+                    TweenAnimationBuilder<double>(
+                      key: ValueKey(meal.type),
+                      tween: Tween(end: _fraction(meal.minutesOfDay)),
+                      duration: const Duration(milliseconds: 520),
+                      curve: Curves.easeOutBack,
+                      builder: (context, fraction, child) => PositionedDirectional(
+                        start: (fraction * width - marker / 2).clamp(-4.0, width - marker + 4),
+                        top: 0,
+                        bottom: 0,
+                        width: marker,
+                        child: child!,
+                      ),
+                      child: _RibbonMarker(emoji: _MealRow.emojiFor(meal.type), size: marker)
+                          .animate(key: ValueKey('marker_${meal.type.name}'))
+                          .scaleXY(begin: 0.3, curve: Curves.easeOutBack, duration: 380.ms)
+                          .fadeIn(duration: 200.ms),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            const Icon(Icons.wb_sunny_rounded, size: 14, color: Color(0xFFF2B33D)),
+            const SizedBox(width: 4),
+            Text(AppFunctions.formatMinutesOfDay(context, _startMinutes), style: AppTextStyles.label),
+            Expanded(
+              child: Text(
+                context.tr('schedule_ribbon_hint'),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                style: AppTextStyles.caption.copyWith(fontSize: 11.5),
+              ),
+            ),
+            Text(AppFunctions.formatMinutesOfDay(context, 0), style: AppTextStyles.label),
+            const SizedBox(width: 4),
+            const Icon(Icons.nightlight_round, size: 14, color: Color(0xFF6B6FD8)),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _RibbonMarker extends StatelessWidget {
+  const _RibbonMarker({required this.emoji, required this.size});
+
+  final String emoji;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: AppShadows.soft),
+          child: Text(emoji, style: TextStyle(fontSize: size * 0.5)),
+        ),
+        Expanded(child: Container(width: 2, color: AppColors.inkMuted.withValues(alpha: 0.35))),
+        Container(
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: AppColors.ink,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: const Icon(Icons.lock_rounded, size: 8, color: Colors.white),
+        ),
+        const SizedBox(height: 5),
+      ],
+    );
+  }
+}
+
+class _MealRow extends StatelessWidget {
+  const _MealRow({super.key, required this.meal, required this.timeLabel, required this.isLast, required this.onTap});
 
   final MealSlotModel meal;
   final String timeLabel;
+  final bool isLast;
   final VoidCallback onTap;
 
-  static String _emojiFor(MealType type) => switch (type) {
+  static String emojiFor(MealType type) => switch (type) {
     MealType.breakfast => '🥐',
     MealType.lunch => '🥗',
     MealType.dinner => '🍝',
@@ -419,38 +635,67 @@ class _MealTimeRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final name = context.tr(meal.type.translationKey);
     return AnimatedPressableWidget(
       onTap: onTap,
       pressedScale: 0.98,
-      semanticLabel: context.tr(meal.type.translationKey),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      semanticLabel: '$name, $timeLabel',
+      child: Container(
+        margin: EdgeInsets.only(bottom: isLast ? 0 : AppSpacing.xs),
+        padding: const EdgeInsetsDirectional.fromSTEB(10, 10, 10, 10),
+        decoration: BoxDecoration(
+          color: AppColors.primarySoft.withValues(alpha: 0.45),
+          borderRadius: AppRadii.mediumAll,
+        ),
         child: Row(
           children: [
-            Text(_emojiFor(meal.type), style: const TextStyle(fontSize: 22)),
+            Container(
+              width: 42,
+              height: 42,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+              child: Text(emojiFor(meal.type), style: const TextStyle(fontSize: 21)),
+            ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(context.tr(meal.type.translationKey), style: AppTextStyles.bodyStrong),
+                  Text(name, style: AppTextStyles.bodyStrong),
                   Text(context.tr('schedule_lock_starts_after'), style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
                 ],
               ),
             ),
+            const SizedBox(width: AppSpacing.xs),
+            // The time is the button: big, clear, obviously tappable.
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
+                color: Colors.white,
                 borderRadius: AppRadii.pillAll,
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+                border: Border.all(color: AppColors.primary.withValues(alpha: 0.55)),
+                boxShadow: AppShadows.soft,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_clock_rounded, size: 16, color: AppColors.primaryInk),
-                  const SizedBox(width: 6),
-                  Text(timeLabel, style: AppTextStyles.bodyStrong.copyWith(color: AppColors.primaryInk, fontSize: 14)),
+                  AnimatedSwitcher(
+                    duration: AppDurations.fast,
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween(begin: const Offset(0, 0.4), end: Offset.zero).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: Text(
+                      timeLabel,
+                      key: ValueKey(timeLabel),
+                      style: AppTextStyles.bodyStrong.copyWith(color: AppColors.primaryInk, fontSize: 14),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(Icons.expand_more_rounded, size: 18, color: AppColors.primaryInk),
                 ],
               ),
             ),
@@ -461,27 +706,42 @@ class _MealTimeRow extends StatelessWidget {
   }
 }
 
-class _WeeklyLocksSummary extends StatelessWidget {
-  const _WeeklyLocksSummary({required this.text});
+class _CustomizeToggle extends StatelessWidget {
+  const _CustomizeToggle({required this.value, required this.onChanged});
 
-  final String text;
+  final bool value;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: AnimatedSwitcher(
-        duration: AppDurations.medium,
-        child: Container(
-          key: ValueKey(text),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.8),
-            borderRadius: AppRadii.pillAll,
-            boxShadow: AppShadows.soft,
-          ),
-          child: Text(
-            text,
-            style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+    return Semantics(
+      toggled: value,
+      child: InkWell(
+        borderRadius: AppRadii.mediumAll,
+        onTap: () => onChanged(!value),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Row(
+            children: [
+              const Icon(Icons.tune_rounded, size: 20, color: AppColors.inkMuted),
+              const SizedBox(width: AppSpacing.xs),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.tr('schedule_customize_each_day'),
+                      style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+                    ),
+                    Text(
+                      context.tr('schedule_customize_each_day_hint'),
+                      style: AppTextStyles.caption.copyWith(fontSize: 11.5),
+                    ),
+                  ],
+                ),
+              ),
+              Switch.adaptive(value: value, onChanged: onChanged, activeTrackColor: AppColors.primary),
+            ],
           ),
         ),
       ),
@@ -489,8 +749,55 @@ class _WeeklyLocksSummary extends StatelessWidget {
   }
 }
 
+/// "14 · smart locks per week" — the number rolls when the plan changes.
+class _WeeklyLocksSummary extends StatelessWidget {
+  const _WeeklyLocksSummary({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xF2FFFFFF), Color(0xE6E8F6FD)]),
+        borderRadius: AppRadii.mediumAll,
+        border: Border.all(color: Colors.white, width: 1.2),
+        boxShadow: AppShadows.soft,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: const BoxDecoration(gradient: AppGradients.ink, shape: BoxShape.circle),
+            child: const Icon(Icons.lock_rounded, size: 18, color: Colors.white),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: count.toDouble()),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) => Text(
+              '${value.round()}',
+              style: AppTextStyles.title.copyWith(color: AppColors.primaryInk, fontSize: 24),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.xs),
+          Expanded(
+            child: Text(
+              context.tr('schedule_locks_per_week_label'),
+              style: AppTextStyles.bodyStrong.copyWith(fontSize: 14),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _EmptyDaysHint extends StatelessWidget {
-  const _EmptyDaysHint({required this.message});
+  const _EmptyDaysHint({super.key, required this.message});
 
   final String message;
 

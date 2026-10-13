@@ -175,6 +175,22 @@ void main() {
                       if (!onboarding.state.preferences.blockedAppIds.contains(id)) onboarding.toggleBlockedApp(id);
                     }
                   });
+                  // Expand two categories + search, like a real user would.
+                  for (final category in ['app_category_social', 'app_category_games']) {
+                    final label = find.text(
+                      AppLocalizations.of(tester.element(find.byType(OnboardingView))).translate(category),
+                    );
+                    if (label.evaluate().isNotEmpty) {
+                      await tester.ensureVisible(label.first);
+                      await tester.tap(label.first, warnIfMissed: false);
+                    }
+                  }
+                  await visit('onboarding/9-apps(expanded)', () async {}, ms: 900);
+                  await tester.enterText(find.byType(TextField).first, 'ta');
+                  await visit('onboarding/9-apps(search)', () async {}, ms: 700);
+                  await tester.enterText(find.byType(TextField).first, '');
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  await settle(400);
                 case OnboardingStep.personalCommitment:
                   // Mid-hold: heart grows while the finger is down.
                   final hold = await tester.startGesture(

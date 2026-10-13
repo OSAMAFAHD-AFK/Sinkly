@@ -31,7 +31,6 @@ class MealScheduleSetupStepWidget extends StatelessWidget {
       body: ScheduleMealPickerMatrixWidget(
         schedule: schedule,
         onDayToggled: cubit.toggleScheduleDay,
-        onPresetToggled: cubit.toggleDayPreset,
         onMealCountChanged: cubit.setMealCount,
         onMealTimeChanged: cubit.setMealTime,
         onSyncAllDaysWith: cubit.syncAllDaysWith,

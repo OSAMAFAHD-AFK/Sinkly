@@ -9,7 +9,7 @@ class OnboardingUserPreferencesModel extends Equatable {
     required this.languageCode,
     required this.userName,
     required this.schedule,
-    required this.blockedAppIds,
+    required this.appSelection,
     this.dishPileupSeverityId,
     this.mainStruggleId,
     this.screenTimePermissionGranted = false,
@@ -22,7 +22,10 @@ class OnboardingUserPreferencesModel extends Equatable {
   final String? dishPileupSeverityId;
   final String? mainStruggleId;
   final WeeklyLockScheduleModel schedule;
-  final List<String> blockedAppIds;
+
+  /// Apps / categories to lock (screen 9).
+  final AppSelectionModel appSelection;
+  List<String> get blockedAppIds => appSelection.appIds;
   final bool screenTimePermissionGranted;
   final bool notificationsAccepted;
   final bool commitmentConfirmed;
@@ -31,7 +34,7 @@ class OnboardingUserPreferencesModel extends Equatable {
     languageCode: languageCode,
     userName: '',
     schedule: WeeklyLockScheduleModel.initial(),
-    blockedAppIds: BlockableAppModel.defaultSelectedIds,
+    appSelection: const AppSelectionModel(appIds: BlockableAppModel.defaultSelectedIds),
   );
 
   /// Resume a partially completed onboarding from the saved plan.
@@ -42,7 +45,7 @@ class OnboardingUserPreferencesModel extends Equatable {
         dishPileupSeverityId: plan.dishPileupSeverityId,
         mainStruggleId: plan.mainStruggleId,
         schedule: plan.schedule,
-        blockedAppIds: plan.blockedAppIds,
+        appSelection: plan.appSelection,
         screenTimePermissionGranted: plan.screenTimePermissionGranted,
         notificationsAccepted: plan.notificationsEnabled,
       );
@@ -53,7 +56,9 @@ class OnboardingUserPreferencesModel extends Equatable {
     userName: trimmedName,
     languageCode: languageCode,
     schedule: schedule,
-    blockedAppIds: blockedAppIds,
+    blockedAppIds: appSelection.appIds,
+    blockedCategoryIds: appSelection.categoryIds,
+    systemPickerCount: appSelection.systemPickerCount,
     dishPileupSeverityId: dishPileupSeverityId,
     mainStruggleId: mainStruggleId,
     onboardingCompleted: onboardingCompleted,
@@ -67,7 +72,7 @@ class OnboardingUserPreferencesModel extends Equatable {
     String? dishPileupSeverityId,
     String? mainStruggleId,
     WeeklyLockScheduleModel? schedule,
-    List<String>? blockedAppIds,
+    AppSelectionModel? appSelection,
     bool? screenTimePermissionGranted,
     bool? notificationsAccepted,
     bool? commitmentConfirmed,
@@ -77,7 +82,7 @@ class OnboardingUserPreferencesModel extends Equatable {
     dishPileupSeverityId: dishPileupSeverityId ?? this.dishPileupSeverityId,
     mainStruggleId: mainStruggleId ?? this.mainStruggleId,
     schedule: schedule ?? this.schedule,
-    blockedAppIds: blockedAppIds ?? this.blockedAppIds,
+    appSelection: appSelection ?? this.appSelection,
     screenTimePermissionGranted: screenTimePermissionGranted ?? this.screenTimePermissionGranted,
     notificationsAccepted: notificationsAccepted ?? this.notificationsAccepted,
     commitmentConfirmed: commitmentConfirmed ?? this.commitmentConfirmed,
@@ -90,7 +95,7 @@ class OnboardingUserPreferencesModel extends Equatable {
     dishPileupSeverityId,
     mainStruggleId,
     schedule,
-    blockedAppIds,
+    appSelection,
     screenTimePermissionGranted,
     notificationsAccepted,
     commitmentConfirmed,
