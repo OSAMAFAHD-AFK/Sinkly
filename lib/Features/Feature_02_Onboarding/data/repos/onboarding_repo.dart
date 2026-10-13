@@ -4,6 +4,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/models/shared_core_models.dart';
 import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../models/onboarding_user_preferences_model.dart';
+import '../models/screen_time_access_model.dart';
 
 /// Contract used by [OnboardingCubit]. Swap the implementation (e.g. one that
 /// also syncs to Firestore, or one driven by Adapty Onboarding Builder)
@@ -14,7 +15,11 @@ abstract class OnboardingRepo {
 
   Future<Either<Failure, Unit>> saveDraft(OnboardingUserPreferencesModel preferences, int stepIndex);
 
-  Future<Either<Failure, bool>> requestScreenTimePermission();
+  /// Screen Time status without prompting (iOS popup / Android Settings toggles).
+  Future<Either<Failure, ScreenTimeAccessModel>> getScreenTimeAccess();
+
+  /// Asks for the next missing Screen Time grant and returns the new status.
+  Future<Either<Failure, ScreenTimeAccessModel>> requestScreenTimePermission();
 
   Future<Either<Failure, bool>> requestNotificationPermission();
 

@@ -6,6 +6,7 @@ import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform
 import '../data_sources/device_permissions_data_source.dart';
 import '../data_sources/onboarding_local_data_source.dart';
 import '../models/onboarding_user_preferences_model.dart';
+import '../models/screen_time_access_model.dart';
 import 'onboarding_repo.dart';
 
 class OnboardingRepoImpl implements OnboardingRepo {
@@ -53,9 +54,18 @@ class OnboardingRepoImpl implements OnboardingRepo {
   }
 
   @override
-  Future<Either<Failure, bool>> requestScreenTimePermission() async {
+  Future<Either<Failure, ScreenTimeAccessModel>> getScreenTimeAccess() async {
     try {
-      return right(await _permissions.requestScreenTimeAuthorization());
+      return right(await _permissions.getScreenTimeAccess());
+    } catch (error) {
+      return left(PermissionFailure('error_permission_screen_time', debugMessage: '$error'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, ScreenTimeAccessModel>> requestScreenTimePermission() async {
+    try {
+      return right(await _permissions.requestScreenTimeAccess());
     } catch (error) {
       return left(PermissionFailure('error_permission_screen_time', debugMessage: '$error'));
     }

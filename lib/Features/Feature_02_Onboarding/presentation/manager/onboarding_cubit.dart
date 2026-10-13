@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/models/shared_core_models.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../data/models/onboarding_user_preferences_model.dart';
+import '../../data/models/screen_time_access_model.dart';
 import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../data/repos/onboarding_repo.dart';
 
@@ -106,7 +107,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
 
   void syncAllDaysWith(int weekday) => _updateSchedule(state.preferences.schedule.syncAllActiveDaysWith(weekday));
 
-  // ── Screen 9: Apps ─────────────────────────────────────────────────────
+  // ── Screen 10: Apps ────────────────────────────────────────────────────
   void updateAppSelection(AppSelectionModel selection) =>
       _updatePreferences(state.preferences.copyWith(appSelection: selection));
 
@@ -117,19 +118,54 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     updateAppSelection(state.preferences.appSelection.toggleApp(app, state.installedApps));
   }
 
-  // ── Screen 10: Screen Time permission ──────────────────────────────────
+  // ── Screen 9: Screen Time permission ───────────────────────────────────
+  /// Re-reads the OS status (on entering the step and whenever the app comes
+  /// back to the foreground, e.g. from Android Settings). A grant that
+  /// happened outside a pending request still completes the step.
+  Future<void> refreshScreenTimeAccess() async {
+    final result = await _repo.getScreenTimeAccess();
+    if (isClosed) return;
+    result.fold((_) {}, (access) {
+      final previous = state.screenTimeAccess;
+      final justGranted = access.isGranted && previous != null && !previous.isGranted;
+      _applyScreenTimeAccess(access, status: justGranted ? OnboardingRequestStatus.success : null);
+    });
+  }
+
+  /// iOS: shows Apple's popup · Android: opens the next Settings toggle.
   Future<void> requestScreenTimePermission() async {
+    if (state.permissionStatus == OnboardingRequestStatus.inProgress) return;
+    final before = state.screenTimeAccess;
     emit(state.copyWith(permissionStatus: OnboardingRequestStatus.inProgress, clearFailure: true));
     final result = await _repo.requestScreenTimePermission();
+    if (isClosed) return;
     result.fold(
       (failure) =>
           emit(state.copyWith(permissionStatus: OnboardingRequestStatus.failure, failureKey: failure.messageKey)),
-      (granted) => emit(
-        state.copyWith(
-          permissionStatus: granted ? OnboardingRequestStatus.success : OnboardingRequestStatus.failure,
-          failureKey: granted ? null : 'error_permission_screen_time',
-          preferences: state.preferences.copyWith(screenTimePermissionGranted: granted),
-        ),
+      (access) {
+        if (access.isGranted) {
+          // Already marked by a concurrent refresh → keep a single success.
+          return _applyScreenTimeAccess(access, status: OnboardingRequestStatus.success);
+        }
+        // Android: one of two toggles done → idle, ready for the next one.
+        final madeProgress = access.grantedCount > (before?.grantedCount ?? 0);
+        _applyScreenTimeAccess(
+          access,
+          status: madeProgress ? OnboardingRequestStatus.idle : OnboardingRequestStatus.failure,
+          failureKey: madeProgress ? null : 'permission_not_granted_hint',
+        );
+      },
+    );
+  }
+
+  void _applyScreenTimeAccess(ScreenTimeAccessModel access, {OnboardingRequestStatus? status, String? failureKey}) {
+    emit(
+      state.copyWith(
+        screenTimeAccess: access,
+        permissionStatus: status,
+        failureKey: failureKey,
+        clearFailure: failureKey == null && status != null,
+        preferences: state.preferences.copyWith(screenTimePermissionGranted: access.isGranted),
       ),
     );
   }
