@@ -110,6 +110,7 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
                               }),
                         highlight: widget.userName,
                         description: context.tr('paywall_subtitle'),
+                        textAlign: TextAlign.center,
                       ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
                       // Plans first: both prices visible without scrolling (clarity
                       // converts better and is what App Review expects).

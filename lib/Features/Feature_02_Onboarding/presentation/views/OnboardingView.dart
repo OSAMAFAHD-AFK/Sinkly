@@ -96,7 +96,8 @@ class _OnboardingViewState extends State<OnboardingView> {
     return PopScope(
       canPop: currentStep.isFirst,
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop && !currentStep.isPaywall) context.read<OnboardingCubit>().previousStep();
+        // No going back once the commitment is sealed (screens without chrome).
+        if (!didPop && currentStep.showsChrome) context.read<OnboardingCubit>().previousStep();
       },
       child: BlocListener<OnboardingCubit, OnboardingState>(
         listenWhen: (previous, current) => previous.currentStep != current.currentStep,

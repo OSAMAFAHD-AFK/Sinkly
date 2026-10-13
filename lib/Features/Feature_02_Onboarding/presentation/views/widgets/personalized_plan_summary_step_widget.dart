@@ -34,6 +34,7 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
     final plan = preferences.toUserPlan(onboardingCompleted: false);
 
     final step = OnboardingStepScaffoldWidget(
+      headerAlign: TextAlign.center,
       title: _planReady ? context.tr('plan_ready_title', {'name': name}) : context.tr('plan_building_title'),
       highlight: name,
       ctaLabel: context.tr('plan_ready_cta'),

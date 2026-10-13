@@ -26,6 +26,7 @@ class TrialReminderAssuranceStepWidget extends StatelessWidget {
     const trialDays = AppConstants.freeTrialDays;
 
     return OnboardingStepScaffoldWidget(
+      headerAlign: TextAlign.center,
       title: context.tr('trial_reminder_title_short'),
       ctaLabel: context.tr('trial_reminder_cta'),
       isCtaLoading: isRequesting,

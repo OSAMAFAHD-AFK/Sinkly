@@ -21,8 +21,9 @@ enum OnboardingStep {
   bool get isFirst => index == 0;
   bool get isPaywall => this == OnboardingStep.paywall;
 
-  /// Steps that show the progress bar & back button.
-  bool get showsChrome => !isPaywall;
+  /// Steps that show the progress bar & back button: language … apps
+  /// selection. After that the funnel is "sealed": no bar, no back button.
+  bool get showsChrome => index <= OnboardingStep.distractingAppsSelection.index;
 }
 
 enum OnboardingRequestStatus { idle, inProgress, success, failure }
@@ -51,8 +52,12 @@ class OnboardingState extends Equatable {
   int get stepIndex => currentStep.index;
   static int get totalSteps => OnboardingStep.values.length;
 
-  /// 0 … 1 progress used by the top progress bar.
-  double get progress => (stepIndex + 1) / totalSteps;
+  /// Screens that show the progress bar (language … apps selection).
+  static int get barSteps => OnboardingStep.distractingAppsSelection.index + 1;
+
+  /// 0 … 1 progress used by the top progress bar: it fills completely on the
+  /// last screen that shows it (the apps-selection screen).
+  double get progress => ((stepIndex + 1) / barSteps).clamp(0.0, 1.0);
 
   bool get canContinueFromName => preferences.trimmedName.isNotEmpty;
 

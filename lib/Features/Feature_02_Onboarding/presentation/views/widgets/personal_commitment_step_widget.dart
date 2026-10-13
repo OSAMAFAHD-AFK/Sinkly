@@ -46,6 +46,7 @@ class _PersonalCommitmentStepWidgetState extends State<PersonalCommitmentStepWid
     return Stack(
       children: [
         OnboardingStepScaffoldWidget(
+          headerAlign: TextAlign.center,
           illustration: CommitmentHeartSceneWidget(holdProgress: _holdProgress, committed: _celebrate || isRevisit),
           title: context.tr('commitment_title', {'name': name}),
           highlight: name,
