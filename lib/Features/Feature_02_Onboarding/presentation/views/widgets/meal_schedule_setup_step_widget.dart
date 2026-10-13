@@ -15,7 +15,6 @@ class MealScheduleSetupStepWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<OnboardingCubit>();
-    final name = context.select((OnboardingCubit c) => c.state.preferences.trimmedName);
     final schedule = context.select((OnboardingCubit c) => c.state.preferences.schedule);
 
     return OnboardingStepScaffoldWidget(
@@ -23,9 +22,7 @@ class MealScheduleSetupStepWidget extends StatelessWidget {
         padding: EdgeInsets.only(bottom: AppSpacing.xs),
         child: AnimatedClockWidget(size: 76, secondsPerTurn: 6, showLockBadge: true),
       ),
-      title: context.tr('schedule_title', {'name': name}),
-      highlight: name,
-      description: context.tr('schedule_description'),
+      title: context.tr('schedule_title'),
       ctaLabel: context.tr('schedule_save_cta'),
       onCtaPressed: schedule.hasActiveDays ? cubit.nextStep : null,
       body: ScheduleMealPickerMatrixWidget(

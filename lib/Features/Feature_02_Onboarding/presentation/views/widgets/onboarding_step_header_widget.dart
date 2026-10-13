@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/utils/style.dart';
 
 /// Headline + supporting copy for each onboarding step.
-/// Aligned to the reading start by default (left in English, right in
-/// Arabic); only the language screen passes [TextAlign.center].
+/// Titles and subtitles are centered across the whole onboarding funnel.
 /// If [highlight] (usually the user's name) appears in the title it is
 /// painted in brand sky blue to make the message feel personal.
 class OnboardingStepHeaderWidget extends StatelessWidget {
@@ -13,7 +12,7 @@ class OnboardingStepHeaderWidget extends StatelessWidget {
     required this.title,
     this.description,
     this.highlight,
-    this.textAlign = TextAlign.start,
+    this.textAlign = TextAlign.center,
   });
 
   final String title;

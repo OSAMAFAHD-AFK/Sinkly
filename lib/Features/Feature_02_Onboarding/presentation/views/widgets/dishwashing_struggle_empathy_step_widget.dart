@@ -22,7 +22,6 @@ class DishwashingStruggleEmpathyStepWidget extends StatelessWidget {
     return OnboardingStepScaffoldWidget(
       illustration: StruggleReactionSceneWidget(selectedId: selectedId),
       title: context.tr('quiz_struggle_title'),
-      description: context.tr('quiz_struggle_description'),
       ctaLabel: context.tr('quiz_struggle_cta'),
       ctaIcon: Icons.auto_awesome_rounded,
       onCtaPressed: selectedId == null ? null : cubit.nextStep,

@@ -32,7 +32,6 @@ class DishPileupDiagnosisQuizStepWidget extends StatelessWidget {
         child: DishOverwhelmReactionSceneWidget(level: _levelFor(selectedId)),
       ),
       title: context.tr('quiz_pileup_title'),
-      description: context.tr('quiz_single_choice_hint'),
       ctaLabel: context.tr('continue'),
       onCtaPressed: selectedId == null ? null : cubit.nextStep,
       body: Column(
