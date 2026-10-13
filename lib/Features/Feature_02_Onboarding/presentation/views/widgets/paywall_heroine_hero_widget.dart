@@ -10,6 +10,7 @@ import '../../../../../core/utils/style.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'heroine_character_painter.dart';
 import 'heroine_character_widget.dart';
+import 'heroine_speech_bubble_widget.dart';
 import 'rising_emoji_particles_widget.dart';
 
 /// Paywall hero: the onboarding heroine acts as a friendly guide who SELLS
@@ -173,65 +174,16 @@ class _PaywallHeroineHeroWidgetState extends State<PaywallHeroineHeroWidget> {
             PositionedDirectional(
               end: 0,
               top: 6,
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 420),
-                switchInCurve: Curves.elasticOut,
-                switchOutCurve: Curves.easeIn,
-                transitionBuilder: (child, animation) => ScaleTransition(
-                  scale: animation,
-                  alignment: AlignmentDirectional.bottomStart.resolve(Directionality.of(context)),
-                  child: FadeTransition(opacity: animation, child: child),
-                ),
-                child: _SpeechBubble(
-                  key: ValueKey(bubbleKey),
-                  text: context.tr(bubbleKey, {'percent': '${annualSaving ?? ''}'}),
-                  highlight: warm,
-                ),
+              child: HeroineSpeechBubbleSwitcherWidget(
+                text: context.tr(bubbleKey, {'percent': '${annualSaving ?? ''}'}),
+                highlight: warm,
+                maxWidth: 158,
               ),
             ),
           ],
         ),
       ),
     );
-  }
-}
-
-class _SpeechBubble extends StatelessWidget {
-  const _SpeechBubble({super.key, required this.text, required this.highlight});
-
-  final String text;
-  final bool highlight;
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 158),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            decoration: BoxDecoration(
-              gradient: highlight ? AppGradients.primaryButton : null,
-              color: highlight ? null : Colors.white,
-              borderRadius: const BorderRadiusDirectional.only(
-                topStart: Radius.circular(20),
-                topEnd: Radius.circular(20),
-                bottomEnd: Radius.circular(20),
-                bottomStart: Radius.circular(4),
-              ),
-              border: Border.all(color: Colors.white, width: 1.5),
-              boxShadow: highlight ? AppShadows.primaryGlow(strength: 0.6) : AppShadows.floating,
-            ),
-            child: Text(
-              text,
-              style: AppTextStyles.bodyStrong.copyWith(
-                fontSize: 13.5,
-                height: 1.3,
-                color: highlight ? AppColors.onPrimary : AppColors.ink,
-              ),
-            ),
-          ),
-        )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .moveY(begin: 0, end: -4, duration: 1600.ms, curve: Curves.easeInOut);
   }
 }
 

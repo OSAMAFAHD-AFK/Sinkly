@@ -19,6 +19,10 @@ abstract final class AppConstants {
   /// (2 meals/day × 7 days × 30 min ≈ the 7 h/week promised in onboarding.)
   static const int minutesReclaimedPerClean = 30;
 
+  /// "Mom Points" earned for every clean sink (introduced on the Welcome
+  /// screen; the points system itself is part of the in-app phase).
+  static const int momPointsPerClean = 10;
+
   // ── Subscription / Adapty ─────────────────────────────────────────────
   static const int freeTrialDays = 3;
 

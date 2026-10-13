@@ -31,7 +31,7 @@ class PaywallPlanCardWidget extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
 
-  /// Overrides the default "SAVE X%" ribbon (e.g. "20% EXTRA OFF").
+  /// Overrides the default "SAVE X%" ribbon (e.g. "25% EXTRA OFF").
   final String? badgeText;
 
   static String titleKey(SubscriptionPeriod period) => switch (period) {

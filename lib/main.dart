@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-import 'Features/Feature_01_Auth/presentation/manager/auth_cubit.dart';
 import 'Features/Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'core/models/supported_language_model.dart';
 import 'core/utils/app_constants.dart';
@@ -43,7 +42,6 @@ class SinklyApp extends StatelessWidget {
       providers: [
         // App-wide state shared by several features.
         BlocProvider(create: (_) => SubscriptionCubit(getIt())..initialize()),
-        BlocProvider(create: (_) => AuthCubit(getIt())),
       ],
       child: ListenableBuilder(
         listenable: localeController,

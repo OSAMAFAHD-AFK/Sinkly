@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../Features/Feature_01_Auth/presentation/views/AuthView.dart';
-import '../../Features/Feature_01_Auth/presentation/views/SplashView.dart';
+import '../../Features/Feature_01_Splash/presentation/manager/splash_cubit.dart';
+import '../../Features/Feature_01_Splash/presentation/views/SplashView.dart';
 import '../../Features/Feature_02_Onboarding/presentation/manager/onboarding_cubit.dart';
 import '../../Features/Feature_02_Onboarding/presentation/views/OnboardingView.dart';
+import '../../Features/Feature_02_Onboarding/presentation/views/WelcomeView.dart';
 import '../../Features/Feature_03_Feedback/presentation/manager/feedback_cubit.dart';
 import '../../Features/Feature_03_Feedback/presentation/views/FeedbackView.dart';
 import '../../Features/Feature_04_Subscription/presentation/views/PaywallView.dart';
@@ -23,11 +24,13 @@ import '../widgets/main_navigation_shell_widget.dart';
 import 'service_locator.dart';
 
 /// Declarative routes. Feature cubits are created per-route (and disposed
-/// with it); app-wide cubits (Subscription, Auth) live above the router.
+/// with it); the app-wide SubscriptionCubit lives above the router.
 abstract final class AppRouter {
   static const String kSplashView = '/';
   static const String kOnboardingView = '/onboarding';
-  static const String kAuthView = '/auth';
+
+  /// Celebration right after subscribing on the onboarding paywall → Home.
+  static const String kWelcomeView = '/welcome';
   static const String kPaywallView = '/paywall';
   static const String kSinkUnlockView = '/sink-unlock';
   static const String kFeedbackView = '/feedback';
@@ -41,7 +44,11 @@ abstract final class AppRouter {
   static final GoRouter router = GoRouter(
     initialLocation: kSplashView,
     routes: [
-      GoRoute(path: kSplashView, pageBuilder: (context, state) => _fade(state, const SplashView())),
+      GoRoute(
+        path: kSplashView,
+        pageBuilder: (context, state) =>
+            _fade(state, BlocProvider(create: (_) => SplashCubit(getIt()), child: const SplashView())),
+      ),
       GoRoute(
         path: kOnboardingView,
         pageBuilder: (context, state) => _fade(
@@ -52,7 +59,7 @@ abstract final class AppRouter {
           ),
         ),
       ),
-      GoRoute(path: kAuthView, pageBuilder: (context, state) => _fade(state, const AuthView())),
+      GoRoute(path: kWelcomeView, pageBuilder: (context, state) => _fade(state, const WelcomeView())),
       GoRoute(path: kPaywallView, pageBuilder: (context, state) => _slideUp(state, const PaywallView())),
       GoRoute(
         path: kSinkUnlockView,

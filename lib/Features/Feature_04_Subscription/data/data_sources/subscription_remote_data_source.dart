@@ -34,19 +34,23 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
   @override
   Future<List<SubscriptionPlanModel>> fetchPaywallPlans({required String placementId}) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
-    // Placeholder prices (the real ones come from the stores via Adapty).
+    // PLACEHOLDER prices (the real ones come from the stores via Adapty).
+    // Weekly $4.99 · Annual $39.99 · Exit-offer annual $29.99. Every figure
+    // below is derived from those three (52 weeks a year):
+    //   annual      $39.99 → $0.77/week · 85% less than 52 × $4.99 = $259.48
+    //   exit offer  $29.99 → $0.58/week · 25% less than the regular annual
     if (placementId == AppConstants.adaptyExitOfferPlacementId) {
-      // One-time exit offer: the SAME annual plan, 20% cheaper. In the stores
-      // this is its own product in the same subscription group.
+      // Exit offer: the SAME annual plan, 25% cheaper. In the stores this is
+      // its own product in the same subscription group.
       return const [
         SubscriptionPlanModel(
           id: 'annual_exit_offer',
           vendorProductId: 'sinkly_premium_annual_special',
           period: SubscriptionPeriod.annual,
-          localizedPrice: r'$31.99',
-          localizedPricePerWeek: r'$0.62',
+          localizedPrice: r'$29.99',
+          localizedPricePerWeek: r'$0.58',
           trialDays: AppConstants.freeTrialDays,
-          discountPercent: 20,
+          discountPercent: 25,
           originalLocalizedPrice: r'$39.99',
         ),
       ];
@@ -59,15 +63,14 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         localizedPrice: r'$39.99',
         localizedPricePerWeek: r'$0.77',
         trialDays: AppConstants.freeTrialDays,
-        // $39.99 vs. 52 × $6.99 = $363.48 → 89% less.
-        discountPercent: 89,
+        discountPercent: 85,
       ),
       SubscriptionPlanModel(
         id: 'weekly',
         vendorProductId: 'sinkly_premium_weekly',
         period: SubscriptionPeriod.weekly,
-        localizedPrice: r'$6.99',
-        localizedPricePerWeek: r'$6.99',
+        localizedPrice: r'$4.99',
+        localizedPricePerWeek: r'$4.99',
         trialDays: AppConstants.freeTrialDays,
       ),
     ];

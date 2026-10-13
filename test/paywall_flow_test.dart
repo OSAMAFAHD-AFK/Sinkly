@@ -84,7 +84,8 @@ void main() {
 
     await _openExitOffer(tester);
     expect(find.byType(PaywallExitOfferSheetWidget), findsOneWidget);
-    expect(cubit.state.exitOffer?.localizedPrice, r'$31.99');
+    expect(cubit.state.exitOffer?.localizedPrice, r'$29.99');
+    expect(cubit.state.exitOffer?.discountPercent, 25);
     expect(find.text('No thanks'), findsNothing, reason: 'strict paywall: no decline button');
 
     // Dismissing the sheet (swipe down / barrier tap pops it with no result)
@@ -108,7 +109,7 @@ void main() {
 
     await _openExitOffer(tester);
     await tester.pump(PaywallExitOfferSheetWidget.sobLength); // gift appears
-    await tester.tap(find.text('Claim my 20% off'));
+    await tester.tap(find.text('Claim my 25% off'));
     await tester.pump(const Duration(milliseconds: 100));
     expect(cubit.state.status, SubscriptionStatus.purchasing);
 

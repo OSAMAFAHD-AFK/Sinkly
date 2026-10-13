@@ -11,8 +11,6 @@ import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
-import '../../../Feature_01_Auth/data/models/auth_user_model.dart';
-import '../../../Feature_01_Auth/presentation/manager/auth_cubit.dart';
 import '../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import '../manager/settings_cubit.dart';
 import 'widgets/settings_group_card_widget.dart';
@@ -24,12 +22,6 @@ import 'widgets/settings_tile_widget.dart';
 /// Settings tab: profile, premium, preferences, community, account, reset.
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
-
-  String _accountLabel(BuildContext context, AuthUserModel? user) => switch (user?.provider) {
-    AuthProviderType.apple => context.tr('settings_account_apple'),
-    AuthProviderType.google => context.tr('settings_account_google'),
-    _ => context.tr('settings_account_guest'),
-  };
 
   Future<void> _restore(BuildContext context) async {
     final restored = await context.read<SubscriptionCubit>().restorePurchases();
@@ -48,14 +40,14 @@ class SettingsView extends StatelessWidget {
     final preferences = context.select((SettingsCubit c) => c.state.preferences);
     final isRequestingPermission = context.select((SettingsCubit c) => c.state.isRequestingPermission);
     final isPremium = context.select((SubscriptionCubit c) => c.state.isPremium);
-    final user = context.select((AuthCubit c) => c.state.user);
 
     final sections = <Widget>[
       Text(context.tr('settings_screen_title'), style: AppTextStyles.headline),
       const SizedBox(height: AppSpacing.lg),
       SettingsProfileCardWidget(
         userName: preferences.userName,
-        accountLabel: _accountLabel(context, user),
+        // No accounts: the subscription lives on the Apple / Google account.
+        accountLabel: context.tr(isPremium ? 'settings_profile_premium' : 'settings_profile_member'),
         onEditName: () async {
           final name = await showEditNameSheet(context, currentName: preferences.userName);
           if (name != null) await cubit.updateUserName(name);
@@ -132,12 +124,6 @@ class SettingsView extends StatelessWidget {
       SettingsGroupCardWidget(
         title: context.tr('settings_group_account'),
         children: [
-          SettingsTileWidget(
-            icon: Icons.account_circle_rounded,
-            title: context.tr('settings_account'),
-            subtitle: _accountLabel(context, user),
-            onTap: () => context.push(AppRouter.kAuthView),
-          ),
           SettingsTileWidget(
             icon: Icons.restore_rounded,
             title: context.tr('restore_purchases'),

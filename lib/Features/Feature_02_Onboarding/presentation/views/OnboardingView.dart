@@ -64,8 +64,8 @@ class _OnboardingViewState extends State<OnboardingView> {
   Future<void> _finishOnboarding(bool purchased) async {
     final completed = await context.read<OnboardingCubit>().completeOnboarding();
     if (!mounted || !completed) return;
-    // Account step is next: lets the user save the plan (Apple / Google / guest).
-    context.go(AppRouter.kAuthView);
+    // Strict paywall: we only get here after subscribing → celebrate, then Home.
+    context.go(AppRouter.kWelcomeView);
   }
 
   Widget _buildStep(OnboardingStep step) => switch (step) {

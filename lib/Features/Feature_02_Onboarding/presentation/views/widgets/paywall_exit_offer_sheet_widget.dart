@@ -11,6 +11,7 @@ import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'heroine_character_painter.dart';
 import 'heroine_character_widget.dart';
+import 'heroine_speech_bubble_widget.dart';
 import 'paywall_plan_card_widget.dart';
 
 /// Opens the exit offer over the paywall (a partial sheet, not a new screen).
@@ -186,17 +187,7 @@ class _PaywallExitOfferSheetWidgetState extends State<PaywallExitOfferSheetWidge
           top: -26,
           child: Align(
             alignment: AlignmentDirectional.centerStart,
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 420),
-              switchInCurve: Curves.elasticOut,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, animation) => ScaleTransition(
-                scale: animation,
-                alignment: AlignmentDirectional.bottomStart.resolve(Directionality.of(context)),
-                child: FadeTransition(opacity: animation, child: child),
-              ),
-              child: _ExitBubble(key: ValueKey(bubbleKey), text: context.tr(bubbleKey), sad: isSad),
-            ),
+            child: HeroineSpeechBubbleSwitcherWidget(text: context.tr(bubbleKey), highlight: !isSad),
           ),
         ),
         Column(
@@ -309,45 +300,6 @@ class _OfferCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _ExitBubble extends StatelessWidget {
-  const _ExitBubble({super.key, required this.text, required this.sad});
-
-  final String text;
-  final bool sad;
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 170),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-            decoration: BoxDecoration(
-              gradient: sad ? null : AppGradients.primaryButton,
-              color: sad ? Colors.white : null,
-              borderRadius: const BorderRadiusDirectional.only(
-                topStart: Radius.circular(20),
-                topEnd: Radius.circular(20),
-                bottomEnd: Radius.circular(20),
-                bottomStart: Radius.circular(4),
-              ),
-              border: Border.all(color: Colors.white, width: 1.5),
-              boxShadow: sad ? AppShadows.floating : AppShadows.primaryGlow(strength: 0.6),
-            ),
-            child: Text(
-              text,
-              style: AppTextStyles.bodyStrong.copyWith(
-                fontSize: 13.5,
-                height: 1.3,
-                color: sad ? AppColors.ink : AppColors.onPrimary,
-              ),
-            ),
-          ),
-        )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .moveY(begin: 0, end: -4, duration: 1600.ms, curve: Curves.easeInOut);
   }
 }
 

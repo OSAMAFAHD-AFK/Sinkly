@@ -3,9 +3,9 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../Features/Feature_01_Auth/data/data_sources/auth_remote_data_source.dart';
-import '../../Features/Feature_01_Auth/data/repos/auth_repo.dart';
-import '../../Features/Feature_01_Auth/data/repos/auth_repo_impl.dart';
+import '../../Features/Feature_01_Splash/data/data_sources/splash_local_data_source.dart';
+import '../../Features/Feature_01_Splash/data/repos/splash_repo.dart';
+import '../../Features/Feature_01_Splash/data/repos/splash_repo_impl.dart';
 import '../../Features/Feature_02_Onboarding/data/data_sources/device_permissions_data_source.dart';
 import '../../Features/Feature_02_Onboarding/data/data_sources/onboarding_local_data_source.dart';
 import '../../Features/Feature_02_Onboarding/data/repos/onboarding_repo.dart';
@@ -42,7 +42,7 @@ import 'local_storage_service.dart';
 final GetIt getIt = GetIt.instance;
 
 /// Registers every service, data source and repo.
-/// Swapping a mock for a real implementation (Firebase, Adapty, native
+/// Swapping a mock for a real implementation (Adapty, native
 /// blocking, AI verification) is a one-line change here.
 Future<void> setupServiceLocator() async {
   // ── Core ───────────────────────────────────────────────────────────────
@@ -57,9 +57,9 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<AppBlockingPlatformDataSource>(MockAppBlockingPlatformDataSource.new)
     // REAL: Android device app list (MainActivity.kt) · iOS uses Apple's picker.
     ..registerLazySingleton<InstalledAppsPlatformDataSource>(MethodChannelInstalledAppsDataSource.new)
-    // ── Feature 01 · Auth ────────────────────────────────────────────────
-    ..registerLazySingleton<AuthRemoteDataSource>(() => MockAuthRemoteDataSource(getIt()))
-    ..registerLazySingleton<AuthRepo>(() => AuthRepoImpl(remoteDataSource: getIt(), storage: getIt()))
+    // ── Feature 01 · Splash ──────────────────────────────────────────────
+    ..registerLazySingleton<SplashLocalDataSource>(() => SplashLocalDataSourceImpl(getIt()))
+    ..registerLazySingleton<SplashRepo>(() => SplashRepoImpl(getIt()))
     // ── Feature 02 · Onboarding ──────────────────────────────────────────
     ..registerLazySingleton<OnboardingLocalDataSource>(() => OnboardingLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<OnboardingRepo>(

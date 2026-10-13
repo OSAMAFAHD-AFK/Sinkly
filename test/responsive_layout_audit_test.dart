@@ -226,7 +226,7 @@ void main() {
 
             // ── Other routes ──
             for (final (label, path) in [
-              ('auth', AppRouter.kAuthView),
+              ('welcome', AppRouter.kWelcomeView),
               ('paywall', AppRouter.kPaywallView),
               ('home', AppRouter.kHomeView),
               ('plan', AppRouter.kLockScheduleView),
