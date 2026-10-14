@@ -17,7 +17,9 @@ class WeeklyCleansBarChartWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxValue = cleansPerDay.fold<int>(1, (max, value) => value > max ? value : max);
-    const chartHeight = 130.0;
+    // Room for the tallest bar + its count + the day label. The text part
+    // grows with the user's text size, so nothing spills out of the card.
+    final chartHeight = 130 + MediaQuery.textScalerOf(context).scale(44);
 
     return CustomCardContainer(
       padding: const EdgeInsets.fromLTRB(AppSpacing.md, AppSpacing.md, AppSpacing.md, AppSpacing.sm),
@@ -36,7 +38,7 @@ class WeeklyCleansBarChartWidget extends StatelessWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(
-            height: chartHeight + 40,
+            height: chartHeight,
             child: Stack(
               children: [
                 Positioned.fill(
@@ -48,7 +50,6 @@ class WeeklyCleansBarChartWidget extends StatelessWidget {
                           child: _Bar(
                             value: cleansPerDay[i],
                             fraction: cleansPerDay[i] / maxValue,
-                            maxHeight: chartHeight,
                             isToday: i == cleansPerDay.length - 1,
                             delayMs: i * 70,
                             label: context.tr(
@@ -83,7 +84,6 @@ class _Bar extends StatelessWidget {
   const _Bar({
     required this.value,
     required this.fraction,
-    required this.maxHeight,
     required this.isToday,
     required this.delayMs,
     required this.label,
@@ -91,36 +91,66 @@ class _Bar extends StatelessWidget {
 
   final int value;
   final double fraction;
-  final double maxHeight;
   final bool isToday;
   final int delayMs;
   final String label;
 
+  static const double _minBarHeight = 8;
+  static const double _countGap = 4;
+
   @override
   Widget build(BuildContext context) {
+    final countStyle = AppTextStyles.label.copyWith(color: AppColors.ink, letterSpacing: 0);
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        if (value > 0) Text('$value', style: AppTextStyles.label.copyWith(color: AppColors.ink, letterSpacing: 0)),
-        const SizedBox(height: 4),
-        TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0, end: fraction),
-          duration: Duration(milliseconds: 700 + delayMs),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, _) => Container(
-            width: 22,
-            height: (maxHeight * value).clamp(8, maxHeight),
-            decoration: BoxDecoration(
-              gradient: isToday ? AppGradients.primaryButton : null,
-              color: isToday ? null : AppColors.primary.withValues(alpha: fraction == 0 ? 0.15 : 0.45),
-              borderRadius: AppRadii.pillAll,
-              boxShadow: isToday ? AppShadows.primaryGlow(strength: 0.5) : null,
-            ),
+        // The bar area takes whatever the day label leaves, and inside it the
+        // bar is sized from the MEASURED height of its count label, so the
+        // taller Arabic font can never push it past the card.
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final countPainter = TextPainter(
+                text: TextSpan(text: '$value', style: countStyle),
+                textDirection: TextDirection.ltr,
+                textScaler: MediaQuery.textScalerOf(context),
+                maxLines: 1,
+              )..layout();
+              final countHeight = countPainter.height;
+              countPainter.dispose();
+              final maxBarHeight = (constraints.maxHeight - countHeight - _countGap).clamp(
+                _minBarHeight,
+                double.infinity,
+              );
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (value > 0) Text('$value', maxLines: 1, style: countStyle),
+                  const SizedBox(height: _countGap),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: fraction),
+                    duration: Duration(milliseconds: 700 + delayMs),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, animated, _) => Container(
+                      width: 22,
+                      height: (maxBarHeight * animated).clamp(_minBarHeight, maxBarHeight),
+                      decoration: BoxDecoration(
+                        gradient: isToday ? AppGradients.primaryButton : null,
+                        color: isToday ? null : AppColors.primary.withValues(alpha: fraction == 0 ? 0.15 : 0.45),
+                        borderRadius: AppRadii.pillAll,
+                        boxShadow: isToday ? AppShadows.primaryGlow(strength: 0.5) : null,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
         const SizedBox(height: 8),
         Text(
           label,
+          maxLines: 1,
+          overflow: TextOverflow.clip,
           style: AppTextStyles.label.copyWith(
             color: isToday ? AppColors.primaryInk : AppColors.inkMuted,
             fontSize: 11,

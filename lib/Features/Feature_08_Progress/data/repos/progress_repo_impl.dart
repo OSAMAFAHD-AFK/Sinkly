@@ -8,7 +8,8 @@ class ProgressRepoImpl implements ProgressRepo {
   ProgressRepoImpl(this._local);
 
   final ProgressLocalDataSource _local;
-  static const int _recentLimit = 20;
+  /// History card shows only the latest few so it never grows out of hand.
+  static const int _recentLimit = 5;
 
   @override
   Stream<void> get dataChanges => _local.sessionsChanges.map((_) {});

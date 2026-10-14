@@ -25,11 +25,6 @@ class FeedbackView extends StatefulWidget {
 }
 
 class _FeedbackViewState extends State<FeedbackView> {
-  /// `Icons.send_rounded` mirrors itself in RTL (it points back at the label
-  /// in Arabic); this copy keeps the paper plane flying forward in every
-  /// language. Const, so icon tree-shaking still works.
-  static const IconData _sendIcon = IconData(0xf0147, fontFamily: 'MaterialIcons');
-
   final TextEditingController _messageController = TextEditingController();
 
   @override
@@ -117,7 +112,8 @@ class _FeedbackViewState extends State<FeedbackView> {
                       previous.canSubmit != current.canSubmit || previous.status != current.status,
                   builder: (context, state) => CustomPrimaryButton(
                     label: context.tr('feedback_submit_cta'),
-                    icon: _sendIcon,
+                    // Trailing + matchTextDirection: right→ in EN, left← in AR.
+                    trailingIcon: Icons.send_rounded,
                     isLoading: state.status == FeedbackSubmissionStatus.submitting,
                     onPressed: state.canSubmit ? context.read<FeedbackCubit>().submitFeedback : null,
                   ),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
@@ -34,13 +36,18 @@ class AchievementBadgeTileWidget extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                SizedBox.expand(
-                  child: CircularProgressIndicator(
-                    value: badge.progress,
-                    strokeWidth: 3.5,
-                    strokeCap: StrokeCap.round,
-                    backgroundColor: AppColors.divider,
-                    valueColor: AlwaysStoppedAnimation(badge.isUnlocked ? AppColors.success : AppColors.primary),
+                // Fills from 0 to the real value when the tab opens.
+                Positioned.fill(
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: badge.progress),
+                    duration: const Duration(milliseconds: 900),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) => CustomPaint(
+                      painter: _ProgressRingPainter(
+                        progress: value,
+                        color: badge.isUnlocked ? AppColors.success : AppColors.primary,
+                      ),
+                    ),
                   ),
                 ),
                 if (badge.isUnlocked) emoji else ColorFiltered(colorFilter: _grayscale, child: emoji),
@@ -65,4 +72,49 @@ class AchievementBadgeTileWidget extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Exact progress ring, clockwise from 12 o'clock.
+///
+/// Replaces Material's `CircularProgressIndicator`, whose current design adds
+/// rounded caps and a track gap on top of the sweep, so 5 / 10 visibly read
+/// past half. Here the round caps are drawn INSIDE the sweep: the colored
+/// arc, caps included, covers exactly [progress] of the circle.
+class _ProgressRingPainter extends CustomPainter {
+  _ProgressRingPainter({required this.progress, required this.color});
+
+  final double progress;
+  final Color color;
+
+  static const double _strokeWidth = 3.5;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final radius = (size.shortestSide - _strokeWidth) / 2;
+    final rect = Rect.fromCircle(center: size.center(Offset.zero), radius: radius);
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _strokeWidth;
+
+    canvas.drawCircle(rect.center, radius, paint..color = AppColors.divider);
+
+    final fraction = progress.clamp(0.0, 1.0);
+    if (fraction <= 0) return;
+    paint
+      ..color = color
+      ..strokeCap = fraction >= 1 ? StrokeCap.butt : StrokeCap.round;
+    if (fraction >= 1) {
+      canvas.drawCircle(rect.center, radius, paint);
+      return;
+    }
+    // Each round cap pokes out by half the stroke; pull both ends in by that
+    // angle so the visible length matches the value.
+    final capAngle = (_strokeWidth / 2) / radius;
+    final sweep = math.max(0.0, fraction * 2 * math.pi - 2 * capAngle);
+    canvas.drawArc(rect, -math.pi / 2 + capAngle, sweep, false, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ProgressRingPainter oldDelegate) =>
+      oldDelegate.progress != progress || oldDelegate.color != color;
 }

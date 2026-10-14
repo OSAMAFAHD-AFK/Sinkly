@@ -16,13 +16,12 @@ import '../../../Feature_04_Subscription/presentation/manager/subscription_cubit
 import '../../data/data_sources/store_review_platform_data_source.dart';
 import '../manager/settings_cubit.dart';
 import 'widgets/settings_group_card_widget.dart';
-import 'widgets/settings_premium_card_widget.dart';
 import 'widgets/settings_profile_card_widget.dart';
 import 'widgets/settings_sheets_widget.dart';
 import 'widgets/settings_tile_widget.dart';
 import 'widgets/share_invite_sheet_widget.dart';
 
-/// Settings tab: profile, premium, preferences, community, account.
+/// Settings tab: profile, preferences, community, account.
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
@@ -66,8 +65,6 @@ class SettingsView extends StatelessWidget {
           if (name != null) await cubit.updateUserName(name);
         },
       ),
-      const SizedBox(height: AppSpacing.md),
-      SettingsPremiumCardWidget(isPremium: isPremium, onUpgrade: () => context.push(AppRouter.kPaywallView)),
       const SizedBox(height: AppSpacing.lg),
       SettingsGroupCardWidget(
         title: context.tr('settings_group_preferences'),

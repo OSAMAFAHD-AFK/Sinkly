@@ -20,7 +20,9 @@ class AchievementBadgeModel extends Equatable {
     return [
       AchievementBadgeModel(
         id: 'first_clean',
-        emoji: '🫧',
+        // ✨ not 🫧: the bubbles emoji (Unicode 14) shows as an empty box on
+        // many Android phones.
+        emoji: '✨',
         titleKey: 'badge_first_clean',
         progress: ratio(stats.totalCleans, 1),
       ),
