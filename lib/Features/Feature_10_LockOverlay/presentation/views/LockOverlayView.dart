@@ -16,7 +16,7 @@ import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../../../Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
 import '../manager/lock_overlay_cubit.dart';
 import 'widgets/lock_overlay_heroine_stage_widget.dart';
-import 'widgets/lock_overlay_reward_strip_widget.dart';
+import 'widgets/lock_overlay_unlock_path_widget.dart';
 import 'widgets/locked_app_chip_widget.dart';
 
 /// Shown when a locked app is opened after a meal: the heroine cheers the
@@ -72,7 +72,7 @@ class LockOverlayView extends StatelessWidget {
             // The stage takes whatever the text and buttons leave; on short
             // phones / huge text it keeps a minimum and the page scrolls.
             final textScale = MediaQuery.textScalerOf(context).scale(1);
-            final stageHeight = (box.maxHeight - (250 + 230 * textScale)).clamp(210.0, 360.0);
+            final stageHeight = (box.maxHeight - (280 + 240 * textScale)).clamp(200.0, 350.0);
             return SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: ConstrainedBox(
@@ -121,7 +121,7 @@ class LockOverlayView extends StatelessWidget {
                             style: AppTextStyles.body,
                           ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
                           const SizedBox(height: AppSpacing.md),
-                          LockOverlayRewardStripWidget(snapshot: snapshot),
+                          LockOverlayUnlockPathWidget(snapshot: snapshot),
                         ],
                       ),
                       Padding(

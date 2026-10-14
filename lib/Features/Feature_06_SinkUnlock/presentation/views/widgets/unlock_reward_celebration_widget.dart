@@ -12,8 +12,8 @@ import '../../../../../core/widgets/custom_primary_button.dart';
 import 'unlock_celebration_heroine_stage_widget.dart';
 
 /// Stage 4 — the reward. The heroine celebrates WITH the user (the padlock
-/// bursts open beside her), the apps pop back free, Mom Points count up and
-/// the session stats land. Ends the loop on a warm high: earned, not stolen.
+/// bursts open beside her), the apps pop back free and one calm summary card
+/// lands. Ends the loop on a warm high: earned, not stolen.
 class UnlockRewardCelebrationWidget extends StatefulWidget {
   const UnlockRewardCelebrationWidget({
     super.key,
@@ -47,7 +47,7 @@ class _UnlockRewardCelebrationWidgetState extends State<UnlockRewardCelebrationW
             // The stage gets what the content leaves; on short phones or huge
             // text it keeps a minimum and the page scrolls instead.
             final textScale = MediaQuery.textScalerOf(context).scale(1);
-            final stageHeight = (box.maxHeight - (330 + 170 * textScale)).clamp(190.0, 320.0);
+            final stageHeight = (box.maxHeight - (250 + 170 * textScale)).clamp(200.0, 340.0);
             return SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: ConstrainedBox(
@@ -89,16 +89,10 @@ class _UnlockRewardCelebrationWidgetState extends State<UnlockRewardCelebrationW
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                        child: Column(
-                          children: [
-                            const _MomPointsEarnedCard()
-                                .animate(delay: 600.ms)
-                                .fadeIn(duration: 400.ms)
-                                .slideY(begin: 0.2, curve: Curves.easeOutCubic),
-                            const SizedBox(height: AppSpacing.sm),
-                            _SessionStatsRow(session: widget.session, stats: widget.stats),
-                          ],
-                        ),
+                        child: _SessionSummaryCard(session: widget.session, stats: widget.stats)
+                            .animate(delay: 600.ms)
+                            .fadeIn(duration: 400.ms)
+                            .slideY(begin: 0.2, curve: Curves.easeOutCubic),
                       ),
                       CustomPrimaryButton(
                         label: context.tr('reward_cta'),
@@ -169,81 +163,10 @@ class _FreedAppsRow extends StatelessWidget {
   }
 }
 
-/// "+10 Mom Points" — counts up, the heart beats. Mirrors the Welcome card.
-class _MomPointsEarnedCard extends StatelessWidget {
-  const _MomPointsEarnedCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsetsDirectional.fromSTEB(12, 12, 18, 12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFFFFE3EC), Color(0xFFFFF4E0)],
-        ),
-        borderRadius: AppRadii.cardAll,
-        border: Border.all(color: Colors.white, width: 1.4),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFF8FB1).withValues(alpha: 0.25),
-            blurRadius: 26,
-            spreadRadius: -8,
-            offset: const Offset(0, 12),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-                width: 46,
-                height: 46,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: const Text('💖', style: TextStyle(fontSize: 22)),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scaleXY(begin: 1, end: 1.1, duration: 800.ms, curve: Curves.easeInOut),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(context.tr('reward_points_title'), style: AppTextStyles.titleSmall),
-                Text(
-                  context.tr('reward_points_body'),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyles.caption.copyWith(fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          TweenAnimationBuilder<int>(
-            tween: IntTween(begin: 0, end: AppConstants.momPointsPerClean),
-            duration: const Duration(milliseconds: 1800),
-            // Starts counting once the card has landed.
-            curve: const Interval(0.4, 1, curve: Curves.easeOutCubic),
-            builder: (context, value, _) => Text(
-              '+$value',
-              textDirection: TextDirection.ltr, // "+10", never "10+" in Arabic
-              style: AppTextStyles.title.copyWith(
-                color: const Color(0xFFE0457B),
-                fontWeight: FontWeight.w800,
-                fontSize: 24,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SessionStatsRow extends StatelessWidget {
-  const _SessionStatsRow({required this.session, required this.stats});
+/// One glass card with the three results side by side, split by hairlines:
+/// how fast it went, the time won back and the streak.
+class _SessionSummaryCard extends StatelessWidget {
+  const _SessionSummaryCard({required this.session, required this.stats});
 
   final SinkCleaningSessionModel session;
   final SinkProgressStatsModel stats;
@@ -255,48 +178,62 @@ class _SessionStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final duration = session.cleaningDuration;
     final express = duration < _expressThreshold;
-    final tiles = [
+    final items = [
       express
-          ? _StatTile(
+          ? _Stat(
               emoji: '⚡',
               value: context.tr('reward_stat_express_value'),
               label: context.tr('reward_stat_express'),
             )
-          : _StatTile(
+          : _Stat(
               emoji: '⏱️',
               value: AppFunctions.formatCountdown(duration.inSeconds.clamp(0, 99 * 60)),
               label: context.tr('reward_stat_time'),
               ltrValue: true,
             ),
-      _StatTile(
+      _Stat(
         emoji: '⏳',
         value: '+${AppConstants.minutesReclaimedPerClean}',
         label: context.tr('reward_stat_reclaimed_minutes'),
         ltrValue: true,
       ),
-      _StatTile(emoji: '🔥', value: '${stats.currentStreakDays}', label: context.tr('stat_day_streak'), ltrValue: true),
+      _Stat(emoji: '🔥', value: '${stats.currentStreakDays}', label: context.tr('stat_day_streak'), ltrValue: true),
     ];
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (final (index, tile) in tiles.indexed) ...[
-            if (index > 0) const SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: tile
-                  .animate(delay: (750 + index * 110).ms)
-                  .fadeIn(duration: 350.ms)
-                  .scaleXY(begin: 0.85, curve: Curves.easeOutBack, duration: 500.ms),
-            ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs, vertical: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: AppColors.glassFillStrong,
+        borderRadius: AppRadii.cardAll,
+        border: Border.all(color: Colors.white, width: 1.4),
+        boxShadow: AppShadows.soft,
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (final (index, stat) in items.indexed) ...[
+              if (index > 0)
+                Container(
+                  width: 1,
+                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  color: AppColors.divider,
+                ),
+              Expanded(
+                child: stat
+                    .animate(delay: (750 + index * 110).ms)
+                    .fadeIn(duration: 350.ms)
+                    .scaleXY(begin: 0.85, curve: Curves.easeOutBack, duration: 500.ms),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
 }
 
-class _StatTile extends StatelessWidget {
-  const _StatTile({required this.emoji, required this.value, required this.label, this.ltrValue = false});
+class _Stat extends StatelessWidget {
+  const _Stat({required this.emoji, required this.value, required this.label, this.ltrValue = false});
 
   final String emoji;
   final String value;
@@ -307,24 +244,19 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.glassFillStrong,
-        borderRadius: AppRadii.mediumAll,
-        border: Border.all(color: Colors.white, width: 1.2),
-        boxShadow: AppShadows.soft,
-      ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 6),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(emoji, style: const TextStyle(fontSize: 18)),
+          Text(emoji, style: const TextStyle(fontSize: 20)),
           const SizedBox(height: 4),
           FittedBox(
             fit: BoxFit.scaleDown,
             child: Text(
               value,
               textDirection: ltrValue ? TextDirection.ltr : null,
-              style: AppTextStyles.titleSmall.copyWith(fontSize: 17, fontWeight: FontWeight.w800),
+              style: AppTextStyles.titleSmall.copyWith(fontSize: 18, fontWeight: FontWeight.w800),
             ),
           ),
           const SizedBox(height: 2),
