@@ -20,6 +20,9 @@ import 'widgets/unlock_reward_celebration_widget.dart';
 class SinkUnlockView extends StatelessWidget {
   const SinkUnlockView({super.key});
 
+  /// Route `extra`: open the camera right away ("sink already clean").
+  static const String openCameraExtra = 'open_camera';
+
   void _close(BuildContext context) => context.canPop() ? context.pop() : context.go(AppRouter.kHomeView);
 
   @override
@@ -104,6 +107,7 @@ class SinkUnlockView extends StatelessWidget {
         session: state.completedSession!,
         stats: state.statsAfterUnlock ?? SinkProgressStatsModel.empty,
         unlockedApps: state.blockedApps,
+        userName: state.userName,
         onDone: () => _close(context),
       ),
     };

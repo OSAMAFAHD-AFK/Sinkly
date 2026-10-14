@@ -53,15 +53,6 @@ class LocalStorageService {
   List<String> getStringList(String key) => _preferences.getStringList(key) ?? const [];
   Future<void> setStringList(String key, List<String> value) => _preferences.setStringList(key, value);
 
-  /// Wipes everything (used by "Reset Sinkly" in settings).
-  Future<void> clearAll() async {
-    await _preferences.clear();
-    _plan = UserPlanModel.initial(languageCode: _plan.languageCode);
-    _sessions = const [];
-    _planController.add(_plan);
-    _sessionsController.add(_sessions);
-  }
-
   static UserPlanModel _readPlan(SharedPreferences preferences) {
     final raw = preferences.getString(_planKey);
     if (raw == null) return UserPlanModel.initial();

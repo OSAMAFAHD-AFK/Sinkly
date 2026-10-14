@@ -1,9 +1,14 @@
+import 'dart:ui';
+
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../../Feature_02_Onboarding/data/data_sources/device_permissions_data_source.dart';
+import '../data_sources/app_share_platform_data_source.dart';
 import '../data_sources/settings_local_data_source.dart';
+import '../data_sources/store_review_platform_data_source.dart';
 import '../models/settings_preferences_model.dart';
 import 'settings_repo.dart';
 
@@ -11,12 +16,18 @@ class SettingsRepoImpl implements SettingsRepo {
   SettingsRepoImpl({
     required SettingsLocalDataSource localDataSource,
     required DevicePermissionsDataSource permissionsDataSource,
+    required StoreReviewPlatformDataSource storeReviewDataSource,
+    required AppSharePlatformDataSource shareDataSource,
     required this._localeController,
   }) : _local = localDataSource,
-       _permissions = permissionsDataSource;
+       _permissions = permissionsDataSource,
+       _storeReview = storeReviewDataSource,
+       _share = shareDataSource;
 
   final SettingsLocalDataSource _local;
   final DevicePermissionsDataSource _permissions;
+  final StoreReviewPlatformDataSource _storeReview;
+  final AppSharePlatformDataSource _share;
   final LocaleController _localeController;
 
   SettingsPreferencesModel _fromPlan() =>
@@ -68,5 +79,21 @@ class SettingsRepoImpl implements SettingsRepo {
   }
 
   @override
-  Future<Either<Failure, Unit>> resetApp() => _guard(_local.clearAllData);
+  Future<Either<Failure, StoreReviewOutcome>> requestAppReview() async {
+    try {
+      return right(await _storeReview.requestReview());
+    } catch (error) {
+      return left(PlatformFailure('settings_rate_unavailable', debugMessage: '$error'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> shareInvite({required String message, required String subject, Rect? origin}) async {
+    try {
+      return right(await _share.shareText(text: message, subject: subject, origin: origin));
+    } catch (error) {
+      debugPrint('[Share] share sheet failed: $error');
+      return left(PlatformFailure('settings_share_error', debugMessage: '$error'));
+    }
+  }
 }

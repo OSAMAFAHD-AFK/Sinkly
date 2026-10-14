@@ -19,6 +19,7 @@ class SinkUnlockCubit extends Cubit<SinkUnlockState> {
           blockedApps: _repo.blockedApps(),
           remainingSeconds: _repo.sprintMinutes() * 60,
           sprintTotalSeconds: _repo.sprintMinutes() * 60,
+          userName: _repo.userName(),
         ),
       );
 

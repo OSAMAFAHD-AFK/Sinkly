@@ -9,6 +9,7 @@ import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/custom_secondary_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
+import '../../../../core/widgets/screen_title_header_widget.dart';
 import '../../../../core/widgets/section_header_widget.dart';
 import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../../Feature_02_Onboarding/presentation/views/widgets/schedule_meal_picker_matrix_widget.dart';
@@ -25,7 +26,8 @@ class LockScheduleView extends StatelessWidget {
     final ok = await context.read<LockScheduleCubit>().triggerTestLockNow();
     if (!context.mounted || !ok) return;
     AppFunctions.mediumHaptic();
-    context.push(AppRouter.kSinkUnlockView);
+    // Simulates opening a locked app right after the lock kicks in.
+    context.push(AppRouter.kLockOverlayView);
   }
 
   @override
@@ -51,9 +53,10 @@ class LockScheduleView extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 110),
               children: [
-                Text(context.tr('plan_screen_title'), style: AppTextStyles.headline),
-                const SizedBox(height: 4),
-                Text(context.tr('plan_screen_subtitle'), style: AppTextStyles.body),
+                ScreenTitleHeaderWidget(
+                  title: context.tr('plan_screen_title'),
+                  subtitle: context.tr('plan_screen_subtitle'),
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 ScheduleMealPickerMatrixWidget(
                   schedule: draft.schedule,

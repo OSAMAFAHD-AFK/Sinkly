@@ -5,7 +5,6 @@ abstract class SettingsLocalDataSource {
   UserPlanModel readPlan();
   Stream<UserPlanModel> get planChanges;
   Future<void> savePlan(UserPlanModel plan);
-  Future<void> clearAllData();
 }
 
 class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
@@ -21,7 +20,4 @@ class SettingsLocalDataSourceImpl implements SettingsLocalDataSource {
 
   @override
   Future<void> savePlan(UserPlanModel plan) => _storage.savePlan(plan);
-
-  @override
-  Future<void> clearAllData() => _storage.clearAll();
 }

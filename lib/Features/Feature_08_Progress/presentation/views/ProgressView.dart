@@ -8,6 +8,7 @@ import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/custom_card_container.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
+import '../../../../core/widgets/screen_title_header_widget.dart';
 import '../../../../core/widgets/section_header_widget.dart';
 import '../manager/progress_cubit.dart';
 import 'widgets/achievement_badge_tile_widget.dart';
@@ -35,9 +36,10 @@ class ProgressView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 0),
             sliver: SliverList.list(
               children: [
-                Text(context.tr('progress_screen_title'), style: AppTextStyles.headline),
-                const SizedBox(height: 4),
-                Text(context.tr('progress_screen_subtitle'), style: AppTextStyles.body),
+                ScreenTitleHeaderWidget(
+                  title: context.tr('progress_screen_title'),
+                  subtitle: context.tr('progress_screen_subtitle'),
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 StreakHeroCardWidget(currentStreak: stats.currentStreakDays, bestStreak: stats.bestStreakDays),
                 const SizedBox(height: AppSpacing.md),

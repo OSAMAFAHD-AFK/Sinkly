@@ -20,6 +20,8 @@ import '../../Features/Feature_08_Progress/presentation/manager/progress_cubit.d
 import '../../Features/Feature_08_Progress/presentation/views/ProgressView.dart';
 import '../../Features/Feature_09_Settings/presentation/manager/settings_cubit.dart';
 import '../../Features/Feature_09_Settings/presentation/views/SettingsView.dart';
+import '../../Features/Feature_10_LockOverlay/presentation/manager/lock_overlay_cubit.dart';
+import '../../Features/Feature_10_LockOverlay/presentation/views/LockOverlayView.dart';
 import '../widgets/main_navigation_shell_widget.dart';
 import 'service_locator.dart';
 
@@ -34,6 +36,9 @@ abstract final class AppRouter {
   static const String kPaywallView = '/paywall';
   static const String kSinkUnlockView = '/sink-unlock';
   static const String kFeedbackView = '/feedback';
+
+  /// What a locked app shows after a meal. `extra` = attempted app id/package.
+  static const String kLockOverlayView = '/lock-overlay';
 
   // Tabs (StatefulShellRoute branches)
   static const String kHomeView = '/home';
@@ -63,8 +68,27 @@ abstract final class AppRouter {
       GoRoute(path: kPaywallView, pageBuilder: (context, state) => _slideUp(state, const PaywallView())),
       GoRoute(
         path: kSinkUnlockView,
-        pageBuilder: (context, state) =>
-            _slideUp(state, BlocProvider(create: (_) => SinkUnlockCubit(getIt()), child: const SinkUnlockView())),
+        pageBuilder: (context, state) => _slideUp(
+          state,
+          BlocProvider(
+            create: (_) {
+              final cubit = SinkUnlockCubit(getIt());
+              if (state.extra == SinkUnlockView.openCameraExtra) cubit.captureAndVerifyPhoto();
+              return cubit;
+            },
+            child: const SinkUnlockView(),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: kLockOverlayView,
+        pageBuilder: (context, state) => _fade(
+          state,
+          BlocProvider(
+            create: (_) => LockOverlayCubit(getIt(), attemptedAppId: state.extra as String?),
+            child: const LockOverlayView(),
+          ),
+        ),
       ),
       GoRoute(
         path: kFeedbackView,

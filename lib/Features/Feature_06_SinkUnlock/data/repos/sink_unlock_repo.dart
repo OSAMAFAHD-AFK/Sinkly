@@ -8,6 +8,9 @@ abstract class SinkUnlockRepo {
   LockStatusModel currentLockStatus({required DateTime now});
   List<BlockableAppModel> blockedApps();
 
+  /// First name from onboarding ('' when skipped) — the heroine uses it.
+  String userName();
+
   /// The user's preferred sprint length (minutes).
   int sprintMinutes();
   Future<void> saveSprintMinutes(int minutes);

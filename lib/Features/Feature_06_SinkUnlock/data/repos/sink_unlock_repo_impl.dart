@@ -33,6 +33,9 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
   List<BlockableAppModel> blockedApps() => _sessions.readPlan().blockedApps;
 
   @override
+  String userName() => _sessions.readPlan().userName.trim();
+
+  @override
   int sprintMinutes() => _sessions.readPlan().sprintMinutes;
 
   @override

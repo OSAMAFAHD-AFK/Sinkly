@@ -67,3 +67,8 @@ class VerificationFailure extends Failure {
 class ValidationFailure extends Failure {
   const ValidationFailure(super.messageKey, {super.debugMessage});
 }
+
+/// Native platform services that failed (store review, share sheet…).
+class PlatformFailure extends Failure {
+  const PlatformFailure(super.messageKey, {super.debugMessage});
+}

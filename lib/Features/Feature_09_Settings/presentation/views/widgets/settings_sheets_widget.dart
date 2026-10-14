@@ -97,24 +97,3 @@ class _EditNameSheetContentState extends State<_EditNameSheetContent> {
     );
   }
 }
-
-/// Destructive confirmation for "Reset Sinkly".
-Future<bool> showResetConfirmationDialog(BuildContext context) async {
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadii.cardAll),
-      title: Text(dialogContext.tr('settings_reset_title'), style: AppTextStyles.title),
-      content: Text(dialogContext.tr('settings_reset_message'), style: AppTextStyles.body),
-      actions: [
-        TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(dialogContext.tr('cancel'))),
-        TextButton(
-          onPressed: () => Navigator.of(dialogContext).pop(true),
-          child: Text(dialogContext.tr('settings_reset_confirm'), style: const TextStyle(color: AppColors.danger)),
-        ),
-      ],
-    ),
-  );
-  return confirmed ?? false;
-}

@@ -187,6 +187,14 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     nextStep();
   }
 
+  /// TODO(dev): DEVELOPMENT ONLY (`AppConstants.showDevOnboardingSkip`).
+  /// Saves the plan with whatever was answered so far (defaults for the rest:
+  /// default meal schedule, default apps) and lets the view jump to Welcome.
+  Future<bool> devSkipToWelcome() async {
+    await _localeController.changeLanguage(state.preferences.languageCode);
+    return completeOnboarding();
+  }
+
   // ── Screen 15: Completion (after purchase OR paywall dismissal) ────────
   Future<bool> completeOnboarding() async {
     emit(state.copyWith(completionStatus: OnboardingRequestStatus.inProgress));

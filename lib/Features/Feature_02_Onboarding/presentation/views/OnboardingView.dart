@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/utils/app_localizations.dart';
+import '../../../../core/widgets/dev_shortcut_button_widget.dart';
 import '../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
@@ -66,6 +68,13 @@ class _OnboardingViewState extends State<OnboardingView> {
     if (!mounted || !completed) return;
     // Strict paywall: we only get here after subscribing → celebrate, then Home.
     context.go(AppRouter.kWelcomeView);
+  }
+
+  // TODO(dev): remove with AppConstants.showDevOnboardingSkip before release.
+  Future<void> _devSkipToWelcome() async {
+    AppFunctions.lightHaptic();
+    final completed = await context.read<OnboardingCubit>().devSkipToWelcome();
+    if (mounted && completed) context.go(AppRouter.kWelcomeView);
   }
 
   Widget _buildStep(OnboardingStep step) => switch (step) {
@@ -130,6 +139,29 @@ class _OnboardingViewState extends State<OnboardingView> {
                   ),
                 ],
               ),
+              // TODO(dev): DEVELOPMENT ONLY — jump straight to Welcome. Sits in
+              // the top bar's back-button slot (empty on the first screen) and
+              // never reaches the centred progress track.
+              if (AppConstants.showDevOnboardingSkip && currentStep.isFirst)
+                PositionedDirectional(
+                  start: AppSpacing.screenGutter - 6,
+                  top: AppSpacing.xs,
+                  height: 46,
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: (MediaQuery.sizeOf(context).width - _OnboardingTopBar.trackWidth) / 2 -
+                            AppSpacing.screenGutter,
+                      ),
+                      child: DevShortcutButtonWidget(
+                        label: context.tr('onboarding_dev_skip'),
+                        icon: Icons.fast_forward_rounded,
+                        onPressed: _devSkipToWelcome,
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -176,6 +208,8 @@ class _OnboardingTopBar extends StatelessWidget {
 
   final OnboardingStep step;
 
+  static const double trackWidth = 148;
+
   @override
   Widget build(BuildContext context) {
     final progress = context.select((OnboardingCubit c) => c.state.progress);
@@ -201,7 +235,7 @@ class _OnboardingTopBar extends StatelessWidget {
               ),
             ),
             // Short centered track (reference layout); keep Sinkly bar styling.
-            SizedBox(width: 148, child: OnboardingProgressBarWidget(progress: progress)),
+            SizedBox(width: trackWidth, child: OnboardingProgressBarWidget(progress: progress)),
           ],
         ),
       ),

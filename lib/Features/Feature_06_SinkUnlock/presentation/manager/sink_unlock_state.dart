@@ -10,6 +10,7 @@ class SinkUnlockState extends Equatable {
     required this.blockedApps,
     required this.remainingSeconds,
     required this.sprintTotalSeconds,
+    this.userName = '',
     this.sprintStartedAt,
     this.photoPath,
     this.isCapturing = false,
@@ -25,6 +26,7 @@ class SinkUnlockState extends Equatable {
 
   /// Length of this sprint in seconds (user-adjustable).
   final int sprintTotalSeconds;
+  final String userName;
   final DateTime? sprintStartedAt;
   final String? photoPath;
   final bool isCapturing;
@@ -58,6 +60,7 @@ class SinkUnlockState extends Equatable {
     blockedApps: blockedApps ?? this.blockedApps,
     remainingSeconds: remainingSeconds ?? this.remainingSeconds,
     sprintTotalSeconds: sprintTotalSeconds ?? this.sprintTotalSeconds,
+    userName: userName,
     sprintStartedAt: sprintStartedAt ?? this.sprintStartedAt,
     photoPath: photoPath ?? this.photoPath,
     isCapturing: isCapturing ?? this.isCapturing,
@@ -73,6 +76,7 @@ class SinkUnlockState extends Equatable {
     blockedApps,
     remainingSeconds,
     sprintTotalSeconds,
+    userName,
     sprintStartedAt,
     photoPath,
     isCapturing,

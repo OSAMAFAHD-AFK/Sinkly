@@ -32,9 +32,14 @@ import '../../Features/Feature_07_LockSchedule/data/repos/lock_schedule_repo_imp
 import '../../Features/Feature_08_Progress/data/data_sources/progress_local_data_source.dart';
 import '../../Features/Feature_08_Progress/data/repos/progress_repo.dart';
 import '../../Features/Feature_08_Progress/data/repos/progress_repo_impl.dart';
+import '../../Features/Feature_09_Settings/data/data_sources/app_share_platform_data_source.dart';
 import '../../Features/Feature_09_Settings/data/data_sources/settings_local_data_source.dart';
+import '../../Features/Feature_09_Settings/data/data_sources/store_review_platform_data_source.dart';
 import '../../Features/Feature_09_Settings/data/repos/settings_repo.dart';
 import '../../Features/Feature_09_Settings/data/repos/settings_repo_impl.dart';
+import '../../Features/Feature_10_LockOverlay/data/data_sources/lock_overlay_local_data_source.dart';
+import '../../Features/Feature_10_LockOverlay/data/repos/lock_overlay_repo.dart';
+import '../../Features/Feature_10_LockOverlay/data/repos/lock_overlay_repo_impl.dart';
 import 'api_service.dart';
 import 'app_localizations.dart';
 import 'local_storage_service.dart';
@@ -101,7 +106,19 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<ProgressRepo>(() => ProgressRepoImpl(getIt()))
     // ── Feature 09 · Settings ────────────────────────────────────────────
     ..registerLazySingleton<SettingsLocalDataSource>(() => SettingsLocalDataSourceImpl(getIt()))
+    // REAL: Apple / Google native rating sheet + system share sheet.
+    ..registerLazySingleton<StoreReviewPlatformDataSource>(InAppReviewStoreReviewDataSource.new)
+    ..registerLazySingleton<AppSharePlatformDataSource>(SharePlusAppShareDataSource.new)
     ..registerLazySingleton<SettingsRepo>(
-      () => SettingsRepoImpl(localDataSource: getIt(), permissionsDataSource: getIt(), localeController: getIt()),
-    );
+      () => SettingsRepoImpl(
+        localDataSource: getIt(),
+        permissionsDataSource: getIt(),
+        storeReviewDataSource: getIt(),
+        shareDataSource: getIt(),
+        localeController: getIt(),
+      ),
+    )
+    // ── Feature 10 · Lock Overlay ────────────────────────────────────────
+    ..registerLazySingleton<LockOverlayLocalDataSource>(() => LockOverlayLocalDataSourceImpl(getIt()))
+    ..registerLazySingleton<LockOverlayRepo>(() => LockOverlayRepoImpl(getIt()));
 }

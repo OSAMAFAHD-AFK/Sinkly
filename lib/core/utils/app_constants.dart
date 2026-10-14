@@ -23,6 +23,31 @@ abstract final class AppConstants {
   /// screen; the points system itself is part of the in-app phase).
   static const int momPointsPerClean = 10;
 
+  // ── Store / sharing ────────────────────────────────────────────────────
+  /// TODO(store): the numeric Apple ID from App Store Connect (App
+  /// Information → Apple ID). Needed on iOS to open the store review page
+  /// when the native prompt is unavailable. Empty until the app is created.
+  static const String appStoreId = '';
+
+  /// Android package (Google Play listing id) = `applicationId` in Gradle.
+  static const String androidPackageName = 'com.sinkly.sinkly';
+
+  /// TODO(store): ONE smart link for invites that sends iPhone users to the
+  /// App Store and Android users to Google Play (e.g. a tiny redirect page
+  /// on sinkly.app, or a Firebase Dynamic Link replacement such as Branch).
+  /// `ref=invite` lets the store / analytics attribute installs to sharing.
+  static const String inviteLink = 'https://sinkly.app/get?ref=invite';
+
+  // ── Development ────────────────────────────────────────────────────────
+  /// TODO(dev): shows a "bypass" button on the lock overlay so it can be
+  /// tested without cleaning. MUST be `false` (and removed) before release.
+  static const bool showDevLockBypass = true;
+
+  /// TODO(dev): shows "Skip to Welcome" on the first onboarding screen so the
+  /// whole setup can be skipped while designing. MUST be removed before
+  /// release.
+  static const bool showDevOnboardingSkip = true;
+
   // ── Subscription / Adapty ─────────────────────────────────────────────
   static const int freeTrialDays = 3;
 

@@ -11,15 +11,18 @@ import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
+import '../../../../core/widgets/screen_title_header_widget.dart';
 import '../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
+import '../../data/data_sources/store_review_platform_data_source.dart';
 import '../manager/settings_cubit.dart';
 import 'widgets/settings_group_card_widget.dart';
 import 'widgets/settings_premium_card_widget.dart';
 import 'widgets/settings_profile_card_widget.dart';
 import 'widgets/settings_sheets_widget.dart';
 import 'widgets/settings_tile_widget.dart';
+import 'widgets/share_invite_sheet_widget.dart';
 
-/// Settings tab: profile, premium, preferences, community, account, reset.
+/// Settings tab: profile, premium, preferences, community, account.
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
@@ -28,10 +31,20 @@ class SettingsView extends StatelessWidget {
     if (context.mounted && restored) AppFunctions.showSnack(context, context.tr('restore_success'));
   }
 
-  Future<void> _reset(BuildContext context) async {
-    if (!await showResetConfirmationDialog(context) || !context.mounted) return;
-    final done = await context.read<SettingsCubit>().resetApp();
-    if (done && context.mounted) context.go(AppRouter.kSplashView);
+  Future<void> _rate(BuildContext context) async {
+    final outcome = await context.read<SettingsCubit>().rateApp();
+    // Native sheet / store page handled it; otherwise explain (pre-launch).
+    if (outcome == StoreReviewOutcome.unavailable && context.mounted) {
+      AppFunctions.showSnack(context, context.tr('settings_rate_unavailable'));
+    }
+  }
+
+  void _share(BuildContext context) {
+    final cubit = context.read<SettingsCubit>();
+    showShareInviteSheet(
+      context,
+      onShare: (message, subject, origin) => cubit.shareInvite(message: message, subject: subject, origin: origin),
+    );
   }
 
   @override
@@ -42,7 +55,7 @@ class SettingsView extends StatelessWidget {
     final isPremium = context.select((SubscriptionCubit c) => c.state.isPremium);
 
     final sections = <Widget>[
-      Text(context.tr('settings_screen_title'), style: AppTextStyles.headline),
+      ScreenTitleHeaderWidget(title: context.tr('settings_screen_title')),
       const SizedBox(height: AppSpacing.lg),
       SettingsProfileCardWidget(
         userName: preferences.userName,
@@ -109,14 +122,12 @@ class SettingsView extends StatelessWidget {
           SettingsTileWidget(
             icon: Icons.star_rounded,
             title: context.tr('settings_rate'),
-            // TODO(store): use in_app_review's requestReview().
-            onTap: () => AppFunctions.showSnack(context, context.tr('coming_soon')),
+            onTap: () => _rate(context),
           ),
           SettingsTileWidget(
             icon: Icons.ios_share_rounded,
             title: context.tr('settings_share'),
-            // TODO(share): use share_plus with the store link.
-            onTap: () => AppFunctions.showSnack(context, context.tr('coming_soon')),
+            onTap: () => _share(context),
           ),
         ],
       ),
@@ -131,20 +142,6 @@ class SettingsView extends StatelessWidget {
           ),
           SettingsTileWidget(icon: Icons.privacy_tip_rounded, title: context.tr('privacy_policy'), onTap: () {}),
           SettingsTileWidget(icon: Icons.description_rounded, title: context.tr('terms_of_use'), onTap: () {}),
-        ],
-      ),
-      const SizedBox(height: AppSpacing.lg),
-      SettingsGroupCardWidget(
-        title: context.tr('settings_group_danger'),
-        children: [
-          SettingsTileWidget(
-            icon: Icons.restart_alt_rounded,
-            title: context.tr('settings_reset_title'),
-            iconColor: AppColors.danger,
-            iconBackground: AppColors.dangerSoft,
-            titleColor: AppColors.danger,
-            onTap: () => _reset(context),
-          ),
         ],
       ),
       const SizedBox(height: AppSpacing.lg),

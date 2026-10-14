@@ -27,7 +27,9 @@ import 'package:sinkly/Features/Feature_03_Feedback/presentation/views/widgets/f
 import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/manager/lock_schedule_cubit.dart';
 import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/views/LockScheduleView.dart';
 import 'package:sinkly/Features/Feature_09_Settings/presentation/views/SettingsView.dart';
+import 'package:sinkly/Features/Feature_09_Settings/data/models/share_invite_outcome.dart';
 import 'package:sinkly/Features/Feature_09_Settings/presentation/views/widgets/settings_sheets_widget.dart';
+import 'package:sinkly/Features/Feature_09_Settings/presentation/views/widgets/share_invite_sheet_widget.dart';
 import 'package:sinkly/core/models/blockable_app_model.dart';
 import 'package:sinkly/core/models/sink_cleaning_session_model.dart';
 import 'package:sinkly/core/models/weekly_lock_schedule_model.dart';
@@ -254,6 +256,10 @@ void main() {
             await visit('home(locked)', () async => AppRouter.router.go(AppRouter.kHomeView), ms: 1500);
             await _scrollThrough(tester, () => currentLabel = 'home(locked,scrolled)');
 
+            // ── Lock overlay (a locked app was opened) ──
+            await visit('lock-overlay', () async => AppRouter.router.go(AppRouter.kLockOverlayView), ms: 2500);
+            await _scrollThrough(tester, () => currentLabel = 'lock-overlay(scrolled)');
+
             // ── Sink unlock: intro → sprint ──
             await visit('unlock/intro', () async => AppRouter.router.go(AppRouter.kSinkUnlockView), ms: 1500);
             unlock = tester.element(find.byType(SinkUnlockView)).read<SinkUnlockCubit>();
@@ -308,7 +314,7 @@ void main() {
               'sheet/edit-name',
               () => showEditNameSheet(screen(), currentName: 'Alexandria-Margaret'),
             );
-            await openAndClose('dialog/reset', () => showResetConfirmationDialog(screen()), isDialog: true);
+            await openAndClose('sheet/share-invite', () => showShareInviteSheet(screen(), onShare: (_, _, _) async => ShareInviteOutcome.dismissed));
             await openAndClose(
               'sheet/time-picker',
               () => showGlassTimePickerSheet(context: screen(), title: 'Dinner', initialMinutesOfDay: 19 * 60),

@@ -5,7 +5,8 @@ import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/sinkly_logo_widget.dart';
 
-/// Greeting row: avatar bubble · "Good evening, Sara" · brand badge.
+/// Centered greeting + username with brand mark on the leading side
+/// (left in English / right in Arabic via [Directionality]).
 class HomeHeaderWidget extends StatelessWidget {
   const HomeHeaderWidget({super.key, required this.userName, required this.now});
 
@@ -14,39 +15,35 @@ class HomeHeaderWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final displayName = userName.isEmpty ? context.tr('home_greeting_fallback') : userName;
+
+    return Column(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: AppGradients.primaryButton,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: AppShadows.primaryGlow(strength: 0.5),
-          ),
-          child: Text(
-            AppFunctions.initialOf(userName),
-            style: AppTextStyles.title.copyWith(color: AppColors.onPrimary),
-          ),
+        Text(
+          context.tr(AppFunctions.greetingKey(now)),
+          textAlign: TextAlign.center,
+          style: AppTextStyles.caption,
         ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        const SizedBox(height: 4),
+        // Logo leads the row: left in LTR (EN), right in RTL (AR).
+        LayoutBuilder(
+          builder: (context, constraints) => Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(context.tr(AppFunctions.greetingKey(now)), style: AppTextStyles.caption),
-              Text(
-                userName.isEmpty ? context.tr('home_greeting_fallback') : userName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.title,
+              const SinklyLogoWidget(size: 22, showWordmark: false),
+              const SizedBox(width: AppSpacing.sm),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.7),
+                child: Text(
+                  displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyles.title,
+                ),
               ),
             ],
           ),
         ),
-        const SinklyLogoWidget(size: 22, showWordmark: false),
       ],
     );
   }

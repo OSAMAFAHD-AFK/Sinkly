@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
-import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
+import '../../../../../core/widgets/sinkly_logo_widget.dart';
 
-/// Avatar + name + account label + edit button.
+/// App logo + name + account label + edit button.
 class SettingsProfileCardWidget extends StatelessWidget {
   const SettingsProfileCardWidget({
     super.key,
@@ -34,21 +34,7 @@ class SettingsProfileCardWidget extends StatelessWidget {
   Widget _buildRow(BuildContext context, {required bool compact}) {
     return Row(
       children: [
-        Container(
-          width: 60,
-          height: 60,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            gradient: AppGradients.primaryButton,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2.5),
-            boxShadow: AppShadows.primaryGlow(strength: 0.5),
-          ),
-          child: Text(
-            AppFunctions.initialOf(userName),
-            style: AppTextStyles.headline.copyWith(color: AppColors.onPrimary),
-          ),
-        ),
+        const SinklyLogoWidget(size: 34, showWordmark: false),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
