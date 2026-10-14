@@ -12,6 +12,7 @@ class GlassScreenScaffold extends StatelessWidget {
     this.animateBackground = false,
     this.bottomBar,
     this.useSafeArea = true,
+    this.safeAreaBottom,
     this.resizeToAvoidBottomInset = true,
   });
 
@@ -20,10 +21,16 @@ class GlassScreenScaffold extends StatelessWidget {
   final bool animateBackground;
   final Widget? bottomBar;
   final bool useSafeArea;
+
+  /// When null, bottom safe-area is applied only if there is no [bottomBar].
+  /// Main tabs set this to false and clear the floating nav via scroll padding.
+  final bool? safeAreaBottom;
   final bool resizeToAvoidBottomInset;
 
   @override
   Widget build(BuildContext context) {
+    final applyBottomSafeArea = safeAreaBottom ?? (bottomBar == null);
+
     return Scaffold(
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       extendBody: true,
@@ -34,7 +41,7 @@ class GlassScreenScaffold extends StatelessWidget {
           ),
           Positioned.fill(
             child: BackdropGroup(
-              child: useSafeArea ? SafeArea(bottom: bottomBar == null, child: body) : body,
+              child: useSafeArea ? SafeArea(bottom: applyBottomSafeArea, child: body) : body,
             ),
           ),
         ],

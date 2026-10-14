@@ -28,6 +28,7 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
     this.customCta,
     this.contentTopSpacing = 0,
     this.balanceContentInSpace = false,
+    this.showCta = true,
   });
 
   final String title;
@@ -51,6 +52,9 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
 
   /// Vertically balances title + body in the free space above the CTA.
   final bool balanceContentInSpace;
+
+  /// Hides the bottom button entirely (e.g. while a step is still loading).
+  final bool showCta;
 
   Widget _buildHeader() {
     return OnboardingStepHeaderWidget(
@@ -127,7 +131,7 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
               ),
             ),
           ),
-          _buildCta(),
+          if (showCta) _buildCta(),
         ],
       );
     }
@@ -160,7 +164,7 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
             ),
           ),
         ),
-        _buildCta(),
+        if (showCta) _buildCta(),
       ],
     );
   }

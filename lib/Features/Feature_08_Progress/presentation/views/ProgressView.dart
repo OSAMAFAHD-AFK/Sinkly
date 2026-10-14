@@ -29,6 +29,7 @@ class ProgressView extends StatelessWidget {
 
     return GlassScreenScaffold(
       palette: MeshPalette.warm,
+      safeAreaBottom: false,
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
@@ -96,7 +97,12 @@ class ProgressView extends StatelessWidget {
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.lg, AppSpacing.screenGutter, 130),
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.screenGutter,
+              AppSpacing.lg,
+              AppSpacing.screenGutter,
+              AppSpacing.mainTabScrollBottom(context),
+            ),
             sliver: SliverToBoxAdapter(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,

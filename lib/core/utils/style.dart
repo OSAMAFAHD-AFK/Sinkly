@@ -81,6 +81,23 @@ abstract final class AppSpacing {
 
   /// Horizontal page gutter used by every screen.
   static const double screenGutter = 22;
+
+  /// Floating glass tab bar pill height ([GlassBottomNavigationBar]).
+  static const double mainTabBarHeight = 70;
+
+  /// Minimum gap under the floating tab bar (matches its SafeArea minimum).
+  static const double mainTabBarMinBottom = 10;
+
+  /// Small air between the last scrolled item and the tab bar.
+  static const double mainTabContentGap = 12;
+
+  /// Bottom inset so list content clears the floating tab bar tightly.
+  /// Use with [GlassScreenScaffold.safeAreaBottom] = false on main tabs.
+  static double mainTabScrollBottom(BuildContext context) {
+    final safeBottom = MediaQuery.viewPaddingOf(context).bottom;
+    final barLift = safeBottom > mainTabBarMinBottom ? safeBottom : mainTabBarMinBottom;
+    return mainTabBarHeight + barLift + mainTabContentGap;
+  }
 }
 
 /// Sizes that must adapt to the device instead of being hard-coded.

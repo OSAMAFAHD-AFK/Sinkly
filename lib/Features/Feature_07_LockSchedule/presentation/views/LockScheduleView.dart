@@ -47,11 +47,17 @@ class LockScheduleView extends StatelessWidget {
         }
       },
       child: GlassScreenScaffold(
+        safeAreaBottom: false,
         body: Stack(
           children: [
             ListView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 110),
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.screenGutter,
+                AppSpacing.md,
+                AppSpacing.screenGutter,
+                AppSpacing.mainTabScrollBottom(context),
+              ),
               children: [
                 ScreenTitleHeaderWidget(
                   title: context.tr('plan_screen_title'),
@@ -96,12 +102,11 @@ class LockScheduleView extends StatelessWidget {
                 ),
               ].animate(interval: 40.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04),
             ),
-            // Docked just above the tab bar. The scaffold's SafeArea already
-            // lifts this Stack above the floating nav bar, so no extra inset.
+            // Docked just above the floating tab bar.
             Positioned(
               left: AppSpacing.screenGutter,
               right: AppSpacing.screenGutter,
-              bottom: AppSpacing.sm,
+              bottom: AppSpacing.mainTabScrollBottom(context) - AppSpacing.mainTabContentGap,
               child: UnsavedChangesBarWidget(
                 visible: state.hasUnsavedChanges,
                 isSaving: state.saveStatus == LockScheduleSaveStatus.saving,

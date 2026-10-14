@@ -74,9 +74,15 @@ class HomeView extends StatelessWidget {
     ];
 
     return GlassScreenScaffold(
+      safeAreaBottom: false,
       body: ListView(
         physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 130),
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.screenGutter,
+          AppSpacing.md,
+          AppSpacing.screenGutter,
+          AppSpacing.mainTabScrollBottom(context),
+        ),
         children: sections
             .animate(interval: 45.ms)
             .fadeIn(duration: 380.ms)

@@ -154,9 +154,15 @@ class SettingsView extends StatelessWidget {
       listener: (context, state) => AppFunctions.showSnack(context, context.tr(state.failureKey!)),
       child: GlassScreenScaffold(
         palette: MeshPalette.calm,
+        safeAreaBottom: false,
         body: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(AppSpacing.screenGutter, AppSpacing.md, AppSpacing.screenGutter, 130),
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.screenGutter,
+            AppSpacing.md,
+            AppSpacing.screenGutter,
+            AppSpacing.mainTabScrollBottom(context),
+          ),
           children: sections.animate(interval: 35.ms).fadeIn(duration: 350.ms).slideY(begin: 0.05),
         ),
       ),
