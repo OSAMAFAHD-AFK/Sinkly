@@ -56,12 +56,8 @@ class HomeActionBannerWidget extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Directionality.of(context) == TextDirection.rtl
-                  ? Icons.chevron_left_rounded
-                  : Icons.chevron_right_rounded,
-              color: AppColors.inkMuted,
-            ),
+            // chevron_right has matchTextDirection: true, so it flips in RTL.
+            const Icon(Icons.chevron_right_rounded, color: AppColors.inkMuted),
           ],
         ),
       ),
