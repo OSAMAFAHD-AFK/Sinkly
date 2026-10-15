@@ -19,20 +19,11 @@ import '../../../../Feature_04_Subscription/data/models/subscription_plan_model.
 /// + its period) is the biggest price on the card; the per-week equivalent is
 /// a small secondary line, and the trial terms are spelled out.
 class PaywallPlanCardWidget extends StatelessWidget {
-  const PaywallPlanCardWidget({
-    super.key,
-    required this.plan,
-    required this.isSelected,
-    required this.onTap,
-    this.badgeText,
-  });
+  const PaywallPlanCardWidget({super.key, required this.plan, required this.isSelected, required this.onTap});
 
   final SubscriptionPlanModel plan;
   final bool isSelected;
   final VoidCallback? onTap;
-
-  /// Overrides the default "SAVE X%" ribbon (e.g. "25% EXTRA OFF").
-  final String? badgeText;
 
   static String titleKey(SubscriptionPeriod period) => switch (period) {
     SubscriptionPeriod.annual => 'plan_annual_title',
@@ -60,9 +51,9 @@ class PaywallPlanCardWidget extends StatelessWidget {
       'price': plan.localizedPrice,
     });
     final showWeeklyEquivalent = plan.period != SubscriptionPeriod.weekly;
-    final ribbon =
-        badgeText ??
-        (plan.discountPercent == null ? null : context.tr('plan_save_badge', {'percent': '${plan.discountPercent}'}));
+    final ribbon = plan.savingVsWeeklyPercent == null
+        ? null
+        : context.tr('plan_save_badge', {'percent': '${plan.savingVsWeeklyPercent}'});
 
     final card = AnimatedContainer(
       duration: AppDurations.medium,

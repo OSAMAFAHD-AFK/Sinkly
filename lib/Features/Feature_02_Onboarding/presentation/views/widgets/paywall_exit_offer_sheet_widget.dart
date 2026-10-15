@@ -272,12 +272,7 @@ class _OfferCard extends StatelessWidget {
                   decoration: const BoxDecoration(color: AppColors.primarySoft, borderRadius: AppRadii.cardAll),
                 ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1200.ms, color: Colors.white)
               else
-                PaywallPlanCardWidget(
-                      plan: offer,
-                      isSelected: true,
-                      onTap: null,
-                      badgeText: context.tr('exit_offer_extra_chip', {'percent': percent}),
-                    )
+                PaywallPlanCardWidget(plan: offer, isSelected: true, onTap: null)
                     .animate(target: showOfferPop ? 1 : 0)
                     .scaleXY(begin: 0.94, end: 1, duration: 650.ms, curve: Curves.elasticOut)
                     .fade(begin: 0.55, end: 1, duration: 300.ms),

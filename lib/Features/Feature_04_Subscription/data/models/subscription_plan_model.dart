@@ -21,6 +21,7 @@ class SubscriptionPlanModel extends Equatable {
     required this.localizedPrice,
     required this.localizedPricePerWeek,
     required this.trialDays,
+    this.savingVsWeeklyPercent,
     this.discountPercent,
     this.originalLocalizedPrice,
   });
@@ -32,8 +33,12 @@ class SubscriptionPlanModel extends Equatable {
   final String localizedPricePerWeek;
   final int trialDays;
 
-  /// "Save X%" badge. On the regular annual plan: saving vs. paying weekly for
-  /// a year. On the exit offer: the extra discount vs. the regular annual.
+  /// "Save X%" ribbon on a plan card: how much cheaper this plan is than paying
+  /// the weekly plan for a whole year (52 weeks).
+  final int? savingVsWeeklyPercent;
+
+  /// Extra discount vs. the regular price of the SAME plan (exit offer only:
+  /// shown in its title and button).
   final int? discountPercent;
 
   /// Regular price shown struck through (exit offer only). Must be the real
@@ -51,6 +56,7 @@ class SubscriptionPlanModel extends Equatable {
     localizedPrice,
     localizedPricePerWeek,
     trialDays,
+    savingVsWeeklyPercent,
     discountPercent,
     originalLocalizedPrice,
   ];

@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Sink-photo eval: private kitchen photos + results never go in git
+/tool/sink_eval/images/
+/tool/sink_eval/results/

@@ -86,6 +86,8 @@ void main() {
     expect(find.byType(PaywallExitOfferSheetWidget), findsOneWidget);
     expect(cubit.state.exitOffer?.localizedPrice, r'$29.99');
     expect(cubit.state.exitOffer?.discountPercent, 25);
+    expect(cubit.state.exitOffer?.savingVsWeeklyPercent, 88);
+    expect(find.text('SAVE 88%'), findsOneWidget, reason: 'the card ribbon compares with weekly');
     expect(find.text('No thanks'), findsNothing, reason: 'strict paywall: no decline button');
 
     // Dismissing the sheet (swipe down / barrier tap pops it with no result)

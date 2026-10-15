@@ -89,7 +89,7 @@ class _PaywallHeroineHeroWidgetState extends State<PaywallHeroineHeroWidget> {
     final annual = selected?.isBestValue ?? false;
     final planBubble = annual ? 'paywall_bubble_annual' : 'paywall_bubble_weekly';
     // Real saving of the annual plan (never a hard-coded number).
-    final annualSaving = state.plans.where((plan) => plan.isBestValue).firstOrNull?.discountPercent;
+    final annualSaving = state.plans.where((plan) => plan.isBestValue).firstOrNull?.savingVsWeeklyPercent;
     final (pose, motion, prop, bubbleKey) = widget.celebrating
         ? (HeroinePose.cheer, HeroineMotion.cheer, HeroineProp.none, 'paywall_bubble_success')
         : purchasing

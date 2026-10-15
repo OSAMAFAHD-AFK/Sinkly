@@ -38,7 +38,8 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
     // Weekly $4.99 · Annual $39.99 · Exit-offer annual $29.99. Every figure
     // below is derived from those three (52 weeks a year):
     //   annual      $39.99 → $0.77/week · 85% less than 52 × $4.99 = $259.48
-    //   exit offer  $29.99 → $0.58/week · 25% less than the regular annual
+    //   exit offer  $29.99 → $0.58/week · 88% less than weekly all year,
+    //                         25% less than the regular annual
     if (placementId == AppConstants.adaptyExitOfferPlacementId) {
       // Exit offer: the SAME annual plan, 25% cheaper. In the stores this is
       // its own product in the same subscription group.
@@ -50,6 +51,7 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
           localizedPrice: r'$29.99',
           localizedPricePerWeek: r'$0.58',
           trialDays: AppConstants.freeTrialDays,
+          savingVsWeeklyPercent: 88,
           discountPercent: 25,
           originalLocalizedPrice: r'$39.99',
         ),
@@ -63,7 +65,7 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
         localizedPrice: r'$39.99',
         localizedPricePerWeek: r'$0.77',
         trialDays: AppConstants.freeTrialDays,
-        discountPercent: 85,
+        savingVsWeeklyPercent: 85,
       ),
       SubscriptionPlanModel(
         id: 'weekly',
