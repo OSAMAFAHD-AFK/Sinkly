@@ -7,6 +7,7 @@ import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
+import '../../../../core/widgets/app_toast_widget.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
@@ -39,7 +40,7 @@ class SinkUnlockView extends StatelessWidget {
           return;
         }
         if (state.failureKey != null) {
-          AppFunctions.showSnack(context, context.tr(state.failureKey!));
+          AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error);
           context.read<SinkUnlockCubit>().clearFailure();
         }
       },

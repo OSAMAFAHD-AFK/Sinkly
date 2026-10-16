@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
+import '../../../../core/widgets/app_toast_widget.dart';
 import '../../../../core/widgets/custom_primary_button.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
@@ -42,7 +43,7 @@ class _FeedbackViewState extends State<FeedbackView> {
       _messageController.clear();
       context.read<FeedbackCubit>().resetForm();
     } else if (state.status == FeedbackSubmissionStatus.failure && state.failureKey != null) {
-      AppFunctions.showSnack(context, context.tr(state.failureKey!));
+      AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error);
     }
   }
 

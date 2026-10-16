@@ -66,6 +66,28 @@ abstract final class AppConstants {
   /// Access level granted by an active subscription.
   static const String premiumAccessLevelId = 'premium';
 
+  // ── Supabase (photo check + feedback only; everything else is on-device) ─
+  /// TODO(supabase): Project Settings → "Project URL" and API Keys →
+  /// "Publishable key" (sb_publishable_…; the legacy "anon" key also works).
+  /// Both are MEANT to be public (they ship inside every app);
+  /// safety comes from Row Level Security + the Edge Function's limits.
+  /// The Gemini key is NOT here: it lives only in Supabase secrets.
+  /// While either is empty the app keeps using the offline mocks.
+  static const String supabaseUrl = 'https://mihskiwblvfzgqutkqlr.supabase.co';
+  static const String supabasePublishableKey = 'sb_publishable_ZKjgUhtGRlId5nFBmSXr2Q_ow6QYz4F';
+
+  /// Edge Function that checks the clean-sink photo with Gemini.
+  static const String verifySinkPhotoFunction = 'verify-sink-photo';
+
+  /// Long side of the photo sent for checking: enough for the model, cheap
+  /// in tokens and fast to upload.
+  static const int verificationPhotoMaxSide = 1024;
+
+  /// Mirrors the server limits (supabase/functions + migration) so the app
+  /// can explain them without a round trip.
+  static const int verificationDailyLimit = 15;
+  static const int feedbackDailyLimit = 5;
+
   // ── Remote API (future) ───────────────────────────────────────────────
   static const String apiBaseUrl = 'https://api.sinkly.app/v1/';
 

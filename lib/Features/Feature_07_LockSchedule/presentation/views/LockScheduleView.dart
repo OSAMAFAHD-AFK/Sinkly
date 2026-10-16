@@ -16,6 +16,7 @@ import '../../../Feature_02_Onboarding/presentation/views/widgets/schedule_meal_
 import '../manager/lock_schedule_cubit.dart';
 import 'widgets/unsaved_changes_bar_widget.dart';
 import '../../../../core/widgets/app_category_picker_widget.dart';
+import '../../../../core/widgets/app_toast_widget.dart';
 import '../../../../core/widgets/system_app_picker_widget.dart';
 
 /// Plan tab: edit lock days, meals, times and locked apps after onboarding.
@@ -41,9 +42,9 @@ class LockScheduleView extends StatelessWidget {
       listener: (context, state) {
         if (state.saveStatus == LockScheduleSaveStatus.saved) {
           AppFunctions.successHaptic();
-          AppFunctions.showSnack(context, context.tr('plan_saved'));
+          AppFunctions.showSnack(context, context.tr('plan_saved'), tone: AppToastTone.success);
         } else if (state.saveStatus == LockScheduleSaveStatus.failure && state.failureKey != null) {
-          AppFunctions.showSnack(context, context.tr(state.failureKey!));
+          AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error);
         }
       },
       child: GlassScreenScaffold(

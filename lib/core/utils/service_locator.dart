@@ -11,6 +11,7 @@ import '../../Features/Feature_02_Onboarding/data/data_sources/onboarding_local_
 import '../../Features/Feature_02_Onboarding/data/repos/onboarding_repo.dart';
 import '../../Features/Feature_02_Onboarding/data/repos/onboarding_repo_impl.dart';
 import '../../Features/Feature_03_Feedback/data/data_sources/feedback_local_data_source.dart';
+import '../../Features/Feature_03_Feedback/data/data_sources/feedback_remote_data_source.dart';
 import '../../Features/Feature_03_Feedback/data/repos/feedback_repo.dart';
 import '../../Features/Feature_03_Feedback/data/repos/feedback_repo_impl.dart';
 import '../../Features/Feature_04_Subscription/data/data_sources/subscription_remote_data_source.dart';
@@ -43,17 +44,22 @@ import '../../Features/Feature_10_LockOverlay/data/repos/lock_overlay_repo_impl.
 import 'api_service.dart';
 import 'app_localizations.dart';
 import 'local_storage_service.dart';
+import 'supabase_service.dart';
 
 final GetIt getIt = GetIt.instance;
 
 /// Registers every service, data source and repo.
 /// Swapping a mock for a real implementation (Adapty, native
-/// blocking, AI verification) is a one-line change here.
+/// blocking) is a one-line change here.
 Future<void> setupServiceLocator() async {
   // ── Core ───────────────────────────────────────────────────────────────
   final preferences = await SharedPreferences.getInstance();
+  // Supabase = photo check + feedback only. Unconfigured builds keep the mocks.
+  final supabase = SupabaseService();
+  await supabase.initialize();
   getIt
     ..registerSingleton<LocalStorageService>(LocalStorageService(preferences))
+    ..registerSingleton<SupabaseService>(supabase)
     ..registerLazySingleton<LocaleController>(() => LocaleController(getIt()))
     ..registerLazySingleton<ApiService>(() => ApiService(Dio()))
     ..registerLazySingleton<ImagePicker>(ImagePicker.new)
@@ -76,7 +82,10 @@ Future<void> setupServiceLocator() async {
     )
     // ── Feature 03 · Feedback ────────────────────────────────────────────
     ..registerLazySingleton<FeedbackLocalDataSource>(() => FeedbackLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<FeedbackRepo>(() => FeedbackRepoImpl(localDataSource: getIt(), localeController: getIt()))
+    ..registerLazySingleton<FeedbackRemoteDataSource>(() => SupabaseFeedbackRemoteDataSource(getIt()))
+    ..registerLazySingleton<FeedbackRepo>(
+      () => FeedbackRepoImpl(localDataSource: getIt(), remoteDataSource: getIt(), localeController: getIt()),
+    )
     // ── Feature 04 · Subscription (swap for AdaptySubscriptionRemoteDataSource) ─
     ..registerLazySingleton<SubscriptionRemoteDataSource>(() => MockSubscriptionRemoteDataSource(getIt()))
     ..registerLazySingleton<SubscriptionRepo>(() => SubscriptionRepoImpl(getIt()))
@@ -86,7 +95,12 @@ Future<void> setupServiceLocator() async {
     // ── Feature 06 · Sink Unlock ─────────────────────────────────────────
     ..registerLazySingleton<SinkSessionLocalDataSource>(() => SinkSessionLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<SinkPhotoCaptureDataSource>(() => SinkPhotoCaptureDataSourceImpl(getIt()))
-    ..registerLazySingleton<SinkPhotoVerificationDataSource>(MockSinkPhotoVerificationDataSource.new)
+    // REAL once AppConstants.supabaseUrl/supabasePublishableKey are set: Edge Function → Gemini.
+    ..registerLazySingleton<SinkPhotoVerificationDataSource>(
+      () => supabase.isConfigured
+          ? SupabaseSinkPhotoVerificationDataSource(getIt())
+          : MockSinkPhotoVerificationDataSource(),
+    )
     ..registerLazySingleton<SinkUnlockRepo>(
       () => SinkUnlockRepoImpl(
         sessionDataSource: getIt(),

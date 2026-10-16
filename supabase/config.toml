@@ -412,6 +412,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
-# Clean-sink photo check: only callers holding a valid (anonymous) Supabase session.
+# Clean-sink photo check. The function itself verifies the caller's (anonymous)
+# session with the Auth server, which works with both legacy and new JWT signing keys.
 [functions.verify-sink-photo]
-verify_jwt = true
+verify_jwt = false

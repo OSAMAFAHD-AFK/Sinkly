@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/models/shared_core_models.dart';
@@ -60,7 +61,12 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
       final result = await _verification.verifySinkPhoto(photoPath);
       if (!result.isClean) return left(VerificationFailure(result.reasonKey ?? 'verify_error_not_clean'));
       return right(result);
+    } on VerificationUnavailableException catch (error) {
+      // The user only sees a friendly message; the real cause goes to the debug console.
+      debugPrint('[SinkVerify] ${error.messageKey}: ${error.debugMessage}');
+      return left(VerificationFailure(error.messageKey, debugMessage: error.debugMessage));
     } catch (error) {
+      debugPrint('[SinkVerify] unexpected: $error');
       return left(VerificationFailure('verify_error_unreadable', debugMessage: '$error'));
     }
   }

@@ -6,13 +6,14 @@
 //   GEMINI_API_KEY        required. Never leaves the server.
 //   GEMINI_MODEL          default "gemini-3.1-flash-lite"
 //   DAILY_LIMIT           default 15     checks per phone per rolling 24 h
-//   GLOBAL_DAILY_LIMIT    default 20000  checks for the whole app per rolling 24 h (wallet safety net)
-// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are injected by Supabase itself.
+// (No whole-app ceiling on purpose: a viral video must never lock real users out.
+//  Emergency stop: `supabase secrets unset GEMINI_API_KEY` → every check answers 502 at once.)
+// SUPABASE_URL and the server key (SUPABASE_SECRET_KEYS, or legacy SUPABASE_SERVICE_ROLE_KEY) are provided by Supabase itself.
 //
 // Replies (always JSON):
 //   200 { clean: boolean, reason: "clean|dishes|dirt|no_sink|not_real_photo|unclear" }
 //   400 invalid_image · 401 unauthorized · 402 subscription_required · 413 image_too_large
-//   429 limit_reached · 503 service_busy · 502 verification_unavailable (not counted against the phone)
+//   429 limit_reached · 502 verification_unavailable (not counted against the phone)
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import {
@@ -27,12 +28,25 @@ import {
 
 const GEMINI_MODEL = Deno.env.get("GEMINI_MODEL") ?? "gemini-3.1-flash-lite";
 const DAILY_LIMIT = positiveInt(Deno.env.get("DAILY_LIMIT"), 15);
-const GLOBAL_DAILY_LIMIT = positiveInt(Deno.env.get("GLOBAL_DAILY_LIMIT"), 20000);
-const GEMINI_TIMEOUT_MS = 20_000;
+// Up to 3 Gemini calls (retry + thinking fallback) must finish before the app gives up (45 s).
+const GEMINI_TIMEOUT_MS = 12_000;
 
-const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
-  auth: { persistSession: false, autoRefreshToken: false },
-});
+/** Server key: new-style secret key when the project has one, else the legacy service_role key. */
+function serverKey(): string | undefined {
+  try {
+    const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+    if (typeof secretKeys.default === "string") return secretKeys.default;
+  } catch {
+    // fall through to the legacy key
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+}
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+const SERVER_KEY = serverKey();
+const admin = SUPABASE_URL && SERVER_KEY
+  ? createClient(SUPABASE_URL, SERVER_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+  : null;
 
 function positiveInt(raw: string | undefined, fallback: number): number {
   const value = Number(raw);
@@ -104,8 +118,8 @@ Deno.serve(async (request) => {
   if (request.method !== "POST") return reply(405, { error: "method_not_allowed" });
 
   const apiKey = Deno.env.get("GEMINI_API_KEY");
-  if (!apiKey) {
-    console.error("GEMINI_API_KEY is not set");
+  if (!apiKey || !admin) {
+    console.error(!apiKey ? "GEMINI_API_KEY is not set" : "Supabase server key is missing");
     return reply(502, { error: "verification_unavailable" });
   }
 
@@ -133,11 +147,10 @@ Deno.serve(async (request) => {
   if (!bytes || !mime) return reply(400, { error: "invalid_image" });
   if (bytes.length > MAX_IMAGE_BYTES) return reply(413, { error: "image_too_large" });
 
-  // 4. Book one attempt (per-phone and whole-app limits, checked atomically).
+  // 4. Book one attempt (the phone's daily limit, checked atomically).
   const { data: booking, error: bookingError } = await admin.rpc("reserve_verification", {
     p_device: userId,
     p_device_limit: DAILY_LIMIT,
-    p_global_limit: GLOBAL_DAILY_LIMIT,
   });
   const reservation = Array.isArray(booking) ? booking[0] : booking;
   if (bookingError || !reservation) {
@@ -145,7 +158,6 @@ Deno.serve(async (request) => {
     return reply(502, { error: "verification_unavailable" });
   }
   if (reservation.status === "device_limit") return reply(429, { error: "limit_reached" });
-  if (reservation.status === "global_limit") return reply(503, { error: "service_busy" });
 
   // 5. Ask the model. The photo only ever exists in memory here: it is never stored or logged.
   const outcome = await askGemini(base64, mime, apiKey);

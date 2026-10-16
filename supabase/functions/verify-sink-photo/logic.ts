@@ -66,9 +66,11 @@ export function parseVerdict(text: string): Verdict | null {
 }
 
 export function buildGeminiBody(base64: string, mime: string, withThinking: boolean) {
+  // No `temperature`: Google asks to keep Gemini 3 models at their default (1.0).
   const generationConfig: Record<string, unknown> = {
-    temperature: 0,
-    maxOutputTokens: 200,
+    // Generous on purpose: "minimal" thinking is not guaranteed to be zero and any thinking
+    // shares this budget. Only tokens actually produced are billed (the answer is ~20).
+    maxOutputTokens: 1024,
     responseMimeType: "application/json",
     responseSchema: {
       type: "OBJECT",

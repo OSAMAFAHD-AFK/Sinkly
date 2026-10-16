@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'Features/Feature_03_Feedback/data/repos/feedback_repo.dart';
 import 'Features/Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'core/models/supported_language_model.dart';
 import 'core/utils/app_constants.dart';
@@ -25,8 +28,11 @@ Future<void> main() async {
   );
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
 
-  // Future: await Firebase.initializeApp(); await Adapty().activate(...);
+  // Future: await Adapty().activate(...);
   await setupServiceLocator();
+  // Background, best effort: deliver ideas written offline. Touches Supabase only
+  // when something is waiting, so installs that never use it never create a user.
+  unawaited(getIt<FeedbackRepo>().flushPending());
 
   runApp(const SinklyApp());
 }

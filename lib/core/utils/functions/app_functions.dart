@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../widgets/app_toast_widget.dart';
 import '../app_localizations.dart';
 
 /// Small, stateless helpers shared across features.
@@ -57,9 +58,8 @@ abstract final class AppFunctions {
   /// Initial letter for avatar bubbles.
   static String initialOf(String name) => name.trim().isEmpty ? '🙂' : name.trim().characters.first.toUpperCase();
 
-  static void showSnack(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
+  /// Temporary branded message (glass card, centred text, animated).
+  /// Use [AppToastTone.error] for failures, [AppToastTone.success] for wins.
+  static void showSnack(BuildContext context, String message, {AppToastTone tone = AppToastTone.info}) =>
+      AppToast.show(context, message, tone: tone);
 }

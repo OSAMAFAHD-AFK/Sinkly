@@ -7,6 +7,7 @@ import '../../../../../core/utils/app_constants.dart';
 import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
+import '../../../../../core/widgets/app_toast_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
@@ -115,7 +116,7 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     return BlocListener<SubscriptionCubit, SubscriptionState>(
       listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
       listener: (context, state) {
-        AppFunctions.showSnack(context, context.tr(state.failureKey!));
+        AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error);
         context.read<SubscriptionCubit>().clearFailure();
       },
       child: PopScope(

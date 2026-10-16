@@ -9,6 +9,7 @@ import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
+import '../../../../core/widgets/app_toast_widget.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../../../../core/widgets/screen_title_header_widget.dart';
@@ -27,7 +28,7 @@ class SettingsView extends StatelessWidget {
 
   Future<void> _restore(BuildContext context) async {
     final restored = await context.read<SubscriptionCubit>().restorePurchases();
-    if (context.mounted && restored) AppFunctions.showSnack(context, context.tr('restore_success'));
+    if (context.mounted && restored) AppFunctions.showSnack(context, context.tr('restore_success'), tone: AppToastTone.success);
   }
 
   Future<void> _rate(BuildContext context) async {
@@ -151,7 +152,7 @@ class SettingsView extends StatelessWidget {
 
     return BlocListener<SettingsCubit, SettingsState>(
       listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
-      listener: (context, state) => AppFunctions.showSnack(context, context.tr(state.failureKey!)),
+      listener: (context, state) => AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error),
       child: GlassScreenScaffold(
         palette: MeshPalette.calm,
         safeAreaBottom: false,
