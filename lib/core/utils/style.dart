@@ -197,7 +197,24 @@ abstract final class AppTextStyles {
   /// Plus Jakarta Sans has no Arabic glyphs, so Arabic switches to Cairo
   /// (similar geometric, friendly feel). Set by `LocaleController`.
   static bool _useArabicFont = false;
-  static void configureForLanguage(String languageCode) => _useArabicFont = languageCode == 'ar';
+
+  /// Japanese, Korean and Hindi glyphs aren't in Plus Jakarta Sans either;
+  /// they fall back to the phone's own fonts (Hiragino / Apple SD Gothic /
+  /// Kohinoor on iOS, Noto on Android), which only need tracking off.
+  static bool _noTracking = false;
+
+  /// Devanagari matras sit above and below the line and need extra room.
+  static double _heightScale = 1;
+
+  static void configureForLanguage(String languageCode) {
+    _useArabicFont = languageCode == 'ar';
+    _noTracking = const {'ar', 'ja', 'ko', 'hi'}.contains(languageCode);
+    _heightScale = switch (languageCode) {
+      'ar' => 1.08,
+      'hi' => 1.12,
+      _ => 1,
+    };
+  }
 
   /// Font family name used for the global TextTheme.
   static String? get fontFamily =>
@@ -210,14 +227,14 @@ abstract final class AppTextStyles {
     Color color = AppColors.ink,
     double letterSpacing = 0,
   }) {
-    // Arabic letters must stay joined: no tracking, slightly taller lines.
+    // Joined scripts (Arabic, Devanagari) and CJK break apart with tracking.
     final style = _useArabicFont ? GoogleFonts.cairo : GoogleFonts.plusJakartaSans;
     return style(
       fontSize: size,
       fontWeight: weight,
-      height: _useArabicFont ? height * 1.08 : height,
+      height: height * _heightScale,
       color: color,
-      letterSpacing: _useArabicFont ? 0 : letterSpacing,
+      letterSpacing: _noTracking ? 0 : letterSpacing,
     );
   }
 

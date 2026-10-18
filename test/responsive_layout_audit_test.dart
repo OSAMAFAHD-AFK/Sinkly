@@ -57,7 +57,9 @@ const _devices = [
 ];
 
 const _textScales = [1.0, 1.4];
-const _languages = ['en', 'ar'];
+/// EN + AR by default; `AUDIT_LANGS=de,hi,fr` audits other languages
+/// (German is the longest, Hindi the tallest).
+final _languages = (Platform.environment['AUDIT_LANGS'] ?? 'en,ar').split(',');
 
 Future<void> _loadRealFonts() async {
   Future<void> load(String family, List<String> paths) async {

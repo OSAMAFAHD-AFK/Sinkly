@@ -449,12 +449,17 @@ class _DayCapsule extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FittedBox(
-                child: Text(
-                  label,
-                  style: AppTextStyles.bodyStrong.copyWith(
-                    fontSize: 14,
-                    color: active ? Colors.white : AppColors.inkMuted,
+              // Shrinks in both directions: tall scripts (Hindi) at large
+              // text sizes must still fit the fixed-height capsule.
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: AppTextStyles.bodyStrong.copyWith(
+                      fontSize: 14,
+                      color: active ? Colors.white : AppColors.inkMuted,
+                    ),
                   ),
                 ),
               ),

@@ -236,7 +236,7 @@ class BlockingService : Service() {
         val text = when {
             state == null || state.locked -> null
             next != null -> snapshot.text("serviceNext", "Next lock at {time}")
-                .replace("{time}", DateFormat.getTimeFormat(this).format(Date(next)))
+                .replace("{time}", westernDigits(DateFormat.getTimeFormat(this).format(Date(next))))
             else -> snapshot.text("serviceIdle", "No lock planned")
         }
         val open = PendingIntent.getActivity(
@@ -261,6 +261,19 @@ class BlockingService : Service() {
         }
 
         return builder.build()
+    }
+
+    /** Clock times always use 0-9 (same rule as the Flutter side): "٣:٠٠ م" → "3:00 م". */
+    private fun westernDigits(text: String): String = buildString(text.length) {
+        for (char in text) {
+            append(
+                when (char) {
+                    in '٠'..'٩' -> '0' + (char - '٠')
+                    in '۰'..'۹' -> '0' + (char - '۰')
+                    else -> char
+                },
+            )
+        }
     }
 
     companion object {

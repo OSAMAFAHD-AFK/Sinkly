@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -103,18 +105,21 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
                 AppSpacing.screenGutter,
                 AppSpacing.lg,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: CustomMultiChildLayout(
+                delegate: _BalancedStepLayoutDelegate(),
                 children: [
                   if (illustration != null)
-                    Center(child: AdaptiveSceneBoxWidget(child: illustration!))
-                        .animate()
-                        .fadeIn(duration: 450.ms)
-                        .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms),
-                  _buildHeader(),
-                  if (body != null) ...[
-                    const SizedBox(height: AppSpacing.md),
-                    Expanded(
+                    LayoutId(
+                      id: _BalancedSlot.illustration,
+                      child: AdaptiveSceneBoxWidget(child: illustration!)
+                          .animate()
+                          .fadeIn(duration: 450.ms)
+                          .scale(begin: const Offset(0.92, 0.92), curve: Curves.easeOutBack, duration: 600.ms),
+                    ),
+                  LayoutId(id: _BalancedSlot.header, child: _buildHeader()),
+                  if (body != null)
+                    LayoutId(
+                      id: _BalancedSlot.body,
                       child: Align(
                         alignment: const Alignment(0, -0.2),
                         child: SingleChildScrollView(
@@ -126,7 +131,6 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-                  ],
                 ],
               ),
             ),
@@ -168,4 +172,46 @@ class OnboardingStepScaffoldWidget extends StatelessWidget {
       ],
     );
   }
+}
+
+enum _BalancedSlot { illustration, header, body }
+
+/// Illustration → header → body, top to bottom (same as a Column with an
+/// Expanded body), except the illustration gives up height when the body
+/// would get less than [_bodyFloor]: tall scripts (Hindi) at large text
+/// sizes on compact phones then shrink the scene instead of overflowing.
+class _BalancedStepLayoutDelegate extends MultiChildLayoutDelegate {
+  static const double _bodyFloor = 140;
+
+  @override
+  void performLayout(Size size) {
+    final hasBody = hasChild(_BalancedSlot.body);
+    final headerSize = layoutChild(_BalancedSlot.header, BoxConstraints.tightFor(width: size.width));
+
+    var top = 0.0;
+    if (hasChild(_BalancedSlot.illustration)) {
+      final reserved = headerSize.height + (hasBody ? AppSpacing.md + _bodyFloor : 0);
+      final scene = layoutChild(
+        _BalancedSlot.illustration,
+        BoxConstraints(maxWidth: size.width, maxHeight: math.max(0, size.height - reserved)),
+      );
+      positionChild(_BalancedSlot.illustration, Offset((size.width - scene.width) / 2, 0));
+      top = scene.height;
+    }
+
+    positionChild(_BalancedSlot.header, Offset(0, top));
+    top += headerSize.height;
+
+    if (hasBody) {
+      top += AppSpacing.md;
+      layoutChild(
+        _BalancedSlot.body,
+        BoxConstraints.tightFor(width: size.width, height: math.max(0, size.height - top)),
+      );
+      positionChild(_BalancedSlot.body, Offset(0, top));
+    }
+  }
+
+  @override
+  bool shouldRelayout(_BalancedStepLayoutDelegate oldDelegate) => false;
 }
