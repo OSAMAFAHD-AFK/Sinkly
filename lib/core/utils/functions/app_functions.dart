@@ -14,11 +14,21 @@ abstract final class AppFunctions {
 
   // ── Time formatting ────────────────────────────────────────────────────
   /// 1260 → "9:00 PM" (or "21:00" depending on device settings).
+  /// Digits are always 0-9 (product decision), even in Arabic; the AM/PM
+  /// marker stays localized (ص / م).
   static String formatMinutesOfDay(BuildContext context, int minutesOfDay) {
     final time = TimeOfDay(hour: minutesOfDay ~/ 60, minute: minutesOfDay % 60);
-    return MaterialLocalizations.of(context)
-        .formatTimeOfDay(time, alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context));
+    return westernDigits(
+      MaterialLocalizations.of(context)
+          .formatTimeOfDay(time, alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context)),
+    );
   }
+
+  /// "١٢:٠٥" / "۱۲:۰۵" → "12:05".
+  static String westernDigits(String text) => text.replaceAllMapped(
+    RegExp('[٠-٩۰-۹]'),
+    (match) => '${match[0]!.codeUnitAt(0) & 0x0F}',
+  );
 
   static String formatDateTimeClock(BuildContext context, DateTime dateTime) =>
       formatMinutesOfDay(context, dateTime.hour * 60 + dateTime.minute);

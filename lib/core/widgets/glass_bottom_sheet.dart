@@ -1,9 +1,11 @@
 import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../utils/app_localizations.dart';
+import '../utils/functions/app_functions.dart';
 import '../utils/style.dart';
 import 'custom_primary_button.dart';
 
@@ -82,21 +84,12 @@ Future<int?> showGlassTimePickerSheet({
             Text(title, style: AppTextStyles.title, textAlign: TextAlign.center),
             const SizedBox(height: AppSpacing.xs),
             Text(sheetContext.tr('time_picker_hint'), style: AppTextStyles.caption, textAlign: TextAlign.center),
+            const SizedBox(height: AppSpacing.xs),
             SizedBox(
-              height: 200,
-              child: CupertinoTheme(
-                data: CupertinoThemeData(
-                  textTheme: CupertinoTextThemeData(
-                    dateTimePickerTextStyle: AppTextStyles.title.copyWith(fontSize: 22),
-                  ),
-                ),
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.time,
-                  minuteInterval: 5,
-                  use24hFormat: MediaQuery.alwaysUse24HourFormatOf(sheetContext),
-                  initialDateTime: DateTime(2024, 1, 1, initialMinutesOfDay ~/ 60, (initialMinutesOfDay % 60) ~/ 5 * 5),
-                  onDateTimeChanged: (value) => selected = value.hour * 60 + value.minute,
-                ),
+              height: 220,
+              child: _TimeWheel(
+                initialMinutesOfDay: initialMinutesOfDay,
+                onChanged: (minutesOfDay) => selected = minutesOfDay,
               ),
             ),
             const SizedBox(height: AppSpacing.md),
@@ -110,4 +103,92 @@ Future<int?> showGlassTimePickerSheet({
       );
     },
   );
+}
+
+/// Hour · minute (1-minute steps) · AM/PM wheel.
+///
+/// Always written left-to-right with 0-9 digits (product decision), while
+/// the AM/PM labels stay in the app language (ص / م in Arabic).
+class _TimeWheel extends StatelessWidget {
+  const _TimeWheel({required this.initialMinutesOfDay, required this.onChanged});
+
+  final int initialMinutesOfDay;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final material = MaterialLocalizations.of(context);
+    final digits = _WesternDigitsCupertinoLocalizations(
+      am: material.anteMeridiemAbbreviation,
+      pm: material.postMeridiemAbbreviation,
+    );
+    // iOS already ticks on every row; give Android the same tactile feel.
+    final tick = defaultTargetPlatform != TargetPlatform.iOS;
+
+    return Localizations.override(
+      context: context,
+      delegates: [_WesternDigitsCupertinoDelegate(digits)],
+      child: Directionality(
+        textDirection: TextDirection.ltr,
+        child: CupertinoTheme(
+          data: CupertinoThemeData(
+            textTheme: CupertinoTextThemeData(
+              // Tabular figures: rows don't wobble sideways while spinning.
+              dateTimePickerTextStyle: AppTextStyles.title.copyWith(
+                fontSize: 23,
+                fontFeatures: const [ui.FontFeature.tabularFigures()],
+              ),
+            ),
+          ),
+          child: CupertinoDatePicker(
+            mode: CupertinoDatePickerMode.time,
+            use24hFormat: MediaQuery.alwaysUse24HourFormatOf(context),
+            itemExtent: 44,
+            initialDateTime: DateTime(2024, 1, 1, initialMinutesOfDay ~/ 60, initialMinutesOfDay % 60),
+            selectionOverlayBuilder: (context, {required selectedIndex, required columnCount}) =>
+                CupertinoPickerDefaultSelectionOverlay(
+                  background: AppColors.primary.withValues(alpha: 0.16),
+                  capStartEdge: selectedIndex == 0,
+                  capEndEdge: selectedIndex == columnCount - 1,
+                ),
+            onDateTimeChanged: (value) {
+              if (tick) AppFunctions.selectionHaptic();
+              onChanged(value.hour * 60 + value.minute);
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// English Cupertino strings (0-9 digits) with the app's own AM/PM labels.
+class _WesternDigitsCupertinoLocalizations extends DefaultCupertinoLocalizations {
+  const _WesternDigitsCupertinoLocalizations({required this.am, required this.pm});
+
+  final String am;
+  final String pm;
+
+  @override
+  String get anteMeridiemAbbreviation => am;
+
+  @override
+  String get postMeridiemAbbreviation => pm;
+}
+
+class _WesternDigitsCupertinoDelegate extends LocalizationsDelegate<CupertinoLocalizations> {
+  const _WesternDigitsCupertinoDelegate(this.localizations);
+
+  final CupertinoLocalizations localizations;
+
+  @override
+  bool isSupported(Locale locale) => true;
+
+  @override
+  Future<CupertinoLocalizations> load(Locale locale) => SynchronousFuture(localizations);
+
+  @override
+  bool shouldReload(_WesternDigitsCupertinoDelegate old) =>
+      old.localizations.anteMeridiemAbbreviation != localizations.anteMeridiemAbbreviation ||
+      old.localizations.postMeridiemAbbreviation != localizations.postMeridiemAbbreviation;
 }
