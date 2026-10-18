@@ -17,6 +17,104 @@ import UIKit
     if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "SinklyScreenTimePlugin") {
       SinklyScreenTimePlugin.register(with: registrar)
     }
+    if let registrar = engineBridge.pluginRegistry.registrar(forPlugin: "SinklyBlockingPlugin") {
+      SinklyBlockingPlugin.register(with: registrar)
+    }
+  }
+}
+
+// MARK: - App blocker bridge
+//
+/// Channel `sinkly/app_blocking` (same contract as Android's AppBlockingBridge.kt):
+///  • apply(snapshot)       → stores it in the App Group, shields / clears and
+///                            re-registers the meal-time schedules → status
+///  • getStatus             → {enabled, isLocked, lockedSinceMs, nextLockAtMs, missing[]}
+///  • consumeLaunchAction   → {appId, appName, action: overlay} left by the shield's
+///                            button, or nil → Flutter opens its full lock screen
+///  • leaveToHomeScreen / openBatterySettings → nothing to do on iOS
+///  • (native → Dart) openLockOverlay {appId, appName, action: overlay}
+/// The real work lives in ios/Shared (also compiled into the extensions).
+final class SinklyBlockingPlugin: NSObject {
+  private static var instance: SinklyBlockingPlugin?
+  private let channel: FlutterMethodChannel
+  private var hasBeenActive = false
+  private var activeObserver: NSObjectProtocol?
+
+  private init(channel: FlutterMethodChannel) {
+    self.channel = channel
+    super.init()
+    activeObserver = NotificationCenter.default.addObserver(
+      forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main
+    ) { [weak self] _ in self?.didBecomeActive() }
+  }
+
+  static func register(with registrar: FlutterPluginRegistrar) {
+    let channel = FlutterMethodChannel(name: "sinkly/app_blocking", binaryMessenger: registrar.messenger())
+    let plugin = SinklyBlockingPlugin(channel: channel)
+    channel.setMethodCallHandler(plugin.handle)
+    instance = plugin
+  }
+
+  private func didBecomeActive() {
+    // Catch up on anything missed while Sinkly was closed, renew schedules.
+    if #available(iOS 16.0, *) { SinklyBlocking.reconcile() }
+    // On a cold start Flutter reads the shield request itself after the splash.
+    guard hasBeenActive else {
+      hasBeenActive = true
+      return
+    }
+    if let pending = SinklyStore.shared.consumePendingLaunch() {
+      channel.invokeMethod(
+        "openLockOverlay", arguments: ["appId": pending.appId, "appName": pending.appName, "action": "overlay"])
+    }
+  }
+
+  private func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    switch call.method {
+    case "apply":
+      guard let map = call.arguments as? [String: Any] else {
+        return result(FlutterError(code: "BAD_SNAPSHOT", message: "apply expects a map", details: nil))
+      }
+      SinklyStore.shared.snapshot = SinklySnapshot(channel: map)
+      if #available(iOS 16.0, *) { SinklyBlocking.reconcile() }
+      result(status())
+    case "getStatus":
+      result(status())
+    case "consumeLaunchAction":
+      if let pending = SinklyStore.shared.consumePendingLaunch() {
+        result(["appId": pending.appId, "appName": pending.appName, "action": "overlay"])
+      } else {
+        result(nil)
+      }
+    case "leaveToHomeScreen", "openBatterySettings":
+      result(nil)
+    default:
+      result(FlutterMethodNotImplemented)
+    }
+  }
+
+  private func status() -> [String: Any] {
+    let snapshot = SinklyStore.shared.snapshot
+    let state = SinklyLockEngine.evaluate(snapshot, now: Date())
+    var missing: [String] = []
+    if snapshot.enabled {
+      if #available(iOS 16.0, *) {
+        if AuthorizationCenter.shared.authorizationStatus != .approved { missing.append("familyControls") }
+      } else {
+        missing.append("familyControls")
+      }
+    }
+    func ms(_ date: Date?) -> Any {
+      guard let date = date else { return NSNull() }
+      return NSNumber(value: date.epochMilliseconds)
+    }
+    return [
+      "enabled": snapshot.enabled,
+      "isLocked": snapshot.enabled && state.locked,
+      "lockedSinceMs": ms(state.lockedSince),
+      "nextLockAtMs": ms(state.nextLockAt),
+      "missing": missing,
+    ]
   }
 }
 
@@ -85,23 +183,22 @@ final class SinklyScreenTimePlugin: NSObject {
   }
 }
 
-/// The user's picks (opaque tokens), persisted across launches.
+/// The user's picks (opaque tokens), kept in the App Group so the blocker
+/// extensions can shield them while Sinkly is closed.
 @available(iOS 16.0, *)
 final class ScreenTimeSelectionStore {
   static let shared = ScreenTimeSelectionStore()
-  private let storageKey = "sinkly.familyActivitySelection"
 
   var selection: FamilyActivitySelection {
-    didSet { persist() }
+    didSet {
+      SinklyStore.shared.selection = selection
+      // Picked apps changed (maybe while locked): shield the new set at once.
+      SinklyBlocking.reconcile()
+    }
   }
 
   private init() {
-    if let data = UserDefaults.standard.data(forKey: storageKey),
-       let saved = try? JSONDecoder().decode(FamilyActivitySelection.self, from: data) {
-      selection = saved
-    } else {
-      selection = FamilyActivitySelection()
-    }
+    selection = SinklyStore.shared.selection
   }
 
   var summary: [String: Int] {
@@ -110,12 +207,6 @@ final class ScreenTimeSelectionStore {
       "categories": selection.categoryTokens.count,
       "webDomains": selection.webDomainTokens.count,
     ]
-  }
-
-  private func persist() {
-    if let data = try? JSONEncoder().encode(selection) {
-      UserDefaults.standard.set(data, forKey: storageKey)
-    }
   }
 }
 

@@ -21,17 +21,19 @@ class _SplashViewState extends State<SplashView> {
   void initState() {
     super.initState();
     // Leave the full brand animation on screen before routing.
-    Future<void>.delayed(SplashKitchenSceneWidget.totalDuration, () {
-      if (mounted) context.read<SplashCubit>().resolveStartDestination();
-    });
+    context.read<SplashCubit>().start(SplashKitchenSceneWidget.totalDuration);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocListener<SplashCubit, AppStartDestination?>(
       listenWhen: (previous, current) => current != null,
-      listener: (context, destination) =>
-          context.go(destination == AppStartDestination.home ? AppRouter.kHomeView : AppRouter.kOnboardingView),
+      listener: (context, destination) {
+        context.go(destination == AppStartDestination.home ? AppRouter.kHomeView : AppRouter.kOnboardingView);
+        // Launched from a locked app: its lock overlay goes on top of Home.
+        final lockRequest = context.read<SplashCubit>().pendingLockOverlay;
+        if (lockRequest != null) AppRouter.openNativeLockRequest(lockRequest);
+      },
       // Full-bleed illustrated scene: the sink sits on the bottom edge.
       child: const GlassScreenScaffold(animateBackground: true, useSafeArea: false, body: SplashKitchenSceneWidget()),
     );

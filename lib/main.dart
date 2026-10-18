@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'Features/Feature_03_Feedback/data/repos/feedback_repo.dart';
+import 'Features/Feature_06_SinkUnlock/data/repos/app_blocking_repo.dart';
 import 'Features/Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'core/models/supported_language_model.dart';
 import 'core/utils/app_constants.dart';
@@ -33,8 +34,19 @@ Future<void> main() async {
   // Background, best effort: deliver ideas written offline. Touches Supabase only
   // when something is waiting, so installs that never use it never create a user.
   unawaited(getIt<FeedbackRepo>().flushPending());
+  // Keeps the native app blocker in step with the plan from now on.
+  final blocking = getIt<AppBlockingRepo>();
+  unawaited(blocking.start());
 
   runApp(const SinklyApp());
+
+  // A button on the native lock screen (or the iOS shield notification) while
+  // Sinkly is running → the matching screen.
+  blocking.lockOverlayRequests.listen((request) {
+    final location = AppRouter.router.routerDelegate.currentConfiguration.uri.path;
+    if (location == AppRouter.kSinkUnlockView) return;
+    AppRouter.openNativeLockRequest(request);
+  });
 }
 
 class SinklyApp extends StatelessWidget {

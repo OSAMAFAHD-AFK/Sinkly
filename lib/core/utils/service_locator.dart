@@ -21,10 +21,13 @@ import '../../Features/Feature_05_Home/data/data_sources/home_local_data_source.
 import '../../Features/Feature_05_Home/data/repos/home_repo.dart';
 import '../../Features/Feature_05_Home/data/repos/home_repo_impl.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/app_blocking_platform_data_source.dart';
+import '../../Features/Feature_06_SinkUnlock/data/data_sources/connectivity_probe_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/installed_apps_platform_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_photo_capture_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_photo_verification_data_source.dart';
 import '../../Features/Feature_06_SinkUnlock/data/data_sources/sink_session_local_data_source.dart';
+import '../../Features/Feature_06_SinkUnlock/data/repos/app_blocking_repo.dart';
+import '../../Features/Feature_06_SinkUnlock/data/repos/app_blocking_repo_impl.dart';
 import '../../Features/Feature_06_SinkUnlock/data/repos/sink_unlock_repo.dart';
 import '../../Features/Feature_06_SinkUnlock/data/repos/sink_unlock_repo_impl.dart';
 import '../../Features/Feature_07_LockSchedule/data/data_sources/lock_schedule_local_data_source.dart';
@@ -49,8 +52,8 @@ import 'supabase_service.dart';
 final GetIt getIt = GetIt.instance;
 
 /// Registers every service, data source and repo.
-/// Swapping a mock for a real implementation (Adapty, native
-/// blocking) is a one-line change here.
+/// Swapping a mock for a real implementation (e.g. Adapty) is a one-line
+/// change here.
 Future<void> setupServiceLocator() async {
   // ── Core ───────────────────────────────────────────────────────────────
   final preferences = await SharedPreferences.getInstance();
@@ -65,12 +68,16 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<ImagePicker>(ImagePicker.new)
     // ── Shared platform data sources (MOCKS) ─────────────────────────────
     ..registerLazySingleton<DevicePermissionsDataSource>(PlatformDevicePermissionsDataSource.new)
-    ..registerLazySingleton<AppBlockingPlatformDataSource>(MockAppBlockingPlatformDataSource.new)
+    // REAL: channel `sinkly/app_blocking` (Kotlin blocking/ · Swift ios/Shared + extensions).
+    ..registerLazySingleton<AppBlockingPlatformDataSource>(MethodChannelAppBlockingDataSource.new)
+    ..registerLazySingleton<AppBlockingRepo>(
+      () => AppBlockingRepoImpl(storage: getIt(), platform: getIt(), permissions: getIt(), localeController: getIt()),
+    )
     // REAL: Android device app list (MainActivity.kt) · iOS uses Apple's picker.
     ..registerLazySingleton<InstalledAppsPlatformDataSource>(MethodChannelInstalledAppsDataSource.new)
     // ── Feature 01 · Splash ──────────────────────────────────────────────
     ..registerLazySingleton<SplashLocalDataSource>(() => SplashLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<SplashRepo>(() => SplashRepoImpl(getIt()))
+    ..registerLazySingleton<SplashRepo>(() => SplashRepoImpl(getIt(), getIt()))
     // ── Feature 02 · Onboarding ──────────────────────────────────────────
     ..registerLazySingleton<OnboardingLocalDataSource>(() => OnboardingLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<OnboardingRepo>(
@@ -88,14 +95,15 @@ Future<void> setupServiceLocator() async {
     )
     // ── Feature 04 · Subscription (swap for AdaptySubscriptionRemoteDataSource) ─
     ..registerLazySingleton<SubscriptionRemoteDataSource>(() => MockSubscriptionRemoteDataSource(getIt()))
-    ..registerLazySingleton<SubscriptionRepo>(() => SubscriptionRepoImpl(getIt()))
+    ..registerLazySingleton<SubscriptionRepo>(() => SubscriptionRepoImpl(getIt(), getIt()))
     // ── Feature 05 · Home ────────────────────────────────────────────────
     ..registerLazySingleton<HomeLocalDataSource>(() => HomeLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<HomeRepo>(() => HomeRepoImpl(getIt()))
+    ..registerLazySingleton<HomeRepo>(() => HomeRepoImpl(getIt(), getIt()))
     // ── Feature 06 · Sink Unlock ─────────────────────────────────────────
     ..registerLazySingleton<SinkSessionLocalDataSource>(() => SinkSessionLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<SinkPhotoCaptureDataSource>(() => SinkPhotoCaptureDataSourceImpl(getIt()))
     // REAL once AppConstants.supabaseUrl/supabasePublishableKey are set: Edge Function → Gemini.
+    ..registerLazySingleton<ConnectivityProbeDataSource>(HttpConnectivityProbeDataSource.new)
     ..registerLazySingleton<SinkPhotoVerificationDataSource>(
       () => supabase.isConfigured
           ? SupabaseSinkPhotoVerificationDataSource(getIt())
@@ -106,14 +114,14 @@ Future<void> setupServiceLocator() async {
         sessionDataSource: getIt(),
         captureDataSource: getIt(),
         verificationDataSource: getIt(),
-        blockingDataSource: getIt(),
+        connectivityDataSource: getIt(),
       ),
     )
     // ── Feature 07 · Lock Schedule ───────────────────────────────────────
     ..registerLazySingleton<LockScheduleLocalDataSource>(() => LockScheduleLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<LockScheduleRepo>(
       () =>
-          LockScheduleRepoImpl(localDataSource: getIt(), blockingDataSource: getIt(), installedAppsDataSource: getIt()),
+          LockScheduleRepoImpl(localDataSource: getIt(), installedAppsDataSource: getIt()),
     )
     // ── Feature 08 · Progress ────────────────────────────────────────────
     ..registerLazySingleton<ProgressLocalDataSource>(() => ProgressLocalDataSourceImpl(getIt()))
@@ -134,5 +142,5 @@ Future<void> setupServiceLocator() async {
     )
     // ── Feature 10 · Lock Overlay ────────────────────────────────────────
     ..registerLazySingleton<LockOverlayLocalDataSource>(() => LockOverlayLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<LockOverlayRepo>(() => LockOverlayRepoImpl(getIt()));
+    ..registerLazySingleton<LockOverlayRepo>(() => LockOverlayRepoImpl(getIt(), getIt()));
 }

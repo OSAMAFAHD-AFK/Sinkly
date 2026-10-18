@@ -1,0 +1,117 @@
+{
+  "about": "Shared cases for the Sinkly lock rule. Dart (LockStatusModel), Kotlin (LockEngine) and Swift (SinklyLockEngine) must all pass them. Times are the phone's local wall clock. 2026-10-12 is a Monday. days: ISO weekday (1=Mon..7=Sun) -> meal end minutes after midnight.",
+  "cases": [
+    {
+      "name": "locked after dinner, never cleaned",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": null, "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": true, "lockedSince": "2026-10-12T21:00", "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "cleaned after dinner -> unlocked",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T21:14", "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "cleaned before dinner -> dinner locks",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T20:00", "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": true, "lockedSince": "2026-10-12T21:00", "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "exactly at the meal time -> locked at that minute",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T10:00", "manualLockAt": null,
+      "now": "2026-10-12T21:00",
+      "expect": {"locked": true, "lockedSince": "2026-10-12T21:00", "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "one second before the meal -> still free",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T10:00", "manualLockAt": null,
+      "now": "2026-10-12T20:59:59",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-12T21:00"}
+    },
+    {
+      "name": "no expiry: dinner-only plan stays locked the next afternoon",
+      "days": {"1": [1260], "2": [1260], "3": [1260], "4": [1260], "5": [1260], "6": [1260], "7": [1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-10T21:30", "manualLockAt": null,
+      "now": "2026-10-12T15:00",
+      "expect": {"locked": true, "lockedSince": "2026-10-11T21:00", "nextLockAt": "2026-10-12T21:00"}
+    },
+    {
+      "name": "meals before locking started never lock",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-12T21:10", "lastCleanAt": null, "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "locking off (no subscription) -> never locked",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": null, "lastCleanAt": null, "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "test lock behaves like a meal ending",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T10:00", "manualLockAt": "2026-10-12T11:59",
+      "now": "2026-10-12T12:00",
+      "expect": {"locked": true, "lockedSince": "2026-10-12T11:59", "nextLockAt": "2026-10-12T21:00"}
+    },
+    {
+      "name": "test lock already cleaned",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T11:30", "manualLockAt": "2026-10-12T11:00",
+      "now": "2026-10-12T12:00",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-12T21:00"}
+    },
+    {
+      "name": "weekend off: next lock is Monday",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-16T21:30", "manualLockAt": null,
+      "now": "2026-10-17T12:00",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-19T09:30"}
+    },
+    {
+      "name": "meal one minute before midnight, checked after midnight",
+      "days": {"1": [1439]},
+      "activeSince": "2026-10-12T00:00", "lastCleanAt": null, "manualLockAt": null,
+      "now": "2026-10-13T00:30",
+      "expect": {"locked": true, "lockedSince": "2026-10-12T23:59", "nextLockAt": "2026-10-19T23:59"}
+    },
+    {
+      "name": "today's dinner removed from the plan while locked -> unlocked at once",
+      "days": {"1": [570], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T10:00", "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-13T09:30"}
+    },
+    {
+      "name": "no active day at all",
+      "days": {},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": null, "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": null}
+    },
+    {
+      "name": "one meal a week, last clean two weeks ago",
+      "days": {"7": [1260]},
+      "activeSince": "2026-09-01T00:00", "lastCleanAt": "2026-10-04T21:30", "manualLockAt": null,
+      "now": "2026-10-17T10:00",
+      "expect": {"locked": true, "lockedSince": "2026-10-11T21:00", "nextLockAt": "2026-10-18T21:00"}
+    },
+    {
+      "name": "cleaned at the exact lock instant -> unlocked",
+      "days": {"1": [570, 1260], "2": [570, 1260], "3": [570, 1260], "4": [570, 1260], "5": [570, 1260], "6": [570, 1260], "7": [570, 1260]},
+      "activeSince": "2026-10-01T00:00", "lastCleanAt": "2026-10-12T21:00", "manualLockAt": null,
+      "now": "2026-10-12T21:30",
+      "expect": {"locked": false, "lockedSince": null, "nextLockAt": "2026-10-13T09:30"}
+    }
+  ]
+}

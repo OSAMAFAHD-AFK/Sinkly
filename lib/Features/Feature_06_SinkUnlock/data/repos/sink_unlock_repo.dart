@@ -27,4 +27,7 @@ abstract class SinkUnlockRepo {
     required String photoPath,
     required MealType? triggeringMeal,
   });
+
+  /// Real internet available? Checked before the camera opens.
+  Future<bool> hasInternet();
 }

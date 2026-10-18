@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../Feature_06_SinkUnlock/data/models/blocking_status_model.dart';
 import '../../data/models/home_dashboard_model.dart';
 import '../../data/repos/home_repo.dart';
 
@@ -14,12 +15,14 @@ part 'home_state.dart';
 class HomeCubit extends Cubit<HomeState> {
   HomeCubit(this._repo) : super(_build(_repo)) {
     _dataSubscription = _repo.dataChanges.listen((_) => refresh());
+    _protectionSubscription = _repo.protectionChanges.listen((_) => refresh());
     _ticker = Timer.periodic(const Duration(seconds: 30), (_) => refresh());
     _lifecycleListener = AppLifecycleListener(onResume: refresh);
   }
 
   final HomeRepo _repo;
   late final StreamSubscription<void> _dataSubscription;
+  late final StreamSubscription<BlockingStatusModel> _protectionSubscription;
   late final Timer _ticker;
   late final AppLifecycleListener _lifecycleListener;
 
@@ -33,6 +36,7 @@ class HomeCubit extends Cubit<HomeState> {
     return HomeState(
       dashboard: repo.buildDashboard(now: now),
       now: _minuteNow(),
+      protection: repo.protection,
     );
   }
 
@@ -41,12 +45,19 @@ class HomeCubit extends Cubit<HomeState> {
     if (!isClosed) emit(_build(_repo));
   }
 
+  /// "Protection is off" banner tapped.
+  Future<void> fixProtection() async {
+    await _repo.fixProtection();
+    refresh();
+  }
+
   @override
   Future<void> close() async {
     // Stop the timer synchronously, before any await.
     _ticker.cancel();
     _lifecycleListener.dispose();
     await _dataSubscription.cancel();
+    await _protectionSubscription.cancel();
     return super.close();
   }
 }

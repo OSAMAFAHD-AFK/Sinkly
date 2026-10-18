@@ -26,7 +26,7 @@ abstract final class AppConstants {
   static const String appStoreId = '';
 
   /// Android package (Google Play listing id) = `applicationId` in Gradle.
-  static const String androidPackageName = 'com.sinkly.sinkly';
+  static const String androidPackageName = 'com.sinkly.app';
 
   /// TODO(store): ONE smart link for invites that sends iPhone users to the
   /// App Store and Android users to Google Play (e.g. a tiny redirect page

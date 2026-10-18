@@ -36,6 +36,17 @@ class HomeView extends StatelessWidget {
         sprintMinutes: dashboard.plan.sprintMinutes,
         onStartSinkSprint: () => context.push(AppRouter.kSinkUnlockView),
       ),
+      // Only if an access granted during onboarding was later switched off.
+      if (state.protection.isProtectionBroken) ...[
+        const SizedBox(height: AppSpacing.sm),
+        HomeActionBannerWidget(
+          emoji: '⚠️',
+          title: context.tr('protection_off_title'),
+          subtitle: context.tr('protection_off_subtitle'),
+          highlighted: true,
+          onTap: context.read<HomeCubit>().fixProtection,
+        ),
+      ],
       const SizedBox(height: AppSpacing.lg),
       SectionHeaderWidget(
         title: context.tr('home_today_section'),

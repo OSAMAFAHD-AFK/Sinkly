@@ -260,15 +260,9 @@ void main() {
             await visit('lock-overlay', () async => AppRouter.router.go(AppRouter.kLockOverlayView), ms: 2500);
             await _scrollThrough(tester, () => currentLabel = 'lock-overlay(scrolled)');
 
-            // ── Sink unlock: intro → sprint ──
-            await visit('unlock/intro', () async => AppRouter.router.go(AppRouter.kSinkUnlockView), ms: 1500);
+            // ── Sink unlock: the sprint starts as soon as it opens ──
+            await visit('unlock/sprint', () async => AppRouter.router.go(AppRouter.kSinkUnlockView), ms: 1500);
             unlock = tester.element(find.byType(SinkUnlockView)).read<SinkUnlockCubit>();
-            await visit('unlock/intro-sheet', () async {
-              await tester.tap(find.byType(SprintDurationButtonWidget));
-            }, ms: 1200);
-            Navigator.of(tester.element(find.byType(SinkUnlockView))).pop();
-            await settle(800);
-            await visit('unlock/sprint', () async => unlock!.startSprint(), ms: 1500);
             await visit('unlock/sprint-sheet', () async {
               await tester.ensureVisible(find.byType(SprintDurationButtonWidget));
               await tester.tap(find.byType(SprintDurationButtonWidget));

@@ -80,7 +80,7 @@ class _LockOverlayHeroineStageWidgetState extends State<LockOverlayHeroineStageW
     final (pose, motion, prop, particles) = switch (act) {
       _Act.hey => (HeroinePose.waveJoy, HeroineMotion.wave, HeroineProp.none, const ['👋', '✨']),
       _Act.pep => (HeroinePose.encourage, HeroineMotion.beckon, HeroineProp.none, const ['⏱️', '✨']),
-      _Act.scrub => (HeroinePose.washJoy, HeroineMotion.scrub, HeroineProp.plate, const ['🫧', '🫧', '✨', '🫧']),
+      _Act.scrub => (HeroinePose.washJoy, HeroineMotion.scrub, HeroineProp.plate, const ['💧', '💧', '✨', '💧']),
       _Act.dream => (HeroinePose.cherishJoy, HeroineMotion.cherish, HeroineProp.heart, const ['✨', '💙', '✨']),
       _Act.cheer => (HeroinePose.joyJump, HeroineMotion.jumpJoy, HeroineProp.none, const ['💪', '🎉', '💙', '✨']),
     };

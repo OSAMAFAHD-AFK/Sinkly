@@ -1,7 +1,7 @@
 part of 'sink_unlock_cubit.dart';
 
 /// Linear flow of the unlock experience.
-enum SinkUnlockStage { intro, sprinting, verifying, celebrating }
+enum SinkUnlockStage { sprinting, verifying, celebrating }
 
 class SinkUnlockState extends Equatable {
   const SinkUnlockState({

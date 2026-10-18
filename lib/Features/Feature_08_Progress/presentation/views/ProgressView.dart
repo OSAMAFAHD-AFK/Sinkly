@@ -115,7 +115,7 @@ class ProgressView extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                             child: Column(
                               children: [
-                                const Text('🫧', style: TextStyle(fontSize: 34)),
+                                const Text('💧', style: TextStyle(fontSize: 34)),
                                 const SizedBox(height: AppSpacing.xs),
                                 Text(
                                   context.tr('progress_history_empty'),

@@ -85,7 +85,7 @@ class _UnlockCelebrationHeroineStageWidgetState extends State<UnlockCelebrationH
     final (pose, motion, particles) = switch (_beat) {
       _Beat.jump => (HeroinePose.joyJump, HeroineMotion.jumpJoy, const ['🎉', '💙', '✨', '💛', '🎉']),
       _Beat.proud => (HeroinePose.adore, HeroineMotion.bounce, const ['💙', '✨', '💙']),
-      _Beat.applause => (HeroinePose.clapHappy, HeroineMotion.clap, const ['👏', '✨', '🫧']),
+      _Beat.applause => (HeroinePose.clapHappy, HeroineMotion.clap, const ['👏', '✨', '💧']),
       _Beat.cheer => (HeroinePose.cheer, HeroineMotion.cheer, const ['🎉', '💖', '✨']),
     };
 

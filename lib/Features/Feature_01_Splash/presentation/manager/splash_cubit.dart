@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../Feature_06_SinkUnlock/data/data_sources/app_blocking_platform_data_source.dart';
 import '../../data/models/app_start_destination_model.dart';
 import '../../data/repos/splash_repo.dart';
 
@@ -10,5 +11,16 @@ class SplashCubit extends Cubit<AppStartDestination?> {
 
   final SplashRepo _repo;
 
-  void resolveStartDestination() => emit(_repo.resolveStartDestination());
+  /// Set when Sinkly was opened from a locked app's lock screen: the view
+  /// opens the lock overlay right after Home.
+  LockOverlayRequest? pendingLockOverlay;
+
+  /// Plays the brand animation, then routes. Opened from a lock screen, it
+  /// skips the animation: the user is in the middle of something.
+  Future<void> start(Duration brandAnimation) async {
+    final destination = _repo.resolveStartDestination();
+    if (destination == AppStartDestination.home) pendingLockOverlay = await _repo.consumePendingLockOverlay();
+    if (pendingLockOverlay == null) await Future<void>.delayed(brandAnimation);
+    if (!isClosed) emit(destination);
+  }
 }

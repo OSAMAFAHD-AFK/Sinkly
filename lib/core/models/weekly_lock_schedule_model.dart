@@ -47,6 +47,15 @@ class MealSlotModel extends Equatable {
 
   factory MealSlotModel.defaultFor(MealType type) => MealSlotModel(type: type, minutesOfDay: type.defaultMinutesOfDay);
 
+  /// This meal's wall-clock time on [day], in the phone's own time zone.
+  ///
+  /// Built from the clock fields (never "midnight + N minutes"), so 18:00
+  /// stays 18:00 on daylight-saving days, when a day lasts 23 or 25 hours.
+  DateTime on(DateTime day) => atMinutesOn(day, minutesOfDay);
+
+  static DateTime atMinutesOn(DateTime day, int minutesOfDay) =>
+      DateTime(day.year, day.month, day.day, minutesOfDay ~/ 60, minutesOfDay % 60);
+
   MealSlotModel copyWith({MealType? type, int? minutesOfDay}) =>
       MealSlotModel(type: type ?? this.type, minutesOfDay: minutesOfDay ?? this.minutesOfDay);
 
@@ -199,7 +208,7 @@ class WeeklyLockScheduleModel extends Equatable {
       final plan = dayPlan(cursor.weekday);
       if (plan.isActive) {
         for (final meal in plan.meals) {
-          final at = cursor.add(Duration(minutes: meal.minutesOfDay));
+          final at = meal.on(cursor);
           if (!at.isBefore(from) && !at.isAfter(to)) triggers.add((at: at, meal: meal.type));
         }
       }

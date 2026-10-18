@@ -1,34 +1,140 @@
+import 'dart:async';
+import 'dart:io' show Platform;
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 
-import '../../../../core/models/shared_core_models.dart';
+import '../models/blocking_snapshot_model.dart';
+import '../models/blocking_status_model.dart';
 
-/// Bridge to the OS-level app blocking layer.
+/// Sent by the native lock card ("Clean my sink"): the locked app (package /
+/// id + visible name; empty on iOS) and the action — always `overlay` = open
+/// Sinkly's full lock screen.
+typedef LockOverlayRequest = ({String appId, String appName, String action});
+
+/// Bridge to the OS-level app blocker — channel `sinkly/app_blocking`.
 ///
-/// MOCK today. Native plan (MethodChannel `sinkly/app_blocking`):
-///  * iOS: `ManagedSettingsStore().shield.applications = tokens` to lock, and
-///    `= nil` to unlock. `DeviceActivityCenter().startMonitoring` schedules
-///    locks at meal end-times even when Sinkly is closed (DeviceActivity
-///    Monitor extension).
-///  * Android: foreground service + UsageStatsManager / AccessibilityService
-///    that shows the Sinkly lock overlay when a blocked package opens;
-///    AlarmManager/WorkManager to trigger at meal end-times.
+///  * Android (`blocking/` in the Kotlin sources): a foreground service
+///    watches which app comes to the front and covers a locked one with
+///    Sinkly's static lock card.
+///  * iOS (`ios/Shared`, extensions): ManagedSettings shields the apps with
+///    the same card (Apple's shield), a DeviceActivityMonitor extension starts
+///    locks at meal times even when Sinkly is closed.
+///
+/// Flutter → native: `apply` (snapshot) · `getStatus` · `consumeLaunchAction`
+/// · `leaveToHomeScreen` · `openBatterySettings`.
+/// Native → Flutter: `openLockOverlay {appId, appName, action}` ("Clean my sink").
 abstract class AppBlockingPlatformDataSource {
-  Future<void> scheduleLocks({required WeeklyLockScheduleModel schedule, required List<BlockableAppModel> apps});
-  Future<void> lockApps(List<BlockableAppModel> apps);
-  Future<void> unlockApps(List<BlockableAppModel> apps);
+  /// Hands the latest snapshot to the native blocker; returns its status.
+  Future<BlockingStatusModel> apply(BlockingSnapshotModel snapshot);
+
+  Future<BlockingStatusModel> status();
+
+  /// A lock-screen request that arrived while Flutter wasn't running (cold
+  /// start from the lock screen or the iOS shield notification), or `null`.
+  Future<LockOverlayRequest?> consumeLaunchAction();
+
+  /// Locked apps the user tried to open while Sinkly is running.
+  Stream<LockOverlayRequest> get lockOverlayRequests;
+
+  /// Android: leave the lock screen to the home screen (back press).
+  Future<void> leaveToHomeScreen();
+
+  /// Android: battery-optimization settings so the blocker isn't stopped.
+  Future<void> openBatterySettings();
 }
 
-class MockAppBlockingPlatformDataSource implements AppBlockingPlatformDataSource {
+class MethodChannelAppBlockingDataSource implements AppBlockingPlatformDataSource {
+  MethodChannelAppBlockingDataSource() {
+    _channel.setMethodCallHandler((call) async {
+      if (call.method == 'openLockOverlay') _requests.add(_request(call.arguments));
+      return null;
+    });
+  }
+
+  static const MethodChannel _channel = MethodChannel('sinkly/app_blocking');
+  final StreamController<LockOverlayRequest> _requests = StreamController.broadcast();
+
+  static LockOverlayRequest _request(Object? args) => args is Map
+      ? (
+          appId: args['appId'] as String? ?? '',
+          appName: args['appName'] as String? ?? '',
+          action: args['action'] as String? ?? 'overlay',
+        )
+      : (appId: '', appName: '', action: 'overlay');
+
+  bool get _isMobile => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
   @override
-  Future<void> scheduleLocks({required WeeklyLockScheduleModel schedule, required List<BlockableAppModel> apps}) async {
-    debugPrint('[AppBlocking] schedule ${schedule.weeklyMealCount} weekly locks for ${apps.map((a) => a.id).toList()}');
+  Future<BlockingStatusModel> apply(BlockingSnapshotModel snapshot) =>
+      _status('apply', snapshot.toChannel());
+
+  @override
+  Future<BlockingStatusModel> status() => _status('getStatus');
+
+  Future<BlockingStatusModel> _status(String method, [Object? arguments]) async {
+    if (!_isMobile) return BlockingStatusModel.unknown;
+    try {
+      final map = await _channel.invokeMethod<Map<Object?, Object?>>(method, arguments);
+      return map == null ? BlockingStatusModel.unknown : BlockingStatusModel.fromChannel(map);
+    } on MissingPluginException {
+      return BlockingStatusModel.unknown;
+    }
   }
 
   @override
-  Future<void> lockApps(List<BlockableAppModel> apps) async =>
-      debugPrint('[AppBlocking] lock ${apps.map((a) => a.id).toList()}');
+  Future<LockOverlayRequest?> consumeLaunchAction() async {
+    if (!_isMobile) return null;
+    try {
+      final args = await _channel.invokeMethod<Map<Object?, Object?>>('consumeLaunchAction');
+      return args == null ? null : _request(args);
+    } on MissingPluginException {
+      return null;
+    }
+  }
 
   @override
-  Future<void> unlockApps(List<BlockableAppModel> apps) async =>
-      debugPrint('[AppBlocking] unlock ${apps.map((a) => a.id).toList()}');
+  Stream<LockOverlayRequest> get lockOverlayRequests => _requests.stream;
+
+  @override
+  Future<void> leaveToHomeScreen() => _invoke('leaveToHomeScreen');
+
+  @override
+  Future<void> openBatterySettings() => _invoke('openBatterySettings');
+
+  Future<void> _invoke(String method) async {
+    if (!_isMobile) return;
+    try {
+      await _channel.invokeMethod<void>(method);
+    } on MissingPluginException {
+      // Older native build: nothing to do.
+    }
+  }
+}
+
+/// Desktop / widget tests: remembers the snapshot, never locks anything.
+class MockAppBlockingPlatformDataSource implements AppBlockingPlatformDataSource {
+  BlockingSnapshotModel? lastSnapshot;
+
+  @override
+  Future<BlockingStatusModel> apply(BlockingSnapshotModel snapshot) async {
+    lastSnapshot = snapshot;
+    return status();
+  }
+
+  @override
+  Future<BlockingStatusModel> status() async =>
+      BlockingStatusModel(enabled: lastSnapshot?.enabled ?? false, isLocked: false, missing: const {});
+
+  @override
+  Future<LockOverlayRequest?> consumeLaunchAction() async => null;
+
+  @override
+  Stream<LockOverlayRequest> get lockOverlayRequests => const Stream.empty();
+
+  @override
+  Future<void> leaveToHomeScreen() async {}
+
+  @override
+  Future<void> openBatterySettings() async {}
 }

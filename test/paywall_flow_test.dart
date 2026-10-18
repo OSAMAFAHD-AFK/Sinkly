@@ -8,6 +8,9 @@ import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/widgets
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/widgets/paywall_step_widget.dart';
 import 'package:sinkly/Features/Feature_04_Subscription/data/data_sources/subscription_remote_data_source.dart';
 import 'package:sinkly/Features/Feature_04_Subscription/data/repos/subscription_repo_impl.dart';
+import 'package:sinkly/Features/Feature_06_SinkUnlock/data/data_sources/app_blocking_platform_data_source.dart';
+import 'package:sinkly/Features/Feature_06_SinkUnlock/data/repos/app_blocking_repo_impl.dart';
+import 'package:sinkly/Features/Feature_02_Onboarding/data/data_sources/device_permissions_data_source.dart';
 import 'package:sinkly/Features/Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'package:sinkly/core/utils/app_localizations.dart';
 import 'package:sinkly/core/utils/local_storage_service.dart';
@@ -16,7 +19,13 @@ import 'package:sinkly/core/widgets/confetti_burst_widget.dart';
 Future<SubscriptionCubit> _cubit() async {
   SharedPreferences.setMockInitialValues({});
   final storage = LocalStorageService(await SharedPreferences.getInstance());
-  return SubscriptionCubit(SubscriptionRepoImpl(MockSubscriptionRemoteDataSource(storage)));
+  final blocking = AppBlockingRepoImpl(
+    storage: storage,
+    platform: MockAppBlockingPlatformDataSource(),
+    permissions: MockDevicePermissionsDataSource(),
+    localeController: LocaleController(storage),
+  );
+  return SubscriptionCubit(SubscriptionRepoImpl(MockSubscriptionRemoteDataSource(storage), blocking));
 }
 
 Future<void> _pumpPaywall(WidgetTester tester, SubscriptionCubit cubit, ValueChanged<bool> onFinished) async {

@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/models/shared_core_models.dart';
-import '../data_sources/app_blocking_platform_data_source.dart';
+import '../data_sources/connectivity_probe_data_source.dart';
 import '../data_sources/sink_photo_capture_data_source.dart';
 import '../data_sources/sink_photo_verification_data_source.dart';
 import '../data_sources/sink_session_local_data_source.dart';
@@ -15,16 +15,19 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
     required SinkSessionLocalDataSource sessionDataSource,
     required SinkPhotoCaptureDataSource captureDataSource,
     required SinkPhotoVerificationDataSource verificationDataSource,
-    required AppBlockingPlatformDataSource blockingDataSource,
+    required ConnectivityProbeDataSource connectivityDataSource,
   }) : _sessions = sessionDataSource,
        _capture = captureDataSource,
        _verification = verificationDataSource,
-       _blocking = blockingDataSource;
+       _connectivity = connectivityDataSource;
 
   final SinkSessionLocalDataSource _sessions;
   final SinkPhotoCaptureDataSource _capture;
   final SinkPhotoVerificationDataSource _verification;
-  final AppBlockingPlatformDataSource _blocking;
+  final ConnectivityProbeDataSource _connectivity;
+
+  @override
+  Future<bool> hasInternet() => _connectivity.hasInternet();
 
   @override
   LockStatusModel currentLockStatus({required DateTime now}) =>
@@ -86,8 +89,9 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
         triggeringMeal: triggeringMeal,
         photoPath: photoPath,
       );
+      // Saving the session IS the unlock: AppBlockingRepo sees it and tells
+      // the native blocker at once.
       await _sessions.saveSession(session);
-      await _blocking.unlockApps(blockedApps());
       return right(session);
     } catch (error) {
       return left(CacheFailure('error_generic', debugMessage: '$error'));

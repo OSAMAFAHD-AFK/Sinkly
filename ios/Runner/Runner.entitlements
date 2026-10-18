@@ -5,5 +5,10 @@
 	<!-- Screen Time API: FamilyActivityPicker + ManagedSettings shields. -->
 	<key>com.apple.developer.family-controls</key>
 	<true/>
+	<!-- Shared with the blocker extensions: plan snapshot, picked apps, shield texts. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.sinkly.app</string>
+	</array>
 </dict>
 </plist>

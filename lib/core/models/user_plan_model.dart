@@ -21,6 +21,7 @@ class UserPlanModel extends Equatable {
     this.screenTimePermissionGranted = false,
     this.notificationsEnabled = true,
     this.manualLockTriggeredAt,
+    this.lockingActiveSince,
     this.sprintMinutes = _defaultSprintMinutes,
   });
 
@@ -45,6 +46,11 @@ class UserPlanModel extends Equatable {
 
   /// Set when the user taps "Test the lock now" — behaves like a meal ending.
   final DateTime? manualLockTriggeredAt;
+
+  /// When app locking (re)started: onboarding done + subscription active.
+  /// Meals that ended before this moment never lock. `null` = locking off
+  /// (no subscription yet, or it lapsed — the plan itself is kept).
+  final DateTime? lockingActiveSince;
 
   /// How long the user's sink sprint timer runs (adjustable in the unlock flow).
   final int sprintMinutes;
@@ -91,6 +97,7 @@ class UserPlanModel extends Equatable {
     bool? screenTimePermissionGranted,
     bool? notificationsEnabled,
     Object? manualLockTriggeredAt = _unset,
+    Object? lockingActiveSince = _unset,
     int? sprintMinutes,
   }) => UserPlanModel(
     userName: userName ?? this.userName,
@@ -107,6 +114,9 @@ class UserPlanModel extends Equatable {
     manualLockTriggeredAt: identical(manualLockTriggeredAt, _unset)
         ? this.manualLockTriggeredAt
         : manualLockTriggeredAt as DateTime?,
+    lockingActiveSince: identical(lockingActiveSince, _unset)
+        ? this.lockingActiveSince
+        : lockingActiveSince as DateTime?,
     sprintMinutes: sprintMinutes ?? this.sprintMinutes,
   );
 
@@ -127,6 +137,7 @@ class UserPlanModel extends Equatable {
     screenTimePermissionGranted: json['screenTimePermissionGranted'] as bool? ?? false,
     notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     manualLockTriggeredAt: DateTime.tryParse(json['manualLockTriggeredAt'] as String? ?? ''),
+    lockingActiveSince: DateTime.tryParse(json['lockingActiveSince'] as String? ?? ''),
     sprintMinutes: ((json['sprintMinutes'] as num?)?.toInt() ?? _defaultSprintMinutes).clamp(
       AppConstants.minSprintMinutes,
       AppConstants.maxSprintMinutes,
@@ -146,6 +157,7 @@ class UserPlanModel extends Equatable {
     'screenTimePermissionGranted': screenTimePermissionGranted,
     'notificationsEnabled': notificationsEnabled,
     'manualLockTriggeredAt': manualLockTriggeredAt?.toIso8601String(),
+    'lockingActiveSince': lockingActiveSince?.toIso8601String(),
     'sprintMinutes': sprintMinutes,
   };
 
@@ -163,6 +175,7 @@ class UserPlanModel extends Equatable {
     screenTimePermissionGranted,
     notificationsEnabled,
     manualLockTriggeredAt,
+    lockingActiveSince,
     sprintMinutes,
   ];
 }

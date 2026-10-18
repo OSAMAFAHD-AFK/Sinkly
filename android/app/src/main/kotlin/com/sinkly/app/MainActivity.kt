@@ -1,5 +1,6 @@
-package com.sinkly.sinkly
+package com.sinkly.app
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
@@ -10,6 +11,8 @@ import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import com.sinkly.app.blocking.AppBlockingBridge
+import com.sinkly.app.blocking.BlockingScheduler
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -20,11 +23,16 @@ class MainActivity : FlutterActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
     private var screenTimeAccess: ScreenTimeAccessBridge? = null
+    private var appBlocking: AppBlockingBridge? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         // "Screen Time" on Android: Display over other apps + Usage access.
         screenTimeAccess = ScreenTimeAccessBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        // The app blocker (blocking/): plan snapshot in, lock-screen requests out.
+        appBlocking = AppBlockingBridge(this, flutterEngine.dartExecutor.binaryMessenger)
+        // Make sure the blocker runs whenever Sinkly is opened (e.g. after a force stop).
+        BlockingScheduler.sync(this)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "sinkly/installed_apps")
             .setMethodCallHandler { call, result ->
                 when (call.method) {
@@ -103,6 +111,17 @@ class MainActivity : FlutterActivity() {
         null
     }
 
+    /** The blocker opened Sinkly over a locked app while Flutter is running. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        val appId = intent.getStringExtra(EXTRA_LOCKED_APP_ID) ?: return
+        appBlocking?.deliverLockRequest(
+            appId,
+            intent.getStringExtra(EXTRA_LOCKED_APP_NAME) ?: "",
+            intent.getStringExtra(EXTRA_ACTION) ?: "overlay",
+        )
+    }
+
     override fun onResume() {
         super.onResume()
         screenTimeAccess?.onResume()
@@ -116,11 +135,33 @@ class MainActivity : FlutterActivity() {
     override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
         screenTimeAccess?.dispose()
         screenTimeAccess = null
+        appBlocking?.dispose()
+        appBlocking = null
         super.cleanUpFlutterEngine(flutterEngine)
     }
 
     override fun onDestroy() {
         worker.shutdown()
         super.onDestroy()
+    }
+
+    companion object {
+        private const val EXTRA_LOCKED_APP_ID = "sinkly.lockedAppId"
+        private const val EXTRA_LOCKED_APP_NAME = "sinkly.lockedAppName"
+        private const val EXTRA_ACTION = "sinkly.lockAction"
+
+        /** Opens (or brings back) Sinkly on its full lock screen ([action]:
+         *  "overlay"). A cold start reads the same request from
+         *  BlockingStore (consumeLaunchAction). */
+        fun lockIntent(context: Context, appId: String, appName: String, action: String): Intent =
+            Intent(context, MainActivity::class.java)
+                .addFlags(
+                    Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                        Intent.FLAG_ACTIVITY_REORDER_TO_FRONT,
+                )
+                .putExtra(EXTRA_LOCKED_APP_ID, appId)
+                .putExtra(EXTRA_LOCKED_APP_NAME, appName)
+                .putExtra(EXTRA_ACTION, action)
     }
 }

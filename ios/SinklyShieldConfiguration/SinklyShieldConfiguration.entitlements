@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Screen Time API (Apple's Family Controls approval must cover this target's bundle id too). -->
+	<key>com.apple.developer.family-controls</key>
+	<true/>
+	<!-- Shared with the app: plan snapshot, picked apps, shield texts. -->
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.sinkly.app</string>
+	</array>
+</dict>
+</plist>

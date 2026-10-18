@@ -5,7 +5,18 @@ import 'user_plan_model.dart';
 import 'weekly_lock_schedule_model.dart';
 
 /// Pure, side-effect-free evaluation of "are the apps locked right now?".
-/// Shared by Home, Sink Unlock and (later) the native background scheduler.
+///
+/// THE lock rule of Sinkly. The native blockers (Kotlin `LockEngine`, Swift
+/// `SinklyLockEngine`) implement exactly the same rule and are checked
+/// against the same cases (`test/fixtures/lock_engine_vectors.json`):
+///
+///  * A lock starts when a planned meal ends (or "Test the lock now").
+///  * It lasts until a clean-sink photo is accepted — there is no expiry.
+///  * Only meals that end after locking became active count
+///    ([UserPlanModel.lockingActiveSince]: onboarding done + subscribed).
+///  * The plan can be edited at any time, even while locked: the rule simply
+///    re-reads the current plan, so removing today's meal lifts its lock.
+///  * Times are the phone's own wall clock (whatever time zone it is in).
 class LockStatusModel extends Equatable {
   const LockStatusModel({
     required this.isLocked,
@@ -24,8 +35,9 @@ class LockStatusModel extends Equatable {
   final DateTime? nextLockAt;
   final MealType? nextLockMeal;
 
-  /// A meal lock stays pending for this long if the sink is never cleaned.
-  static const Duration pendingLockWindow = Duration(hours: 18);
+  /// The plan repeats every week, so the latest meal that already ended is
+  /// always within the last 7 days (8 for safety around midnight).
+  static const Duration lookBack = Duration(days: 8);
 
   static LockStatusModel evaluate({
     required UserPlanModel plan,
@@ -33,7 +45,7 @@ class LockStatusModel extends Equatable {
     required DateTime now,
   }) {
     final schedule = plan.schedule;
-    final pastTriggers = schedule.lockTriggersBetween(now.subtract(pendingLockWindow), now);
+    final pastTriggers = schedule.lockTriggersBetween(now.subtract(lookBack), now);
 
     DateTime? latestTriggerAt = pastTriggers.isEmpty ? null : pastTriggers.last.at;
     MealType? latestMeal = pastTriggers.isEmpty ? null : pastTriggers.last.meal;
@@ -48,12 +60,15 @@ class LockStatusModel extends Equatable {
         ? null
         : sessions.map((session) => session.completedAt).reduce((a, b) => a.isAfter(b) ? a : b);
 
-    final isLocked = latestTriggerAt != null && (lastCleanAt == null || lastCleanAt.isBefore(latestTriggerAt));
+    final activeSince = plan.lockingActiveSince;
+    // Locks only count after the later of "locking started" and "last clean".
+    final anchor = activeSince == null
+        ? null
+        : (lastCleanAt != null && lastCleanAt.isAfter(activeSince) ? lastCleanAt : activeSince);
 
-    final upcoming = schedule.lockTriggersBetween(
-      now.add(const Duration(seconds: 1)),
-      now.add(const Duration(days: 8)),
-    );
+    final isLocked = anchor != null && latestTriggerAt != null && latestTriggerAt.isAfter(anchor);
+
+    final upcoming = schedule.lockTriggersBetween(now.add(const Duration(seconds: 1)), now.add(lookBack));
 
     return LockStatusModel(
       isLocked: isLocked,

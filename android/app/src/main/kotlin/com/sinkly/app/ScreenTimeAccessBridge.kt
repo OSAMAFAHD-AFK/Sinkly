@@ -1,18 +1,14 @@
-package com.sinkly.sinkly
+package com.sinkly.app
 
-import android.Manifest
 import android.app.Activity
-import android.app.AppOpsManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.os.Process
 import android.provider.Settings
+import com.sinkly.app.blocking.BlockingPermissions
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -139,24 +135,9 @@ class ScreenTimeAccessBridge(private val activity: Activity, messenger: BinaryMe
     private fun isGranted(requirement: String) =
         if (requirement == DISPLAY_OVER_APPS) canDrawOverlays() else hasUsageAccess()
 
-    private fun canDrawOverlays(): Boolean =
-        Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(activity)
+    private fun canDrawOverlays(): Boolean = BlockingPermissions.canDrawOverlays(activity)
 
-    private fun hasUsageAccess(): Boolean {
-        val appOps = activity.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), activity.packageName)
-        } else {
-            @Suppress("DEPRECATION")
-            appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), activity.packageName)
-        }
-        return if (mode == AppOpsManager.MODE_DEFAULT) {
-            activity.checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) ==
-                PackageManager.PERMISSION_GRANTED
-        } else {
-            mode == AppOpsManager.MODE_ALLOWED
-        }
-    }
+    private fun hasUsageAccess(): Boolean = BlockingPermissions.hasUsageAccess(activity)
 
     // ── Settings pages ───────────────────────────────────────────────────
     private fun openSettingsFor(requirement: String): Boolean {

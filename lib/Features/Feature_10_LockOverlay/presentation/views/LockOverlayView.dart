@@ -43,8 +43,10 @@ class LockOverlayView extends StatelessWidget {
   }
 
   // TODO(dev): remove with AppConstants.showDevLockBypass before release.
-  void _devBypass(BuildContext context) {
+  Future<void> _devBypass(BuildContext context) async {
     AppFunctions.lightHaptic();
+    await context.read<LockOverlayCubit>().devBypassLock();
+    if (!context.mounted) return;
     AppFunctions.showSnack(context, context.tr('lock_overlay_dev_bypassed'));
     _leave(context);
   }
@@ -61,9 +63,13 @@ class LockOverlayView extends StatelessWidget {
       null => 'lock_overlay_title_manual',
     };
 
-    // A real overlay can't be "backed out of"; the way through is the sink.
+    // A real lock screen can't be "backed out of" into the locked app: back
+    // goes to the phone's home screen (Android). The way through is the sink.
     return PopScope(
       canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) context.read<LockOverlayCubit>().leaveToHomeScreen();
+      },
       child: GlassScreenScaffold(
         palette: MeshPalette.warm,
         animateBackground: true,

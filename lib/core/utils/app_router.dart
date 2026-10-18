@@ -20,6 +20,7 @@ import '../../Features/Feature_08_Progress/presentation/manager/progress_cubit.d
 import '../../Features/Feature_08_Progress/presentation/views/ProgressView.dart';
 import '../../Features/Feature_09_Settings/presentation/manager/settings_cubit.dart';
 import '../../Features/Feature_09_Settings/presentation/views/SettingsView.dart';
+import '../../Features/Feature_06_SinkUnlock/data/data_sources/app_blocking_platform_data_source.dart';
 import '../../Features/Feature_10_LockOverlay/presentation/manager/lock_overlay_cubit.dart';
 import '../../Features/Feature_10_LockOverlay/presentation/views/LockOverlayView.dart';
 import '../widgets/main_navigation_shell_widget.dart';
@@ -85,7 +86,15 @@ abstract final class AppRouter {
         pageBuilder: (context, state) => _fade(
           state,
           BlocProvider(
-            create: (_) => LockOverlayCubit(getIt(), attemptedAppId: state.extra as String?),
+            create: (_) => switch (state.extra) {
+              (appId: final String id, appName: final String name, action: _) => LockOverlayCubit(
+                getIt(),
+                attemptedAppId: id,
+                attemptedAppName: name,
+              ),
+              final String id => LockOverlayCubit(getIt(), attemptedAppId: id),
+              _ => LockOverlayCubit(getIt()),
+            },
             child: const LockOverlayView(),
           ),
         ),
@@ -109,6 +118,13 @@ abstract final class AppRouter {
       ),
     ],
   );
+
+  /// "Clean my sink" on the native lock card (Android) or the shield
+  /// notification (iOS): Sinkly opens on its full lock screen.
+  static void openNativeLockRequest(LockOverlayRequest request) {
+    if (router.routerDelegate.currentConfiguration.uri.path == kLockOverlayView) return;
+    router.push(kLockOverlayView, extra: request);
+  }
 
   static StatefulShellBranch _tab(String path, Widget child) => StatefulShellBranch(
     routes: [

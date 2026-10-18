@@ -1,14 +1,26 @@
 import 'dart:async';
 
 import '../../../../core/models/shared_core_models.dart';
+import '../../../Feature_06_SinkUnlock/data/models/blocking_status_model.dart';
+import '../../../Feature_06_SinkUnlock/data/repos/app_blocking_repo.dart';
 import '../data_sources/home_local_data_source.dart';
 import '../models/home_dashboard_model.dart';
 import 'home_repo.dart';
 
 class HomeRepoImpl implements HomeRepo {
-  HomeRepoImpl(this._local);
+  HomeRepoImpl(this._local, this._blocking);
 
   final HomeLocalDataSource _local;
+  final AppBlockingRepo _blocking;
+
+  @override
+  BlockingStatusModel get protection => _blocking.status;
+
+  @override
+  Stream<BlockingStatusModel> get protectionChanges => _blocking.statusChanges;
+
+  @override
+  Future<void> fixProtection() => _blocking.fixProtection();
 
   @override
   Stream<void> get dataChanges {
@@ -49,8 +61,8 @@ class HomeRepoImpl implements HomeRepo {
     return [
       for (var i = 0; i < meals.length; i++)
         () {
-          final at = startOfToday.add(Duration(minutes: meals[i].minutesOfDay));
-          final nextAt = i + 1 < meals.length ? startOfToday.add(Duration(minutes: meals[i + 1].minutesOfDay)) : null;
+          final at = meals[i].on(startOfToday);
+          final nextAt = i + 1 < meals.length ? meals[i + 1].on(startOfToday) : null;
           final TodayMealStatus status;
           if (at.isAfter(now)) {
             status = TodayMealStatus.upcoming;

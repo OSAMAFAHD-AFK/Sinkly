@@ -36,7 +36,8 @@ void main() {
 
   group('LockStatusModel', () {
     // 2026-10-12 is a Monday. Default plan: breakfast 9:30, dinner 21:00 every day.
-    final plan = UserPlanModel.initial();
+    // Locking has been active (onboarding + subscription) since October 1st.
+    final plan = UserPlanModel.initial().copyWith(lockingActiveSince: DateTime(2026, 10, 1));
 
     test('locked after a meal ends until a clean session is recorded', () {
       final now = DateTime(2026, 10, 12, 21, 30);

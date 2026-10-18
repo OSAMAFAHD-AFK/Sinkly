@@ -14,10 +14,10 @@ import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../manager/sink_unlock_cubit.dart';
 import 'widgets/photo_verification_scanning_widget.dart';
 import 'widgets/sink_sprint_stage_widget.dart';
-import 'widgets/sink_unlock_intro_stage_widget.dart';
 import 'widgets/unlock_reward_celebration_widget.dart';
 
-/// Full-screen unlock flow: intro → sprint → photo verification → reward.
+/// Full-screen unlock flow: sprint → photo verification → reward. Opened
+/// from the lock screen (LockOverlay) or Home; the sprint starts right away.
 class SinkUnlockView extends StatelessWidget {
   const SinkUnlockView({super.key});
 
@@ -101,7 +101,6 @@ class SinkUnlockView extends StatelessWidget {
   Widget _buildStage(BuildContext context, SinkUnlockStage stage) {
     final state = context.read<SinkUnlockCubit>().state;
     return switch (stage) {
-      SinkUnlockStage.intro => const SinkUnlockIntroStageWidget(),
       SinkUnlockStage.sprinting => const SinkSprintStageWidget(),
       SinkUnlockStage.verifying => PhotoVerificationScanningWidget(photoPath: state.photoPath ?? ''),
       SinkUnlockStage.celebrating => UnlockRewardCelebrationWidget(

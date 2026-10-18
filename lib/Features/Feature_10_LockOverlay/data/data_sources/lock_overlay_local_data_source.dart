@@ -6,6 +6,7 @@ import '../../../../core/utils/local_storage_service.dart';
 abstract class LockOverlayLocalDataSource {
   UserPlanModel readPlan();
   List<SinkCleaningSessionModel> readSessions();
+  Future<void> savePlan(UserPlanModel plan);
 }
 
 class LockOverlayLocalDataSourceImpl implements LockOverlayLocalDataSource {
@@ -18,4 +19,7 @@ class LockOverlayLocalDataSourceImpl implements LockOverlayLocalDataSource {
 
   @override
   List<SinkCleaningSessionModel> readSessions() => _storage.sessions;
+
+  @override
+  Future<void> savePlan(UserPlanModel plan) => _storage.savePlan(plan);
 }
