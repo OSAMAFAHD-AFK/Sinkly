@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/utils/app_localizations.dart';
-import '../../../../core/widgets/dev_shortcut_button_widget.dart';
 import '../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
@@ -34,10 +32,6 @@ import 'widgets/trial_reminder_assurance_step_widget.dart';
 /// * Swipe is disabled — progress only moves through CTAs (keeps answers valid).
 /// * Pages are built lazily by [PageView.builder]; only the visible step lives.
 /// * System back / swipe-back goes to the previous step instead of exiting.
-///
-/// Adapty Onboarding Builder: when `AppConstants.useAdaptyOnboardingBuilder`
-/// is enabled, the router can present the remote onboarding instead of this
-/// view; answers would then be mapped into the same OnboardingUserPreferencesModel.
 class OnboardingView extends StatefulWidget {
   const OnboardingView({super.key});
 
@@ -68,13 +62,6 @@ class _OnboardingViewState extends State<OnboardingView> {
     if (!mounted || !completed) return;
     // Strict paywall: we only get here after subscribing → celebrate, then Home.
     context.go(AppRouter.kWelcomeView);
-  }
-
-  // TODO(dev): remove with AppConstants.showDevOnboardingSkip before release.
-  Future<void> _devSkipToWelcome() async {
-    AppFunctions.lightHaptic();
-    final completed = await context.read<OnboardingCubit>().devSkipToWelcome();
-    if (mounted && completed) context.go(AppRouter.kWelcomeView);
   }
 
   Widget _buildStep(OnboardingStep step) => switch (step) {
@@ -139,29 +126,6 @@ class _OnboardingViewState extends State<OnboardingView> {
                   ),
                 ],
               ),
-              // TODO(dev): DEVELOPMENT ONLY — jump straight to Welcome. Sits in
-              // the top bar's back-button slot (empty on the first screen) and
-              // never reaches the centred progress track.
-              if (AppConstants.showDevOnboardingSkip && currentStep.isFirst)
-                PositionedDirectional(
-                  start: AppSpacing.screenGutter - 6,
-                  top: AppSpacing.xs,
-                  height: 46,
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: (MediaQuery.sizeOf(context).width - _OnboardingTopBar.trackWidth) / 2 -
-                            AppSpacing.screenGutter,
-                      ),
-                      child: DevShortcutButtonWidget(
-                        label: context.tr('onboarding_dev_skip'),
-                        icon: Icons.fast_forward_rounded,
-                        onPressed: _devSkipToWelcome,
-                      ),
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

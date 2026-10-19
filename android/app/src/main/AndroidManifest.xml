@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <!-- Google Fonts download + future API calls (AI photo verification, sync). -->
+    <!-- Photo check (Supabase → Gemini), subscriptions (RevenueCat), feedback. -->
     <uses-permission android:name="android.permission.INTERNET" />
     <!-- App blocking ("Screen Time" on Android, ScreenTimeAccessBridge.kt).
          Both are special accesses the user switches on in Settings:
@@ -50,6 +50,21 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- Local reminders (flutter_local_notifications): show scheduled ones and
+             put them back after a reboot / app update. -->
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
+        <receiver
+            android:exported="false"
+            android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
         <!-- App blocker (see kotlin/com/sinkly/app/blocking/BlockingService.kt). -->
         <service
             android:name=".blocking.BlockingService"

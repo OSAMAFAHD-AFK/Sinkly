@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/models/supported_language_model.dart';
 import '../../../../core/utils/app_constants.dart';
@@ -27,9 +28,24 @@ class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
 
   Future<void> _restore(BuildContext context) async {
-    final restored = await context.read<SubscriptionCubit>().restorePurchases();
-    if (context.mounted && restored) AppFunctions.showSnack(context, context.tr('restore_success'), tone: AppToastTone.success);
+    final subscription = context.read<SubscriptionCubit>();
+    final restored = await subscription.restorePurchases();
+    if (!context.mounted) return;
+    if (restored) {
+      AppFunctions.showSnack(context, context.tr('restore_success'), tone: AppToastTone.success);
+    } else if (subscription.state.failureKey != null) {
+      AppFunctions.showSnack(context, context.tr(subscription.state.failureKey!), tone: AppToastTone.error);
+      subscription.clearFailure();
+    }
   }
+
+  /// The store's own subscription page: change plan or cancel in one tap.
+  Future<void> _manageSubscription(BuildContext context) async {
+    final url = await context.read<SubscriptionCubit>().manageSubscriptionUrl();
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
+  static Future<void> _open(String url) => launchUrl(Uri.parse(url), mode: LaunchMode.inAppBrowserView);
 
   Future<void> _rate(BuildContext context) async {
     final outcome = await context.read<SettingsCubit>().rateApp();
@@ -134,12 +150,31 @@ class SettingsView extends StatelessWidget {
         title: context.tr('settings_group_account'),
         children: [
           SettingsTileWidget(
+            icon: Icons.workspace_premium_rounded,
+            title: context.tr('settings_manage_subscription'),
+            subtitle: context.tr('settings_manage_subscription_subtitle'),
+            onTap: () => _manageSubscription(context),
+          ),
+          SettingsTileWidget(
             icon: Icons.restore_rounded,
             title: context.tr('restore_purchases'),
             onTap: () => _restore(context),
           ),
-          SettingsTileWidget(icon: Icons.privacy_tip_rounded, title: context.tr('privacy_policy'), onTap: () {}),
-          SettingsTileWidget(icon: Icons.description_rounded, title: context.tr('terms_of_use'), onTap: () {}),
+          SettingsTileWidget(
+            icon: Icons.help_outline_rounded,
+            title: context.tr('settings_support'),
+            onTap: () => _open(AppConstants.supportUrl),
+          ),
+          SettingsTileWidget(
+            icon: Icons.privacy_tip_rounded,
+            title: context.tr('privacy_policy'),
+            onTap: () => _open(AppConstants.privacyUrl),
+          ),
+          SettingsTileWidget(
+            icon: Icons.description_rounded,
+            title: context.tr('terms_of_use'),
+            onTap: () => _open(AppConstants.termsUrl),
+          ),
         ],
       ),
       const SizedBox(height: AppSpacing.lg),

@@ -15,6 +15,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sinkly/Features/Feature_02_Onboarding/data/data_sources/onboarding_local_data_source.dart';
 import 'package:sinkly/Features/Feature_02_Onboarding/data/models/onboarding_quiz_option_model.dart';
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/manager/onboarding_cubit.dart';
 import 'package:sinkly/Features/Feature_02_Onboarding/presentation/views/OnboardingView.dart';
@@ -32,6 +33,7 @@ import 'package:sinkly/Features/Feature_09_Settings/presentation/views/widgets/s
 import 'package:sinkly/Features/Feature_09_Settings/presentation/views/widgets/share_invite_sheet_widget.dart';
 import 'package:sinkly/core/models/blockable_app_model.dart';
 import 'package:sinkly/core/models/sink_cleaning_session_model.dart';
+import 'package:sinkly/core/models/user_plan_model.dart';
 import 'package:sinkly/core/models/weekly_lock_schedule_model.dart';
 import 'package:sinkly/core/widgets/glass_bottom_sheet.dart';
 import 'package:sinkly/core/utils/app_localizations.dart';
@@ -152,6 +154,11 @@ void main() {
             await visit('splash', () async {}, ms: 1000);
 
             // ── Onboarding: all 15 steps ──
+            // Every run is a brand-new user: no onboarding draft to resume.
+            await getIt<OnboardingLocalDataSource>().saveDraft(
+              plan: UserPlanModel.initial(languageCode: language),
+              stepIndex: 0,
+            );
             await visit('onboarding', () async => AppRouter.router.go(AppRouter.kOnboardingView));
             final onboarding = tester.element(find.byType(OnboardingView)).read<OnboardingCubit>();
             for (final step in OnboardingStep.values) {

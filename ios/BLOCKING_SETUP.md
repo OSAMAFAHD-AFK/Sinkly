@@ -51,6 +51,13 @@ Xcode يولّد لكل هدف ملف Swift وInfo.plist داخل مجلد بن�
 - **+ Capability → Family Controls** و **+ Capability → App Groups** ← `group.com.sinkly.app`.
 - **Deployment Target**: iOS 16.0 أو أعلى (نفس Runner).
 
+### Runner فقط (التطبيق الرئيسي)
+- **+ Capability → In-App Purchase** (اشتراكات RevenueCat).
+- لا حاجة لـ Push Notifications: كل التذكيرات محلية على الجهاز.
+- نصوص أذونات iOS مترجمة للغات العشر جاهزة في `Runner/<lang>.lproj/InfoPlist.strings` ومضافة للمشروع.
+- **Crashlytics** (بعد ربط Firebase بأمر `flutterfire configure`): تأكد أن `GoogleService-Info.plist` داخل هدف Runner، وأضف في **Build Phases** سكربت رفع رموز الأعطال كما يقترحه `flutterfire` (`FirebaseCrashlytics/run`).
+- أول تشغيل بعد `pod install`: `cd ios && pod install` (مكتبات RevenueCat والإشعارات وFirebase).
+
 ## 6) التجربة
 - **الحجب لا يعمل على المحاكي** (Simulator) — Apple لا تشغّل Screen Time فيه. المحاكي يصلح فقط لاختبار `SinklyLockEngineTests` والواجهة.
 - على **iPhone حقيقي** (بحساب المطوّر يكفي للتجربة؛ TestFlight يحتاج موافقة التوزيع):

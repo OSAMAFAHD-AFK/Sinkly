@@ -10,10 +10,13 @@ import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/app_toast_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
+import '../../../../../core/widgets/dev_shortcut_button_widget.dart';
 import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../../core/widgets/glass_icon_button.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
+import '../../../../Feature_04_Subscription/data/models/subscription_plan_model.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
+import 'paywall_plan_card_widget.dart' show PaywallPlanCardWidget;
 import 'onboarding_step_header_widget.dart';
 import 'paywall_exit_offer_sheet_widget.dart';
 import 'paywall_heroine_hero_widget.dart';
@@ -21,16 +24,18 @@ import 'paywall_plan_card_widget.dart';
 
 /// Screen 15 — Paywall (also hosted by the standalone PaywallView).
 ///
-/// Always this custom Flutter design — never Adapty's built-in paywall UI.
-/// Adapty (later) only feeds it: plans, purchase and restore all go through
+/// Always this custom Flutter design — never RevenueCat's paywall UI.
+/// RevenueCat only feeds it: plans, purchase and restore all go through
 /// [SubscriptionCubit] → SubscriptionRepo → data source, and every display is
-/// reported with `paywallShown()` so Adapty analytics / A-B tests still work.
+/// reported with `paywallShown()` so paywall analytics / experiments work.
 ///
 /// Conversion choreography: the heroine presents the offer and reacts to the
 /// selected plan, the best-value card glows, the CTA breathes, trust chips
 /// remove payment anxiety, and a successful purchase is celebrated.
 ///
 /// STRICT paywall: there is no way past it except a purchase / restore.
+/// Someone who is already subscribed (reinstall: the store remembered them)
+/// skips it straight away.
 /// "X" (or system back) opens the exit offer ([showPaywallExitOfferSheet]):
 /// the heroine cries, then offers an extra discount on the annual plan. The
 /// sheet has no decline button; swiping it away just returns here.
@@ -69,6 +74,13 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   @override
   void initState() {
     super.initState();
+    // Already subscribed on this store account (e.g. reinstalled): no paywall.
+    if (!widget.isDismissible && _cubit.state.isPremium) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) widget.onFinished(true);
+      });
+      return;
+    }
     _cubit
       ..loadPaywall()
       ..paywallShown();
@@ -97,6 +109,13 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   Future<void> _restore() async {
     final restored = await _cubit.restorePurchases();
     if (restored) widget.onFinished(true);
+  }
+
+  // TODO(dev): remove with AppConstants.devPaywallBypass before the store release.
+  Future<void> _devSkipPayment() async {
+    AppFunctions.lightHaptic();
+    await _cubit.devUnlockPremium();
+    if (mounted) widget.onFinished(true);
   }
 
   /// "X" or system back: always the exit offer (strict paywall — the only
@@ -129,7 +148,12 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
             const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 8, maxBubbleSize: 30)),
             Column(
               children: [
-                _PaywallTopBar(showClose: _showCloseButton, onClose: _onExitAttempt, onRestore: _restore),
+                _PaywallTopBar(
+                  showClose: _showCloseButton,
+                  onClose: _onExitAttempt,
+                  onRestore: _restore,
+                  onDevSkip: AppConstants.devPaywallBypass ? _devSkipPayment : null,
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -187,11 +211,14 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
 }
 
 class _PaywallTopBar extends StatelessWidget {
-  const _PaywallTopBar({required this.showClose, required this.onClose, required this.onRestore});
+  const _PaywallTopBar({required this.showClose, required this.onClose, required this.onRestore, this.onDevSkip});
 
   final bool showClose;
   final VoidCallback onClose;
   final VoidCallback onRestore;
+
+  /// TODO(dev): "DEV · Skip payment" (AppConstants.devPaywallBypass).
+  final VoidCallback? onDevSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +235,15 @@ class _PaywallTopBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
+          if (onDevSkip != null)
+            Flexible(
+              child: DevShortcutButtonWidget(
+                label: context.tr('paywall_dev_skip'),
+                icon: Icons.fast_forward_rounded,
+                onPressed: onDevSkip!,
+              ),
+            ),
+          const SizedBox(width: AppSpacing.xs),
           AnimatedOpacity(
             opacity: showClose ? 1 : 0,
             duration: AppDurations.slow,
@@ -369,7 +405,9 @@ class _PaywallBottomActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<SubscriptionCubit>().state;
-    const days = '${AppConstants.freeTrialDays}';
+    final plan = state.selectedPlan;
+    // Trial wording only when the selected plan really has a free trial.
+    final hasTrial = plan?.hasTrial ?? true;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -381,24 +419,25 @@ class _PaywallBottomActions extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  context.tr('paywall_no_payment_now'),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+          if (hasTrial)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.success),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    context.tr('paywall_no_payment_now'),
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.caption.copyWith(color: AppColors.ink, fontWeight: FontWeight.w700),
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: AppSpacing.sm),
           // The CTA "breathes" softly so the eye keeps coming back to it.
           CustomPrimaryButton(
-                label: context.tr('paywall_cta'),
+                label: context.tr(hasTrial ? 'paywall_cta' : 'paywall_cta_subscribe'),
                 showShimmer: true,
                 trailingIcon: Icons.arrow_forward_rounded,
                 isLoading: state.status == SubscriptionStatus.purchasing,
@@ -407,11 +446,12 @@ class _PaywallBottomActions extends StatelessWidget {
               .animate(onPlay: (c) => c.repeat(reverse: true))
               .scaleXY(begin: 1, end: 1.025, duration: 1100.ms, curve: Curves.easeInOut),
           const SizedBox(height: AppSpacing.xs),
-          Text(
-            context.tr('paywall_note', {'days': days}),
-            textAlign: TextAlign.center,
-            style: AppTextStyles.caption.copyWith(fontSize: 12),
-          ),
+          if (plan != null)
+            Text(
+              _billingNote(context, plan),
+              textAlign: TextAlign.center,
+              style: AppTextStyles.caption.copyWith(fontSize: 12),
+            ),
           const SizedBox(height: 2),
           Wrap(
             alignment: WrapAlignment.center,
@@ -426,6 +466,21 @@ class _PaywallBottomActions extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Exactly what will be charged and when (App Store 3.1.2 / Play policy):
+/// "Free for 3 days, then $39.99 per year. Cancel before Oct 22 and you won't
+/// be charged." — or the plain renewing price when there is no trial.
+String _billingNote(BuildContext context, SubscriptionPlanModel plan) {
+  final per = context.tr(PaywallPlanCardWidget.perPeriodKey(plan.period));
+  if (!plan.hasTrial) return context.tr('paywall_note_no_trial', {'price': plan.localizedPrice, 'per': per});
+  final trialEnd = DateTime.now().add(Duration(days: plan.trialDays));
+  return context.tr('paywall_note', {
+    'days': '${plan.trialDays}',
+    'price': plan.localizedPrice,
+    'per': per,
+    'date': AppFunctions.westernDigits(MaterialLocalizations.of(context).formatMediumDate(trialEnd)),
+  });
 }
 
 class _FooterLink extends StatelessWidget {

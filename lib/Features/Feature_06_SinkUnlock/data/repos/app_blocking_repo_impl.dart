@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 
-import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_localizations.dart';
+import '../../../../core/utils/crash_reporting_service.dart';
 import '../../../../core/utils/local_storage_service.dart';
 import '../../../Feature_02_Onboarding/data/data_sources/device_permissions_data_source.dart';
 import '../data_sources/app_blocking_platform_data_source.dart';
@@ -43,10 +43,8 @@ class AppBlockingRepoImpl implements AppBlockingRepo {
   @override
   Stream<BlockingStatusModel> get statusChanges => _statusController.stream;
 
-  /// TODO(dev): the onboarding "Skip to Welcome" shortcut finishes without a
-  /// purchase; treat it as subscribed so locking can be tested. Goes away
-  /// with [AppConstants.showDevOnboardingSkip].
-  bool get _subscriptionActive => _storage.getBool(_subscriptionKey) || AppConstants.showDevOnboardingSkip;
+  /// Last answer of the store (SubscriptionRepo → [setSubscriptionActive]).
+  bool get _subscriptionActive => _storage.getBool(_subscriptionKey);
 
   @override
   Future<void> start() async {
@@ -96,8 +94,8 @@ class AppBlockingRepoImpl implements AppBlockingRepo {
       if (!force && snapshot == _lastSent) return;
       _setStatus(await _platform.apply(snapshot));
       _lastSent = snapshot;
-    } catch (error) {
-      debugPrint('[AppBlocking] sync failed: $error');
+    } catch (error, stack) {
+      CrashReportingService.recordError(error, stack, reason: 'app blocker sync');
     }
   });
 

@@ -2,6 +2,7 @@ import FamilyControls
 import Flutter
 import SwiftUI
 import UIKit
+import UserNotifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
@@ -9,6 +10,9 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // Local reminders (flutter_local_notifications) also show while Sinkly is open,
+    // and a tap on the shield's "open Sinkly" notification reaches the app.
+    UNUserNotificationCenter.current().delegate = self
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

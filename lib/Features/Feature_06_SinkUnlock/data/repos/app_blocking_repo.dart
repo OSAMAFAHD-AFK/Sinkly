@@ -15,7 +15,7 @@ abstract class AppBlockingRepo {
   BlockingStatusModel get status;
   Stream<BlockingStatusModel> get statusChanges;
 
-  /// Subscription state from Adapty / the mock: locking only runs while it
+  /// Subscription state from RevenueCat / the mock: locking only runs while it
   /// is active. When it lapses everything unlocks; the plan is kept and
   /// resumes (from that moment) when the user subscribes again.
   Future<void> setSubscriptionActive(bool active);

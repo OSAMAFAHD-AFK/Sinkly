@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/app_constants.dart';
 import '../../data/models/subscription_plan_model.dart';
 import '../../data/repos/subscription_repo.dart';
@@ -13,13 +16,18 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   SubscriptionCubit(this._repo) : super(const SubscriptionState());
 
   final SubscriptionRepo _repo;
+  StreamSubscription<bool>? _premiumChanges;
 
   Future<void> initialize() async {
+    // Renewals, cancellations, refunds… reported by the store while the app runs.
+    _premiumChanges ??= _repo.premiumChanges.listen((isPremium) {
+      if (!isClosed && isPremium != state.isPremium) emit(state.copyWith(isPremium: isPremium));
+    });
     final isPremium = await _repo.isPremiumActive();
-    emit(state.copyWith(isPremium: isPremium));
+    if (!isClosed) emit(state.copyWith(isPremium: isPremium));
   }
 
-  Future<void> loadPaywall({String placementId = AppConstants.adaptyOnboardingPlacementId}) async {
+  Future<void> loadPaywall({String placementId = AppConstants.onboardingPaywallPlacementId}) async {
     if (state.plans.isNotEmpty) return;
     emit(state.copyWith(status: SubscriptionStatus.loading, clearFailure: true));
     final result = await _repo.fetchPaywallPlans(placementId: placementId);
@@ -36,8 +44,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     );
   }
 
-  /// Call whenever the custom paywall becomes visible (Adapty analytics).
-  void paywallShown({String placementId = AppConstants.adaptyOnboardingPlacementId}) =>
+  /// Call whenever the custom paywall becomes visible (RevenueCat analytics).
+  void paywallShown({String placementId = AppConstants.onboardingPaywallPlacementId}) =>
       _repo.logPaywallShown(placementId: placementId);
 
   void selectPlan(String planId) => emit(state.copyWith(selectedPlanId: planId));
@@ -46,16 +54,16 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// Preloads the discounted plan so the sheet opens instantly.
   Future<void> loadExitOffer() async {
     if (state.exitOffer != null) return;
-    final result = await _repo.fetchPaywallPlans(placementId: AppConstants.adaptyExitOfferPlacementId);
+    final result = await _repo.fetchPaywallPlans(placementId: AppConstants.exitOfferPlacementId);
     if (isClosed) return;
     result.fold((_) {}, (plans) {
       if (plans.isNotEmpty) emit(state.copyWith(exitOffer: plans.first));
     });
   }
 
-  /// Call when the exit-offer sheet appears (Adapty analytics).
+  /// Call when the exit-offer sheet appears (RevenueCat analytics).
   void exitOfferShown() {
-    _repo.logPaywallShown(placementId: AppConstants.adaptyExitOfferPlacementId);
+    _repo.logPaywallShown(placementId: AppConstants.exitOfferPlacementId);
   }
 
   Future<bool> purchaseExitOffer() async {
@@ -75,7 +83,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     final result = await _repo.purchase(plan);
     return result.fold(
       (failure) {
-        emit(state.copyWith(status: SubscriptionStatus.ready, failureKey: failure.messageKey));
+        // Closing the store sheet is a choice, not an error: no message.
+        final cancelled = failure is PurchaseFailure && failure.userCancelled;
+        emit(state.copyWith(status: SubscriptionStatus.ready, failureKey: cancelled ? null : failure.messageKey));
         return false;
       },
       (isPremium) {
@@ -107,5 +117,20 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     );
   }
 
+  /// The store page where the subscription is managed or cancelled.
+  Future<String> manageSubscriptionUrl() => _repo.manageSubscriptionUrl();
+
+  /// TODO(dev): `AppConstants.devPaywallBypass` only — Premium without buying.
+  Future<void> devUnlockPremium() async {
+    await _repo.devUnlockPremium();
+    emit(state.copyWith(isPremium: true));
+  }
+
   void clearFailure() => emit(state.copyWith(clearFailure: true));
+
+  @override
+  Future<void> close() {
+    _premiumChanges?.cancel();
+    return super.close();
+  }
 }

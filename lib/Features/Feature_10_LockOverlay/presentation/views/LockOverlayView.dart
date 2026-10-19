@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/models/shared_core_models.dart';
-import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/app_localizations.dart';
 import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
@@ -28,8 +27,6 @@ import 'widgets/locked_app_chip_widget.dart';
 /// deep-links here.
 class LockOverlayView extends StatelessWidget {
   const LockOverlayView({super.key});
-
-  void _leave(BuildContext context) => context.canPop() ? context.pop() : context.go(AppRouter.kHomeView);
 
   void _startSprint(BuildContext context) {
     AppFunctions.mediumHaptic();

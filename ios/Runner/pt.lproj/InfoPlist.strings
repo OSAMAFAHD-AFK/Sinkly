@@ -1,0 +1,4 @@
+/* Sinkly — texts iOS shows for permissions, in the phone's language. */
+"CFBundleDisplayName" = "Sinkly";
+"NSCameraUsageDescription" = "O Sinkly usa a câmera para tirar uma foto da sua pia limpa e desbloquear seus apps.";
+"NSPhotoLibraryUsageDescription" = "O Sinkly pode usar uma foto da sua pia limpa da sua galeria quando a câmera não estiver disponível.";

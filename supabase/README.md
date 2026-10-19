@@ -24,7 +24,8 @@ supabase functions deploy verify-sink-photo
 Then in the dashboard: **Authentication → Sign In / Providers → Allow anonymous sign-ins = ON**
 (`config.toml` only affects the local dev stack).
 
-Optional secrets (defaults in brackets): `GEMINI_MODEL` [gemini-3.1-flash-lite], `DAILY_LIMIT` [15].
+Optional secrets (defaults in brackets): `GEMINI_MODEL` [gemini-3.1-flash-lite], `DAILY_LIMIT` [15],
+`REVENUECAT_SECRET_KEY` [not set = every caller allowed] — see "Subscribers only" below.
 Changing one = `supabase secrets set …`, no app update.
 
 **Emergency stop** (abuse or runaway cost): `supabase secrets unset GEMINI_API_KEY` — every check answers 502 immediately
@@ -40,8 +41,17 @@ Changing one = `supabase secrets set …`, no app update.
 | 502 | `verification_unavailable` (attempt refunded) | `verify_error_unavailable` |
 | 400 / 413 | `invalid_image` / `image_too_large` | `verify_error_unreadable` |
 | 401 | `unauthorized` | `verify_error_unavailable` |
+| 402 | `subscription_required` | `verify_error_subscription` |
 
-## Later: subscribers only
+## Subscribers only (RevenueCat)
 
-`isSubscriber()` in `functions/verify-sink-photo/index.ts` returns `true` for now.
-When Adapty / RevenueCat is wired, it asks their server API whether the `premium` access level is active.
+The app sends its RevenueCat customer id (`customer_id`) with every photo. Once the secret is set,
+`isSubscriber()` asks RevenueCat's server whether that customer's `premium` entitlement is active
+(paid, free trial or billing grace period); anyone else gets `402` before Gemini is called.
+
+```
+supabase secrets set REVENUECAT_SECRET_KEY=sk_...
+```
+
+Not set → everyone is allowed (the daily limit still applies). If RevenueCat itself is down the
+check is allowed rather than blocking paying users.

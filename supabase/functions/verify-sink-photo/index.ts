@@ -1,11 +1,15 @@
 // verify-sink-photo — the ONE Edge Function of Sinkly.
 //
-// Phone → { image: <base64 JPEG/PNG/WebP> }  →  this function  →  Gemini  →  { clean, reason }
+// Phone → { image: <base64 JPEG/PNG/WebP>, customer_id: <RevenueCat app user id> }
+//       →  this function  →  Gemini  →  { clean, reason }
 //
 // Secrets (supabase secrets set …):
-//   GEMINI_API_KEY        required. Never leaves the server.
-//   GEMINI_MODEL          default "gemini-3.1-flash-lite"
-//   DAILY_LIMIT           default 15     checks per phone per rolling 24 h
+//   GEMINI_API_KEY          required. Never leaves the server.
+//   GEMINI_MODEL            default "gemini-3.1-flash-lite"
+//   DAILY_LIMIT             default 15     checks per phone per rolling 24 h
+//   REVENUECAT_SECRET_KEY   RevenueCat secret API key (sk_…). Once set, only customers with an
+//                           active "premium" entitlement (paid, trial or grace period) get a check.
+//                           Not set → everyone is allowed (before the stores are connected).
 // (No whole-app ceiling on purpose: a viral video must never lock real users out.
 //  Emergency stop: `supabase secrets unset GEMINI_API_KEY` → every check answers 502 at once.)
 // SUPABASE_URL and the server key (SUPABASE_SECRET_KEYS, or legacy SUPABASE_SERVICE_ROLE_KEY) are provided by Supabase itself.
@@ -60,18 +64,41 @@ function reply(status: number, body: Record<string, unknown>): Response {
   });
 }
 
+const REVENUECAT_SECRET_KEY = Deno.env.get("REVENUECAT_SECRET_KEY")?.trim();
+const PREMIUM_ENTITLEMENT = "premium";
+
 /**
- * Is this person a paying subscriber?
+ * Is this RevenueCat customer subscribed right now (paid, free trial or billing grace period)?
  *
- * TODO(adapty|revenuecat): once subscriptions are wired, send the store profile id from the app,
- * ask Adapty / RevenueCat's server API whether the 'premium' access level is active, and return
- * false when it is not. With the strict paywall every real user is subscribed or on a trial,
- * so this is the lock that keeps strangers from spending your Gemini budget.
- * Until then everyone is allowed; the daily limits still apply.
+ * With the strict paywall every real user is subscribed or on a trial, so this is the lock that
+ * keeps strangers from spending the Gemini budget. Before REVENUECAT_SECRET_KEY is set everyone
+ * is allowed (the daily limit still applies). If RevenueCat itself can't be reached, the check is
+ * allowed rather than blocking paying users; the daily limit still caps it.
  */
-// deno-lint-ignore require-await
-async function isSubscriber(_userId: string): Promise<boolean> {
-  return true;
+async function isSubscriber(customerId: string): Promise<boolean> {
+  if (!REVENUECAT_SECRET_KEY) return true;
+  if (!customerId || customerId.length > 200) return false;
+  try {
+    const response = await fetch(
+      `https://api.revenuecat.com/v1/subscribers/${encodeURIComponent(customerId)}`,
+      { headers: { authorization: `Bearer ${REVENUECAT_SECRET_KEY}` }, signal: AbortSignal.timeout(6_000) },
+    );
+    if (response.status >= 500 || response.status === 429) {
+      console.error("revenuecat: HTTP", response.status);
+      return true;
+    }
+    if (!response.ok) {
+      console.error("revenuecat: HTTP", response.status);
+      return false;
+    }
+    const entitlement = (await response.json())?.subscriber?.entitlements?.[PREMIUM_ENTITLEMENT];
+    if (!entitlement) return false;
+    const until = entitlement.grace_period_expires_date ?? entitlement.expires_date;
+    return until == null || Date.parse(until) > Date.now(); // null = never expires
+  } catch (error) {
+    console.error("revenuecat: request failed", (error as Error).name);
+    return true;
+  }
 }
 
 type GeminiOutcome = { verdict: Verdict } | { failed: true };
@@ -130,16 +157,19 @@ Deno.serve(async (request) => {
   if (authError || !auth.user) return reply(401, { error: "unauthorized" });
   const userId = auth.user.id;
 
-  // 2. Allowed to use the check at all? (placeholder until Adapty / RevenueCat)
-  if (!(await isSubscriber(userId))) return reply(402, { error: "subscription_required" });
-
-  // 3. A real, small image — rejected before it can cost anything.
-  let base64: unknown;
+  let payload: { image?: unknown; customer_id?: unknown } | null;
   try {
-    base64 = (await request.json())?.image;
+    payload = await request.json();
   } catch {
     return reply(400, { error: "invalid_image" });
   }
+
+  // 2. Allowed to use the check at all? RevenueCat confirms the subscription.
+  const customerId = typeof payload?.customer_id === "string" ? payload.customer_id : "";
+  if (!(await isSubscriber(customerId))) return reply(402, { error: "subscription_required" });
+
+  // 3. A real, small image — rejected before it can cost anything.
+  const base64 = payload?.image;
   if (typeof base64 !== "string" || base64.length === 0) return reply(400, { error: "invalid_image" });
   if (base64.length > Math.ceil((MAX_IMAGE_BYTES * 4) / 3) + 8) return reply(413, { error: "image_too_large" });
   const bytes = decodeBase64(base64);

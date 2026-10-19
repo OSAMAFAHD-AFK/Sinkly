@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get Sinkly</title>
+  <meta name="description" content="Clean sink. Clear mind. Download Sinkly for iPhone or Android.">
+  <meta property="og:title" content="Sinkly: a clean sink after every meal">
+  <meta property="og:description" content="Sinkly pauses your distracting apps after every meal, and they come back once your sink is clean.">
+  <meta property="og:image" content="https://sinkly.osamafahd.com/icon.png">
+  <link rel="icon" href="../icon.png">
+  <link rel="stylesheet" href="../style.css">
+  <script>
+    // One link for everyone: iPhone → App Store, Android → Google Play.
+    // TODO(store): put the numeric Apple ID (App Store Connect → App Information → Apple ID).
+    var APPLE_ID = '';
+    var appStore = APPLE_ID ? 'https://apps.apple.com/app/id' + APPLE_ID : '';
+    var googlePlay = 'https://play.google.com/store/apps/details?id=com.sinkly.app'
+      + (location.search.indexOf('ref=') >= 0 ? '&referrer=' + encodeURIComponent(location.search.slice(1)) : '');
+    var ua = navigator.userAgent || '';
+    var isIos = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var isAndroid = /Android/i.test(ua);
+    if (isIos && appStore) location.replace(appStore);
+    else if (isAndroid) location.replace(googlePlay);
+  </script>
+</head>
+<body>
+<div class="wrap">
+  <main class="hero">
+    <img src="../icon.png" alt="Sinkly">
+    <h1>Sinkly</h1>
+    <p class="lead">Your apps take a short break after every meal, and come back once your sink is clean.</p>
+    <div class="buttons">
+      <a class="btn" id="ios" href="#">Download on the App Store</a>
+      <a class="btn secondary" id="android" href="#">Get it on Google Play</a>
+    </div>
+  </main>
+  <footer class="site"><a href="../privacy/">Privacy</a> · <a href="../terms/">Terms</a> · <a href="../support/">Support</a></footer>
+</div>
+<script>
+  document.getElementById('android').href = googlePlay;
+  var ios = document.getElementById('ios');
+  if (appStore) ios.href = appStore; else ios.style.display = 'none';
+</script>
+</body>
+</html>

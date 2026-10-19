@@ -1,8 +1,8 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../../../core/errors/failures.dart';
 import '../../../../core/models/shared_core_models.dart';
+import '../../../../core/utils/crash_reporting_service.dart';
 import '../data_sources/connectivity_probe_data_source.dart';
 import '../data_sources/sink_photo_capture_data_source.dart';
 import '../data_sources/sink_photo_verification_data_source.dart';
@@ -65,11 +65,11 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
       if (!result.isClean) return left(VerificationFailure(result.reasonKey ?? 'verify_error_not_clean'));
       return right(result);
     } on VerificationUnavailableException catch (error) {
-      // The user only sees a friendly message; the real cause goes to the debug console.
-      debugPrint('[SinkVerify] ${error.messageKey}: ${error.debugMessage}');
+      // The user only sees a friendly message (offline, daily limit… are normal).
       return left(VerificationFailure(error.messageKey, debugMessage: error.debugMessage));
-    } catch (error) {
-      debugPrint('[SinkVerify] unexpected: $error');
+    } catch (error, stack) {
+      // A real bug: reported to Crashlytics (no photo, no personal data).
+      CrashReportingService.recordError(error, stack, reason: 'photo check');
       return left(VerificationFailure('verify_error_unreadable', debugMessage: '$error'));
     }
   }

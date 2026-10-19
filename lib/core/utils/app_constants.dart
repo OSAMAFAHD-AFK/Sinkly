@@ -1,7 +1,8 @@
 /// App-wide constants and integration switches.
 abstract final class AppConstants {
   static const String appName = 'Sinkly';
-  static const String appVersion = '0.1.0';
+  /// Keep in step with `version:` in pubspec.yaml.
+  static const String appVersion = '1.0.0';
 
   // ── Core mechanic ──────────────────────────────────────────────────────
   /// The guided "sink sprint" length (default; users can adjust it).
@@ -28,43 +29,53 @@ abstract final class AppConstants {
   /// Android package (Google Play listing id) = `applicationId` in Gradle.
   static const String androidPackageName = 'com.sinkly.app';
 
-  /// TODO(store): ONE smart link for invites that sends iPhone users to the
-  /// App Store and Android users to Google Play (e.g. a tiny redirect page
-  /// on sinkly.app, or a Firebase Dynamic Link replacement such as Branch).
+  /// Sinkly's website (legal pages, support, invite redirect): `site/` in
+  /// this repo, published on the owner's domain.
+  static const String websiteUrl = 'https://sinkly.osamafahd.com';
+
+  /// ONE link for invites: the page sends iPhone users to the App Store and
+  /// Android users to Google Play (`site/get/index.html`).
   /// `ref=invite` lets the store / analytics attribute installs to sharing.
-  static const String inviteLink = 'https://sinkly.app/get?ref=invite';
+  static const String inviteLink = '$websiteUrl/get/?ref=invite';
 
   // ── Development ────────────────────────────────────────────────────────
-  /// TODO(dev): shows a "bypass" button on the lock overlay so it can be
-  /// tested without cleaning. MUST be `false` (and removed) before release.
-  static const bool showDevLockBypass = true;
+  /// TODO(dev): the ONLY developer shortcut left (owner's request until the
+  /// stores + RevenueCat are connected): a "DEV · Skip payment" pill on the
+  /// paywall that unlocks Premium on this phone without buying.
+  /// MUST be `false` before the store release.
+  static const bool devPaywallBypass = true;
 
-  /// TODO(dev): shows "Skip to Welcome" on the first onboarding screen so the
-  /// whole setup can be skipped while designing. MUST be removed before
-  /// release.
-  static const bool showDevOnboardingSkip = true;
-
-  // ── Subscription / Adapty ─────────────────────────────────────────────
+  // ── Subscription / RevenueCat ─────────────────────────────────────────
+  /// Shown before the store answers; the real length comes from the store.
   static const int freeTrialDays = 3;
 
   // PRODUCT DECISION: the paywall is ALWAYS our custom Flutter screen (with
-  // the heroine). Adapty only supplies products/prices, purchases, restore and
-  // analytics — its built-in Paywall Builder UI (AdaptyUI) is never used.
+  // the heroine). RevenueCat only supplies products/prices, purchases,
+  // restore, status and analytics — never its own paywall UI.
 
-  /// When `true`, onboarding is rendered by Adapty Onboarding Builder.
-  static const bool useAdaptyOnboardingBuilder = false;
+  /// RevenueCat → Project settings → API keys → the PUBLIC app-specific keys
+  /// (`appl_…` / `goog_…`). Public by design: they ship inside the app.
+  /// While empty the app keeps the offline mock subscription.
+  static const String revenueCatAppleApiKey = '';
+  static const String revenueCatGoogleApiKey = '';
 
-  /// Adapty placement ids (configure the same ids in the Adapty dashboard).
-  static const String adaptyOnboardingPlacementId = 'onboarding_paywall';
-  static const String adaptySettingsPlacementId = 'settings_upgrade';
-  static const String adaptyOnboardingFlowPlacementId = 'onboarding_flow';
+  /// Entitlement unlocked by every Sinkly product (RevenueCat dashboard).
+  static const String premiumEntitlementId = 'premium';
+
+  /// Paywall placements (optional RevenueCat placements with the same ids
+  /// enable targeting / price experiments per screen).
+  static const String onboardingPaywallPlacementId = 'onboarding_paywall';
+  static const String settingsPaywallPlacementId = 'settings_upgrade';
 
   /// Discounted annual plan offered every time the user taps "X" on the
-  /// paywall (a separate product: `sinkly_premium_annual_special`).
-  static const String adaptyExitOfferPlacementId = 'paywall_exit_offer';
+  /// paywall: its own offering, product `sinkly_premium_annual_special`.
+  static const String exitOfferPlacementId = 'paywall_exit_offer';
+  static const String exitOfferOfferingId = 'exit_offer';
 
-  /// Access level granted by an active subscription.
-  static const String premiumAccessLevelId = 'premium';
+  /// The store pages where a subscription is managed / cancelled.
+  static const String appleSubscriptionsUrl = 'https://apps.apple.com/account/subscriptions';
+  static const String googleSubscriptionsUrl =
+      'https://play.google.com/store/account/subscriptions?package=$androidPackageName';
 
   // ── Supabase (photo check + feedback only; everything else is on-device) ─
   /// TODO(supabase): Project Settings → "Project URL" and API Keys →
@@ -88,11 +99,9 @@ abstract final class AppConstants {
   static const int verificationDailyLimit = 15;
   static const int feedbackDailyLimit = 5;
 
-  // ── Remote API (future) ───────────────────────────────────────────────
-  static const String apiBaseUrl = 'https://api.sinkly.app/v1/';
-
   // ── Legal ──────────────────────────────────────────────────────────────
-  static const String termsUrl = 'https://sinkly.app/terms';
-  static const String privacyUrl = 'https://sinkly.app/privacy';
-  static const String supportEmail = 'support@sinkly.app';
+  static const String termsUrl = '$websiteUrl/terms/';
+  static const String privacyUrl = '$websiteUrl/privacy/';
+  static const String supportUrl = '$websiteUrl/support/';
+  static const String supportEmail = 'support@osamafahd.com';
 }

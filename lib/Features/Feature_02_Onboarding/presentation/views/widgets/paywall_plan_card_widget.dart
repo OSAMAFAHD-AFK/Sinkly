@@ -37,6 +37,13 @@ class PaywallPlanCardWidget extends StatelessWidget {
     SubscriptionPeriod.weekly => 'plan_trial_then_week',
   };
 
+  /// No free trial (store says not eligible / none configured): the billed price.
+  static String billedLineKey(SubscriptionPeriod period) => switch (period) {
+    SubscriptionPeriod.annual => 'plan_billed_year',
+    SubscriptionPeriod.monthly => 'plan_billed_month',
+    SubscriptionPeriod.weekly => 'plan_billed_week',
+  };
+
   static String perPeriodKey(SubscriptionPeriod period) => switch (period) {
     SubscriptionPeriod.annual => 'plan_per_year',
     SubscriptionPeriod.monthly => 'plan_per_month',
@@ -46,10 +53,9 @@ class PaywallPlanCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = context.tr(titleKey(plan.period));
-    final priceLine = context.tr(trialLineKey(plan.period), {
-      'days': '${plan.trialDays}',
-      'price': plan.localizedPrice,
-    });
+    final priceLine = plan.hasTrial
+        ? context.tr(trialLineKey(plan.period), {'days': '${plan.trialDays}', 'price': plan.localizedPrice})
+        : context.tr(billedLineKey(plan.period), {'price': plan.localizedPrice});
     final showWeeklyEquivalent = plan.period != SubscriptionPeriod.weekly;
     final ribbon = plan.savingVsWeeklyPercent == null
         ? null

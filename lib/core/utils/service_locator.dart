@@ -1,4 +1,6 @@
-import 'package:dio/dio.dart';
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +16,7 @@ import '../../Features/Feature_03_Feedback/data/data_sources/feedback_local_data
 import '../../Features/Feature_03_Feedback/data/data_sources/feedback_remote_data_source.dart';
 import '../../Features/Feature_03_Feedback/data/repos/feedback_repo.dart';
 import '../../Features/Feature_03_Feedback/data/repos/feedback_repo_impl.dart';
+import '../../Features/Feature_04_Subscription/data/data_sources/revenuecat_subscription_remote_data_source.dart';
 import '../../Features/Feature_04_Subscription/data/data_sources/subscription_remote_data_source.dart';
 import '../../Features/Feature_04_Subscription/data/repos/subscription_repo.dart';
 import '../../Features/Feature_04_Subscription/data/repos/subscription_repo_impl.dart';
@@ -44,7 +47,9 @@ import '../../Features/Feature_09_Settings/data/repos/settings_repo_impl.dart';
 import '../../Features/Feature_10_LockOverlay/data/data_sources/lock_overlay_local_data_source.dart';
 import '../../Features/Feature_10_LockOverlay/data/repos/lock_overlay_repo.dart';
 import '../../Features/Feature_10_LockOverlay/data/repos/lock_overlay_repo_impl.dart';
-import 'api_service.dart';
+import '../../Features/Feature_11_Reminders/data/data_sources/local_notifications_data_source.dart';
+import '../../Features/Feature_11_Reminders/data/repos/reminders_repo.dart';
+import '../../Features/Feature_11_Reminders/data/repos/reminders_repo_impl.dart';
 import 'app_localizations.dart';
 import 'local_storage_service.dart';
 import 'supabase_service.dart';
@@ -52,7 +57,7 @@ import 'supabase_service.dart';
 final GetIt getIt = GetIt.instance;
 
 /// Registers every service, data source and repo.
-/// Swapping a mock for a real implementation (e.g. Adapty) is a one-line
+/// Swapping a mock for a real implementation is a one-line
 /// change here.
 Future<void> setupServiceLocator() async {
   // ── Core ───────────────────────────────────────────────────────────────
@@ -64,10 +69,13 @@ Future<void> setupServiceLocator() async {
     ..registerSingleton<LocalStorageService>(LocalStorageService(preferences))
     ..registerSingleton<SupabaseService>(supabase)
     ..registerLazySingleton<LocaleController>(() => LocaleController(getIt()))
-    ..registerLazySingleton<ApiService>(() => ApiService(Dio()))
     ..registerLazySingleton<ImagePicker>(ImagePicker.new)
     // ── Shared platform data sources (MOCKS) ─────────────────────────────
-    ..registerLazySingleton<DevicePermissionsDataSource>(PlatformDevicePermissionsDataSource.new)
+    // REAL on phones: notifications scheduled on the device (no server).
+    ..registerLazySingleton<LocalNotificationsDataSource>(
+      () => isPhone ? FlutterLocalNotificationsDataSource() : MockLocalNotificationsDataSource(),
+    )
+    ..registerLazySingleton<DevicePermissionsDataSource>(() => PlatformDevicePermissionsDataSource(getIt()))
     // REAL: channel `sinkly/app_blocking` (Kotlin blocking/ · Swift ios/Shared + extensions).
     ..registerLazySingleton<AppBlockingPlatformDataSource>(MethodChannelAppBlockingDataSource.new)
     ..registerLazySingleton<AppBlockingRepo>(
@@ -93,9 +101,16 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<FeedbackRepo>(
       () => FeedbackRepoImpl(localDataSource: getIt(), remoteDataSource: getIt(), localeController: getIt()),
     )
-    // ── Feature 04 · Subscription (swap for AdaptySubscriptionRemoteDataSource) ─
-    ..registerLazySingleton<SubscriptionRemoteDataSource>(() => MockSubscriptionRemoteDataSource(getIt()))
-    ..registerLazySingleton<SubscriptionRepo>(() => SubscriptionRepoImpl(getIt(), getIt()))
+    // ── Feature 04 · Subscription ────────────────────────────────────────
+    // REAL once AppConstants.revenueCat*ApiKey are set: RevenueCat → stores.
+    ..registerLazySingleton<SubscriptionRemoteDataSource>(
+      () => RevenueCatSubscriptionRemoteDataSource.isConfigured
+          ? RevenueCatSubscriptionRemoteDataSource()
+          : MockSubscriptionRemoteDataSource(getIt()),
+    )
+    ..registerLazySingleton<SubscriptionRepo>(
+      () => SubscriptionRepoImpl(remote: getIt(), blocking: getIt(), reminders: getIt(), storage: getIt()),
+    )
     // ── Feature 05 · Home ────────────────────────────────────────────────
     ..registerLazySingleton<HomeLocalDataSource>(() => HomeLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<HomeRepo>(() => HomeRepoImpl(getIt(), getIt()))
@@ -106,7 +121,8 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<ConnectivityProbeDataSource>(HttpConnectivityProbeDataSource.new)
     ..registerLazySingleton<SinkPhotoVerificationDataSource>(
       () => supabase.isConfigured
-          ? SupabaseSinkPhotoVerificationDataSource(getIt())
+          // The server confirms the subscription itself with this customer id.
+          ? SupabaseSinkPhotoVerificationDataSource(getIt(), customerId: () => getIt<SubscriptionRemoteDataSource>().customerId())
           : MockSinkPhotoVerificationDataSource(),
     )
     ..registerLazySingleton<SinkUnlockRepo>(
@@ -142,5 +158,12 @@ Future<void> setupServiceLocator() async {
     )
     // ── Feature 10 · Lock Overlay ────────────────────────────────────────
     ..registerLazySingleton<LockOverlayLocalDataSource>(() => LockOverlayLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<LockOverlayRepo>(() => LockOverlayRepoImpl(getIt(), getIt()));
+    ..registerLazySingleton<LockOverlayRepo>(() => LockOverlayRepoImpl(getIt(), getIt()))
+    // ── Feature 11 · Reminders (next lock · free trial ends) ─────────────
+    ..registerLazySingleton<RemindersRepo>(
+      () => RemindersRepoImpl(storage: getIt(), notifications: getIt(), localeController: getIt()),
+    );
 }
+
+/// Real platform plugins only run on a phone; desktop / tests use mocks.
+bool get isPhone => !kIsWeb && (Platform.isAndroid || Platform.isIOS);

@@ -4,11 +4,11 @@ enum SubscriptionPeriod { weekly, monthly, annual }
 
 /// A purchasable plan as displayed on the paywall.
 ///
-/// Maps 1:1 to an Adapty `AdaptyPaywallProduct` (or RevenueCat `Package`):
-///  * [vendorProductId]      ← product.vendorProductId
-///  * [localizedPrice]       ← product.price.localizedString (the BILLED amount)
-///  * [localizedPricePerWeek]← computed from product.price.amount
-///  * [trialDays]            ← product.subscription.offer (free trial phase)
+/// Maps 1:1 to a RevenueCat `Package` (revenuecat_subscription_remote_data_source.dart):
+///  * [vendorProductId]      ← storeProduct.identifier
+///  * [localizedPrice]       ← storeProduct.priceString (the BILLED amount)
+///  * [localizedPricePerWeek]← storeProduct.pricePerWeekString
+///  * [trialDays]            ← the free trial offer (0 when not eligible)
 ///
 /// Store rule (Apple 3.1.2 / Google Play): [localizedPrice] — what is actually
 /// charged — must stay the most prominent price; per-week figures are

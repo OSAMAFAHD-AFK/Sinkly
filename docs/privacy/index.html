@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy · Sinkly</title>
+  <meta name="description" content="How Sinkly handles your data: most of it never leaves your phone.">
+  <link rel="icon" href="../icon.png">
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="site">
+    <img src="../icon.png" alt="">
+    <a class="brand" href="../">Sinkly</a>
+    <nav><a href="../privacy/">Privacy</a><a href="../terms/">Terms</a><a href="../support/">Support</a></nav>
+  </header>
+
+  <main class="card">
+    <h1>Privacy Policy</h1>
+    <p class="meta">Effective date: October 19, 2026</p>
+
+    <p class="lead">Sinkly locks the apps you choose after your meals and unlocks them when you show a photo of a clean sink. We built it so that almost everything stays on your phone. There are no accounts, no ads and no tracking.</p>
+
+    <p>This policy explains what the Sinkly app (iOS and Android) processes, why, and the choices you have. "We", "us" and "our" mean Osama Fahd, the developer of Sinkly, who is responsible for this processing. Contact: <a href="mailto:support@osamafahd.com">support@osamafahd.com</a>.</p>
+
+    <div class="note"><b>In short:</b> your name, meal plan, chosen apps and cleaning history live only on your phone. A photo of your sink is sent for a few seconds to be checked and is not stored by us. Purchases are handled by Apple or Google. We never sell your data.</div>
+
+    <h2>1. Information that stays on your phone</h2>
+    <p>The following is stored only on your device and is never sent to us:</p>
+    <ul>
+      <li>The first name you give the app, your language and your settings.</li>
+      <li>Your meal schedule, lock times and the apps or categories you choose to lock.</li>
+      <li>Your cleaning history, streaks and statistics.</li>
+    </ul>
+    <p>Deleting the app deletes this information.</p>
+
+    <h3>App blocking permissions</h3>
+    <ul>
+      <li><b>iPhone (Screen Time / Family Controls):</b> you choose apps in Apple's own picker. Apple gives Sinkly anonymous tokens, so Sinkly cannot see which apps you chose, what you do in them or your browsing. Apple applies the locks on your device.</li>
+      <li><b>Android (Usage access and Display over other apps):</b> Sinkly checks which app is in the foreground so it can show its lock screen over a locked app. This check happens on your phone; it is not stored or sent anywhere. Sinkly never reads your messages, notifications or app content.</li>
+    </ul>
+
+    <h2>2. The photo of your sink</h2>
+    <p>To unlock your apps, you take a photo of your sink with the camera. The photo is resized and sent over an encrypted connection to our server (a function hosted by Supabase), which asks Google's Gemini AI model one question: is this a clean kitchen sink? The answer (clean / not clean and a short reason) comes back to the app.</p>
+    <ul>
+      <li>We do not store the photo on our servers and do not look at it.</li>
+      <li>Google processes the image only to produce the answer, under the <a href="https://ai.google.dev/gemini-api/terms">Gemini API Additional Terms</a>, and may keep it for a limited time to detect abuse.</li>
+      <li>Please photograph only your sink. Avoid people, documents or anything personal in the frame.</li>
+    </ul>
+    <p>To keep the service fair and affordable, each phone can run 15 photo checks per day. For this, the first time you use the photo check (or send feedback), the app creates a random, anonymous identifier with Supabase (no name, email or phone number). We store the time of each check against that identifier and delete these records automatically after a few days.</p>
+
+    <h2>3. Feedback you send</h2>
+    <p>If you use "Help build Sinkly", we receive the text you write, the category you picked, the app language, the app version and the platform (iOS or Android), linked to the anonymous identifier above. Please do not include personal information in your message. We use feedback only to improve Sinkly and keep it while it is useful for planning features; you can ask us to delete it.</p>
+
+    <h2>4. Purchases and subscriptions</h2>
+    <p>Subscriptions are sold and billed by Apple (App Store) or Google (Google Play). We never receive your card or payment details. We use <a href="https://www.revenuecat.com/privacy">RevenueCat</a> to confirm whether your subscription is active. RevenueCat receives the purchase information from the store (product, dates, renewal status), an anonymous app user ID, and basic device data such as the store country and OS version. Our server also asks RevenueCat whether that anonymous ID has an active subscription before running a photo check.</p>
+
+    <h2>5. Crash reports</h2>
+    <p>If the app crashes, it sends a crash report to <a href="https://firebase.google.com/support/privacy">Firebase Crashlytics</a> (Google): the technical error, device model, OS version, app version and a random installation identifier. Crash reports never contain your photos, name or plan, and we use them only to fix bugs.</p>
+
+    <h2>6. Notifications</h2>
+    <p>Reminders (for example "Apps lock at 2:00 PM" or "Your free trial ends tomorrow") are scheduled on your phone. No push token or personal data is sent to us for them. You can turn reminders off in Sinkly's settings or in your phone's settings.</p>
+
+    <h2>7. What we do not do</h2>
+    <ul>
+      <li>No advertising, no ad networks and no selling or renting of data.</li>
+      <li>No tracking across other companies' apps or websites.</li>
+      <li>No access to your contacts, location, messages or photo library content beyond the photo you take for the check.</li>
+    </ul>
+
+    <h2>8. Service providers</h2>
+    <table>
+      <tr><th>Provider</th><th>What for</th><th>Data</th></tr>
+      <tr><td>Supabase</td><td>Anonymous identifier, daily limits, feedback</td><td>Random ID, check times, feedback text</td></tr>
+      <tr><td>Google (Gemini API)</td><td>Checking the sink photo</td><td>The photo, during the check</td></tr>
+      <tr><td>RevenueCat</td><td>Subscription status</td><td>Purchase info, anonymous user ID, device basics</td></tr>
+      <tr><td>Apple / Google</td><td>Payments, app distribution</td><td>Handled under their own privacy policies</td></tr>
+      <tr><td>Firebase Crashlytics (Google)</td><td>Crash reports</td><td>Crash trace, device and app version</td></tr>
+    </table>
+    <p>These providers may process data in the United States, the European Union or other countries, with safeguards required by law.</p>
+
+    <h2>9. Legal bases (EEA and UK)</h2>
+    <p>We process the photo, the anonymous identifier and subscription status to provide the service you request (performance of a contract). We process crash reports and feedback based on our legitimate interest in keeping Sinkly reliable and improving it.</p>
+
+    <h2>10. Your choices and rights</h2>
+    <ul>
+      <li>You can stop all processing by deleting the app; on-device data is removed with it.</li>
+      <li>You can manage or cancel your subscription in your App Store or Google Play account at any time.</li>
+      <li>Depending on where you live (for example under the GDPR or the California CCPA/CPRA), you may have the right to access, correct or delete your data, to object or to complain to a data protection authority. Because we do not know who you are, please include details that help us find your data (for example the text of feedback you sent). Write to <a href="mailto:support@osamafahd.com">support@osamafahd.com</a>.</li>
+    </ul>
+
+    <h2>11. Children</h2>
+    <p>Sinkly is not directed to children under 13 (under 16 in the European Economic Area), and we do not knowingly collect their data.</p>
+
+    <h2>12. Security</h2>
+    <p>Data in transit is encrypted (HTTPS). Server access is restricted, and the AI provider key is kept only on the server, never in the app.</p>
+
+    <h2>13. Changes</h2>
+    <p>If we change this policy, we will update the date above and, for significant changes, tell you in the app.</p>
+
+    <h2>14. Contact</h2>
+    <p>Osama Fahd · <a href="mailto:support@osamafahd.com">support@osamafahd.com</a></p>
+  </main>
+
+  <footer class="site">© 2026 Sinkly · <a href="../terms/">Terms of Use</a> · <a href="../support/">Support</a></footer>
+</div>
+</body>
+</html>

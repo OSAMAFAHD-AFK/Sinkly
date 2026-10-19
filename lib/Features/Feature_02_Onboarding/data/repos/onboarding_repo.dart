@@ -6,8 +6,7 @@ import '../../../Feature_06_SinkUnlock/data/data_sources/installed_apps_platform
 import '../models/onboarding_user_preferences_model.dart';
 import '../models/screen_time_access_model.dart';
 
-/// Contract used by [OnboardingCubit]. Swap the implementation (e.g. one that
-/// also syncs to Firestore, or one driven by Adapty Onboarding Builder)
+/// Contract used by [OnboardingCubit]. The implementation can be swapped
 /// without touching the presentation layer.
 abstract class OnboardingRepo {
   /// Restores the draft answers and step after an app restart.

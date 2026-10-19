@@ -32,9 +32,15 @@ class VerificationUnavailableException implements Exception {
 }
 
 class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDataSource {
-  SupabaseSinkPhotoVerificationDataSource(this._supabase);
+  SupabaseSinkPhotoVerificationDataSource(this._supabase, {required Future<String?> Function() customerId})
+    : _customerId = customerId;
 
+  // ignore_for_file: prefer_initializing_formals — named parameters keep call sites readable.
   final SupabaseService _supabase;
+
+  /// RevenueCat customer id: the server asks RevenueCat itself whether this
+  /// customer is subscribed before spending a Gemini check.
+  final Future<String?> Function() _customerId;
 
   /// Same ceiling as the Edge Function (`MAX_IMAGE_BYTES`).
   static const int _maxPhotoBytes = 700000;
@@ -46,7 +52,7 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
       throw VerificationUnavailableException('verify_error_unreadable', debugMessage: '${bytes.length} bytes');
     }
 
-    final body = {'image': base64Encode(bytes)};
+    final body = {'image': base64Encode(bytes), 'customer_id': await _safeCustomerId() ?? ''};
     try {
       FunctionResponse response;
       try {
@@ -72,6 +78,14 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
         offline ? 'error_no_internet' : 'verify_error_unavailable',
         debugMessage: '$error',
       );
+    }
+  }
+
+  Future<String?> _safeCustomerId() async {
+    try {
+      return await _customerId();
+    } catch (_) {
+      return null; // The server decides; a missing id never crashes the check.
     }
   }
 
@@ -106,6 +120,7 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
 
   static String _keyForStatus(int status) => switch (status) {
     429 => 'verify_error_limit_reached',
+    402 => 'verify_error_subscription',
     400 || 413 => 'verify_error_unreadable',
     _ => 'verify_error_unavailable',
   };

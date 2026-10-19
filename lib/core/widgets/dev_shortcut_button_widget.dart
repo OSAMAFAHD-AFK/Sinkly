@@ -4,8 +4,8 @@ import '../utils/style.dart';
 import 'animated_pressable_widget.dart';
 
 /// TODO(dev): DEVELOPMENT ONLY. Amber "DEV" pill for temporary testing
-/// shortcuts (bypass the lock overlay, skip onboarding…). Each use is gated
-/// by an `AppConstants.showDev…` flag; delete them all before release.
+/// shortcuts. Only one is left: "Skip payment" on the paywall, gated by
+/// `AppConstants.devPaywallBypass` — delete both before the store release.
 class DevShortcutButtonWidget extends StatelessWidget {
   const DevShortcutButtonWidget({
     super.key,

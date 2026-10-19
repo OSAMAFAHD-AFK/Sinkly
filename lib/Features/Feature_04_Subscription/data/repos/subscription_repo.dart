@@ -4,9 +4,30 @@ import '../../../../core/errors/failures.dart';
 import '../models/subscription_plan_model.dart';
 
 abstract class SubscriptionRepo {
+  /// Connects to the store and keeps the app in step with every status
+  /// change (renewal, cancellation, refund…): app locking runs only while
+  /// subscribed, and the "trial ends tomorrow" reminder follows the trial.
+  Future<void> start();
+
   Future<Either<Failure, List<SubscriptionPlanModel>>> fetchPaywallPlans({required String placementId});
+
+  /// `Right(true)` when Premium is active after the purchase. Closing the
+  /// store sheet is `Left(PurchaseFailure(userCancelled: true))`.
   Future<Either<Failure, bool>> purchase(SubscriptionPlanModel plan);
+
   Future<Either<Failure, bool>> restorePurchases();
+
   Future<bool> isPremiumActive();
+
+  /// Premium switched on / off (purchase, expiry, refund…) while the app runs.
+  Stream<bool> get premiumChanges;
+
   Future<void> logPaywallShown({required String placementId});
+
+  /// The store's own page where the user manages or cancels the subscription.
+  Future<String> manageSubscriptionUrl();
+
+  /// TODO(dev): `AppConstants.devPaywallBypass` only — unlocks Premium on
+  /// this phone without buying. Remove before the store release.
+  Future<void> devUnlockPremium();
 }

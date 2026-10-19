@@ -3,6 +3,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
+import '../../../Feature_11_Reminders/data/data_sources/local_notifications_data_source.dart';
 import '../models/screen_time_access_model.dart';
 
 /// OS permission requests needed by Sinkly.
@@ -13,8 +14,9 @@ import '../models/screen_time_access_model.dart';
 ///  * Android — "Display over other apps" + "Usage access" (MainActivity.kt):
 ///           Android has no popup for these, so Sinkly opens the exact
 ///           Settings page and the call completes when the user comes back.
-/// Notifications are still mocked (`firebase_messaging` /
-/// `flutter_local_notifications` later).
+/// Notifications: the real system prompt (Android 13+ / iOS) through
+/// [LocalNotificationsDataSource] — needed for the reminders and, on iPhone,
+/// for the notification that opens Sinkly from Apple's lock screen.
 abstract class DevicePermissionsDataSource {
   /// Current status, without asking the user anything.
   Future<ScreenTimeAccessModel> getScreenTimeAccess();
@@ -31,9 +33,22 @@ abstract class DevicePermissionsDataSource {
 }
 
 class PlatformDevicePermissionsDataSource extends MockDevicePermissionsDataSource {
+  PlatformDevicePermissionsDataSource(this._notifications);
+
+  final LocalNotificationsDataSource _notifications;
   static const MethodChannel _screenTime = MethodChannel('sinkly/screen_time');
 
   bool get _isMobile => !kIsWeb && (Platform.isIOS || Platform.isAndroid);
+
+  @override
+  Future<bool> requestNotificationPermission() async {
+    if (!_isMobile) return super.requestNotificationPermission();
+    try {
+      return await _notifications.requestPermission();
+    } on MissingPluginException {
+      return super.requestNotificationPermission();
+    }
+  }
 
   @override
   Future<ScreenTimeAccessModel> getScreenTimeAccess() => _invoke('getAuthorizationStatus', super.getScreenTimeAccess);
