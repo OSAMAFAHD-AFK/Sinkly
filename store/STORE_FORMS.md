@@ -4,7 +4,7 @@
 - سياسة الخصوصية: `https://sinkly.osamafahd.com/privacy/`
 - شروط الاستخدام: `https://sinkly.osamafahd.com/terms/`
 - الدعم: `https://sinkly.osamafahd.com/support/`
-- بريد الدعم: `support@osamafahd.com`
+- بريد الدعم: `osamadeveloper0@gmail.com`
 
 ---
 

@@ -103,5 +103,5 @@ abstract final class AppConstants {
   static const String termsUrl = '$websiteUrl/terms/';
   static const String privacyUrl = '$websiteUrl/privacy/';
   static const String supportUrl = '$websiteUrl/support/';
-  static const String supportEmail = 'support@osamafahd.com';
+  static const String supportEmail = 'osamadeveloper0@gmail.com';
 }
