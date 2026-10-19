@@ -8,8 +8,4 @@ abstract class LockOverlayRepo {
   /// Android: back press on the lock screen goes to the home screen (never
   /// back into the locked app).
   Future<void> leaveToHomeScreen();
-
-  /// TODO(dev): DEVELOPMENT ONLY (`AppConstants.showDevLockBypass`) — lifts
-  /// the current lock without a photo.
-  Future<void> devBypassLock();
 }

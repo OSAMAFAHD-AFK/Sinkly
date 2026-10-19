@@ -27,7 +27,4 @@ class LockOverlayCubit extends Cubit<LockOverlayState> {
 
   /// Back press: the home screen, never back into the locked app.
   Future<void> leaveToHomeScreen() => _repo.leaveToHomeScreen();
-
-  /// TODO(dev): remove with AppConstants.showDevLockBypass before release.
-  Future<void> devBypassLock() => _repo.devBypassLock();
 }

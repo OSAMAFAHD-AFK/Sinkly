@@ -10,7 +10,6 @@ import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/custom_primary_button.dart';
-import '../../../../core/widgets/dev_shortcut_button_widget.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../../../Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
@@ -40,15 +39,6 @@ class LockOverlayView extends StatelessWidget {
   void _snapPhoto(BuildContext context) {
     AppFunctions.lightHaptic();
     context.pushReplacement(AppRouter.kSinkUnlockView, extra: SinkUnlockView.openCameraExtra);
-  }
-
-  // TODO(dev): remove with AppConstants.showDevLockBypass before release.
-  Future<void> _devBypass(BuildContext context) async {
-    AppFunctions.lightHaptic();
-    await context.read<LockOverlayCubit>().devBypassLock();
-    if (!context.mounted) return;
-    AppFunctions.showSnack(context, context.tr('lock_overlay_dev_bypassed'));
-    _leave(context);
   }
 
   @override
@@ -101,13 +91,6 @@ class LockOverlayView extends StatelessWidget {
                               child: LockedAppChipWidget(app: snapshot.attemptedApp),
                             ),
                           ),
-                          if (AppConstants.showDevLockBypass) ...[
-                            const SizedBox(width: AppSpacing.xs),
-                            DevShortcutButtonWidget(
-                              label: context.tr('lock_overlay_dev_bypass'),
-                              onPressed: () => _devBypass(context),
-                            ),
-                          ],
                         ],
                       ),
                       SizedBox(height: stageHeight, child: const LockOverlayHeroineStageWidget())

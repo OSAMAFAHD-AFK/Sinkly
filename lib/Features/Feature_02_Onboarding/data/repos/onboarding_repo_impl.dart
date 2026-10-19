@@ -30,17 +30,15 @@ class OnboardingRepoImpl implements OnboardingRepo {
 
   @override
   ({OnboardingUserPreferencesModel preferences, int stepIndex}) restoreDraft({required String languageCode}) {
-    // TODO(design): restore draft resume when design is done:
-    // final plan = _local.readSavedPlan();
-    // final stepIndex = _local.readSavedStepIndex();
-    // if (plan.userName.isEmpty && stepIndex == 0) {
-    //   return (preferences: OnboardingUserPreferencesModel.initial(languageCode: languageCode), stepIndex: 0);
-    // }
-    // return (
-    //   preferences: OnboardingUserPreferencesModel.fromUserPlan(plan, languageCode: languageCode),
-    //   stepIndex: stepIndex,
-    // );
-    return (preferences: OnboardingUserPreferencesModel.initial(languageCode: languageCode), stepIndex: 0);
+    final plan = _local.readSavedPlan();
+    final stepIndex = _local.readSavedStepIndex();
+    if (plan.userName.isEmpty && stepIndex == 0) {
+      return (preferences: OnboardingUserPreferencesModel.initial(languageCode: languageCode), stepIndex: 0);
+    }
+    return (
+      preferences: OnboardingUserPreferencesModel.fromUserPlan(plan, languageCode: languageCode),
+      stepIndex: stepIndex,
+    );
   }
 
   @override

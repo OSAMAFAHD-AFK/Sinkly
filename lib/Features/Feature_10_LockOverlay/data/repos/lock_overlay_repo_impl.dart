@@ -38,17 +38,4 @@ class LockOverlayRepoImpl implements LockOverlayRepo {
 
   @override
   Future<void> leaveToHomeScreen() => _blocking.leaveToHomeScreen();
-
-  @override
-  Future<void> devBypassLock() async {
-    final plan = _local.readPlan();
-    // Restart the "locking active" clock now: meals that already ended no
-    // longer count, and the test lock is cleared.
-    await _local.savePlan(
-      plan.copyWith(
-        manualLockTriggeredAt: null,
-        lockingActiveSince: plan.lockingActiveSince == null ? null : DateTime.now(),
-      ),
-    );
-  }
 }

@@ -50,7 +50,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <!-- App blocker (see kotlin/com/sinkly/sinkly/blocking/BlockingService.kt). -->
+        <!-- App blocker (see kotlin/com/sinkly/app/blocking/BlockingService.kt). -->
         <service
             android:name=".blocking.BlockingService"
             android:exported="false"
