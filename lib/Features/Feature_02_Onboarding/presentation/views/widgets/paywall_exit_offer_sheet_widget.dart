@@ -284,12 +284,14 @@ class _OfferCard extends StatelessWidget {
                 isLoading: purchasing,
                 onPressed: offer == null || isBusy ? null : onClaim,
               ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                context.tr('paywall_auto_renew_note'),
-                textAlign: TextAlign.center,
-                style: AppTextStyles.caption.copyWith(fontSize: 10.5, color: AppColors.inkMuted),
-              ),
+              if (offer != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  PaywallPlanCardWidget.billingNote(context, offer),
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.caption.copyWith(fontSize: 12),
+                ),
+              ],
             ],
           ),
         ),

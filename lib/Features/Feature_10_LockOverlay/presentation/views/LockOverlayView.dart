@@ -9,6 +9,7 @@ import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
 import '../../../../core/widgets/custom_primary_button.dart';
+import '../../../../core/widgets/glass_icon_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/mesh_gradient_background_widget.dart';
 import '../../../Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
@@ -31,6 +32,14 @@ class LockOverlayView extends StatelessWidget {
   void _startSprint(BuildContext context) {
     AppFunctions.mediumHaptic();
     context.pushReplacement(AppRouter.kSinkUnlockView);
+  }
+
+  /// Leaves the lock screen only, inside Sinkly: back to the Home tab. The
+  /// lock stays on, and opening a locked app again brings this screen back.
+  /// (System Back is different: it sends the phone to its home screen.)
+  void _close(BuildContext context) {
+    AppFunctions.lightHaptic();
+    context.go(AppRouter.kHomeView);
   }
 
   void _snapPhoto(BuildContext context) {
@@ -82,9 +91,18 @@ class LockOverlayView extends StatelessWidget {
                     children: [
                       Row(
                         children: [
+                          // Opposite corners: the X at the start edge (right in
+                          // Arabic, left in LTR), the locked-app pill at the end.
+                          GlassIconButton(
+                            icon: Icons.close_rounded,
+                            size: 44,
+                            semanticLabel: context.tr('close'),
+                            onPressed: () => _close(context),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: Align(
-                              alignment: AlignmentDirectional.centerStart,
+                              alignment: AlignmentDirectional.centerEnd,
                               child: LockedAppChipWidget(app: snapshot.attemptedApp),
                             ),
                           ),

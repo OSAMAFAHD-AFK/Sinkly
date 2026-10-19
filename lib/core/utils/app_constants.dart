@@ -1,6 +1,7 @@
 /// App-wide constants and integration switches.
 abstract final class AppConstants {
   static const String appName = 'Sinkly';
+
   /// Keep in step with `version:` in pubspec.yaml.
   static const String appVersion = '1.0.0';
 
@@ -37,13 +38,6 @@ abstract final class AppConstants {
   /// Android users to Google Play (`site/get/index.html`).
   /// `ref=invite` lets the store / analytics attribute installs to sharing.
   static const String inviteLink = '$websiteUrl/get/?ref=invite';
-
-  // ── Development ────────────────────────────────────────────────────────
-  /// TODO(dev): the ONLY developer shortcut left (owner's request until the
-  /// stores + RevenueCat are connected): a "DEV · Skip payment" pill on the
-  /// paywall that unlocks Premium on this phone without buying.
-  /// MUST be `false` before the store release.
-  static const bool devPaywallBypass = true;
 
   // ── Subscription / RevenueCat ─────────────────────────────────────────
   /// Shown before the store answers; the real length comes from the store.

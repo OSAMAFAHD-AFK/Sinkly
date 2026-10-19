@@ -120,12 +120,6 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// The store page where the subscription is managed or cancelled.
   Future<String> manageSubscriptionUrl() => _repo.manageSubscriptionUrl();
 
-  /// TODO(dev): `AppConstants.devPaywallBypass` only — Premium without buying.
-  Future<void> devUnlockPremium() async {
-    await _repo.devUnlockPremium();
-    emit(state.copyWith(isPremium: true));
-  }
-
   void clearFailure() => emit(state.copyWith(clearFailure: true));
 
   @override

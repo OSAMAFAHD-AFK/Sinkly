@@ -26,8 +26,4 @@ abstract class SubscriptionRepo {
 
   /// The store's own page where the user manages or cancels the subscription.
   Future<String> manageSubscriptionUrl();
-
-  /// TODO(dev): `AppConstants.devPaywallBypass` only — unlocks Premium on
-  /// this phone without buying. Remove before the store release.
-  Future<void> devUnlockPremium();
 }

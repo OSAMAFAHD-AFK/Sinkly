@@ -10,11 +10,9 @@ import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/app_toast_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
-import '../../../../../core/widgets/dev_shortcut_button_widget.dart';
 import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../../core/widgets/glass_icon_button.dart';
 import '../../../../../core/widgets/confetti_burst_widget.dart';
-import '../../../../Feature_04_Subscription/data/models/subscription_plan_model.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'paywall_plan_card_widget.dart' show PaywallPlanCardWidget;
 import 'onboarding_step_header_widget.dart';
@@ -111,13 +109,6 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     if (restored) widget.onFinished(true);
   }
 
-  // TODO(dev): remove with AppConstants.devPaywallBypass before the store release.
-  Future<void> _devSkipPayment() async {
-    AppFunctions.lightHaptic();
-    await _cubit.devUnlockPremium();
-    if (mounted) widget.onFinished(true);
-  }
-
   /// "X" or system back: always the exit offer (strict paywall — the only
   /// way past it is buying; swiping the sheet away stays on the paywall).
   Future<void> _onExitAttempt() async {
@@ -148,12 +139,7 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
             const Positioned.fill(child: FloatingSoapBubblesWidget(bubbleCount: 8, maxBubbleSize: 30)),
             Column(
               children: [
-                _PaywallTopBar(
-                  showClose: _showCloseButton,
-                  onClose: _onExitAttempt,
-                  onRestore: _restore,
-                  onDevSkip: AppConstants.devPaywallBypass ? _devSkipPayment : null,
-                ),
+                _PaywallTopBar(showClose: _showCloseButton, onClose: _onExitAttempt, onRestore: _restore),
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -188,13 +174,6 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
                         const SizedBox(height: AppSpacing.md),
                         const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
                         const SizedBox(height: AppSpacing.md),
-                        // Auto-renewal disclosure (App Store 3.1.2 / Google Play subscriptions policy).
-                        Text(
-                          context.tr('paywall_auto_renew_note'),
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.caption.copyWith(fontSize: 11, color: AppColors.inkMuted),
-                        ),
-                        const SizedBox(height: AppSpacing.md),
                       ],
                     ),
                   ),
@@ -211,14 +190,11 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
 }
 
 class _PaywallTopBar extends StatelessWidget {
-  const _PaywallTopBar({required this.showClose, required this.onClose, required this.onRestore, this.onDevSkip});
+  const _PaywallTopBar({required this.showClose, required this.onClose, required this.onRestore});
 
   final bool showClose;
   final VoidCallback onClose;
   final VoidCallback onRestore;
-
-  /// TODO(dev): "DEV · Skip payment" (AppConstants.devPaywallBypass).
-  final VoidCallback? onDevSkip;
 
   @override
   Widget build(BuildContext context) {
@@ -235,15 +211,6 @@ class _PaywallTopBar extends StatelessWidget {
             ),
           ),
           const Spacer(),
-          if (onDevSkip != null)
-            Flexible(
-              child: DevShortcutButtonWidget(
-                label: context.tr('paywall_dev_skip'),
-                icon: Icons.fast_forward_rounded,
-                onPressed: onDevSkip!,
-              ),
-            ),
-          const SizedBox(width: AppSpacing.xs),
           AnimatedOpacity(
             opacity: showClose ? 1 : 0,
             duration: AppDurations.slow,
@@ -448,7 +415,7 @@ class _PaywallBottomActions extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           if (plan != null)
             Text(
-              _billingNote(context, plan),
+              PaywallPlanCardWidget.billingNote(context, plan),
               textAlign: TextAlign.center,
               style: AppTextStyles.caption.copyWith(fontSize: 12),
             ),
@@ -466,21 +433,6 @@ class _PaywallBottomActions extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Exactly what will be charged and when (App Store 3.1.2 / Play policy):
-/// "Free for 3 days, then $39.99 per year. Cancel before Oct 22 and you won't
-/// be charged." — or the plain renewing price when there is no trial.
-String _billingNote(BuildContext context, SubscriptionPlanModel plan) {
-  final per = context.tr(PaywallPlanCardWidget.perPeriodKey(plan.period));
-  if (!plan.hasTrial) return context.tr('paywall_note_no_trial', {'price': plan.localizedPrice, 'per': per});
-  final trialEnd = DateTime.now().add(Duration(days: plan.trialDays));
-  return context.tr('paywall_note', {
-    'days': '${plan.trialDays}',
-    'price': plan.localizedPrice,
-    'per': per,
-    'date': AppFunctions.westernDigits(MaterialLocalizations.of(context).formatMediumDate(trialEnd)),
-  });
 }
 
 class _FooterLink extends StatelessWidget {

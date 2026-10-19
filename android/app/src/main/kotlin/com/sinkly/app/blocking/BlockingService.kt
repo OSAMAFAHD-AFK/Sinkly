@@ -80,6 +80,8 @@ class BlockingService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // The Reminders switch may have changed the channel since onCreate.
+        createChannel(store.snapshot)
         startInForeground(buildNotification(store.snapshot, null))
         notificationKey = null
         poke()
@@ -204,11 +206,19 @@ class BlockingService : Service() {
         }
     }
 
+    /**
+     * Android requires a visible notification while the blocker runs, so it
+     * can't be removed. With Reminders off it moves to a MIN-importance
+     * channel: no status-bar icon, folded at the bottom of the shade.
+     */
+    private fun channelId(snapshot: BlockingSnapshot) =
+        if (snapshot.remindersEnabled) CHANNEL_ID else QUIET_CHANNEL_ID
+
     private fun createChannel(snapshot: BlockingSnapshot) {
         val channel = NotificationChannel(
-            CHANNEL_ID,
+            channelId(snapshot),
             snapshot.text("serviceChannel", "Plan protection"),
-            NotificationManager.IMPORTANCE_LOW,
+            if (snapshot.remindersEnabled) NotificationManager.IMPORTANCE_LOW else NotificationManager.IMPORTANCE_MIN,
         ).apply {
             setShowBadge(false)
             enableVibration(false)
@@ -218,7 +228,7 @@ class BlockingService : Service() {
     }
 
     private fun updateNotification(snapshot: BlockingSnapshot, state: LockState) {
-        val key = "${state.locked}|${state.nextLockAtMs}|${snapshot.languageCode}|${snapshot.strings.hashCode()}"
+        val key = "${state.locked}|${state.nextLockAtMs}|${snapshot.remindersEnabled}|${snapshot.languageCode}|${snapshot.strings.hashCode()}"
         if (key == notificationKey) return
         notificationKey = key
         createChannel(snapshot)
@@ -234,7 +244,7 @@ class BlockingService : Service() {
         }
         val next = state?.nextLockAtMs
         val text = when {
-            state == null || state.locked -> null
+            state == null || state.locked || !snapshot.remindersEnabled -> null
             next != null -> snapshot.text("serviceNext", "Next lock at {time}")
                 .replace("{time}", westernDigits(DateFormat.getTimeFormat(this).format(Date(next))))
             else -> snapshot.text("serviceIdle", "No lock planned")
@@ -245,9 +255,8 @@ class BlockingService : Service() {
             Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        
-        // تصحيح بناء الإشعار بإزالة الـ apply لتجنب مشاكل الـ Type Inference
-        val builder = Notification.Builder(this, CHANNEL_ID)
+
+        val builder = Notification.Builder(this, channelId(snapshot))
             .setSmallIcon(R.drawable.ic_stat_sinkly)
             .setContentTitle(title)
             .setContentIntent(open)
@@ -282,6 +291,7 @@ class BlockingService : Service() {
         const val ACTION_OVERLAY = "overlay"
         const val NOTIFICATION_ID = 4242
         private const val CHANNEL_ID = "sinkly_protection"
+        private const val QUIET_CHANNEL_ID = "sinkly_protection_quiet"
         private const val LOCKED_POLL_MS = 500L
         private const val IDLE_POLL_MS = 15_000L
         private const val SCREEN_OFF_CHECK_MS = 60_000L

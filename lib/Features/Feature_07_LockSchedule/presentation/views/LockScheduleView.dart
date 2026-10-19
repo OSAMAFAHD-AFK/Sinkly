@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/utils/app_localizations.dart';
-import '../../../../core/utils/app_router.dart';
 import '../../../../core/utils/functions/app_functions.dart';
 import '../../../../core/utils/style.dart';
-import '../../../../core/widgets/custom_secondary_button.dart';
 import '../../../../core/widgets/glass_screen_scaffold.dart';
 import '../../../../core/widgets/screen_title_header_widget.dart';
 import '../../../../core/widgets/section_header_widget.dart';
@@ -22,14 +19,6 @@ import '../../../../core/widgets/system_app_picker_widget.dart';
 /// Plan tab: edit lock days, meals, times and locked apps after onboarding.
 class LockScheduleView extends StatelessWidget {
   const LockScheduleView({super.key});
-
-  Future<void> _testLock(BuildContext context) async {
-    final ok = await context.read<LockScheduleCubit>().triggerTestLockNow();
-    if (!context.mounted || !ok) return;
-    AppFunctions.mediumHaptic();
-    // Simulates opening a locked app right after the lock kicks in.
-    context.push(AppRouter.kLockOverlayView);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,19 +77,6 @@ class LockScheduleView extends StatelessWidget {
                     isLoading: !state.appsLoaded,
                     onChanged: cubit.updateAppSelection,
                   ),
-                const SizedBox(height: AppSpacing.xl),
-                SectionHeaderWidget(title: context.tr('plan_try_section')),
-                CustomSecondaryButton(
-                  label: context.tr('plan_test_lock_cta'),
-                  icon: const Icon(Icons.bolt_rounded),
-                  onPressed: () => _testLock(context),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  context.tr('plan_test_lock_hint'),
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(fontSize: 12),
-                ),
               ].animate(interval: 40.ms).fadeIn(duration: 350.ms).slideY(begin: 0.04),
             ),
             // Docked just above the floating tab bar.

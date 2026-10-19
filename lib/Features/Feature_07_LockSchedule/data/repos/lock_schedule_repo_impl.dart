@@ -35,7 +35,7 @@ class LockScheduleRepoImpl implements LockScheduleRepo {
     try {
       // Allowed any time, even while locked (user decision): the new plan
       // applies at once — removing the meal that locked the apps unlocks
-      // them. Saving also ends a "Test the lock now" lock.
+      // them. Saving also clears any leftover manual lock.
       // AppBlockingRepo pushes the change to the native blocker.
       final updated = _local
           .readPlan()
@@ -43,18 +43,6 @@ class LockScheduleRepoImpl implements LockScheduleRepo {
           .withAppSelection(draft.appSelection);
       await _local.savePlan(updated);
       return right(updated);
-    } catch (error) {
-      return left(CacheFailure('error_generic', debugMessage: '$error'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, Unit>> triggerTestLockNow() async {
-    try {
-      final plan = _local.readPlan();
-      // Behaves like a meal ending right now (the native blocker locks for real).
-      await _local.savePlan(plan.copyWith(manualLockTriggeredAt: DateTime.now()));
-      return right(unit);
     } catch (error) {
       return left(CacheFailure('error_generic', debugMessage: '$error'));
     }

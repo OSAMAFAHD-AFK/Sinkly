@@ -21,6 +21,7 @@ class BlockingSnapshotModel extends Equatable {
     this.activeSince,
     this.lastCleanAt,
     this.manualLockAt,
+    this.remindersEnabled = true,
   });
 
   /// Onboarding finished and the subscription is active. `false` = never
@@ -29,6 +30,10 @@ class BlockingSnapshotModel extends Equatable {
   final DateTime? activeSince;
   final DateTime? lastCleanAt;
   final DateTime? manualLockAt;
+
+  /// Settings "Reminders" switch. Off = the blocker's always-on Android
+  /// notification goes minimized (no status-bar icon, no "next lock" line).
+  final bool remindersEnabled;
 
   /// ISO weekday (1 = Monday … 7 = Sunday) → meal end times in minutes after
   /// midnight. Only active days are present.
@@ -77,6 +82,7 @@ class BlockingSnapshotModel extends Equatable {
       activeSince: enabled ? plan.lockingActiveSince : null,
       lastCleanAt: lastCleanAt,
       manualLockAt: plan.manualLockTriggeredAt,
+      remindersEnabled: plan.notificationsEnabled,
       days: {
         for (final weekday in plan.schedule.activeWeekdays)
           weekday: [for (final meal in _sortedMeals(plan, weekday)) meal.minutesOfDay],
@@ -101,6 +107,7 @@ class BlockingSnapshotModel extends Equatable {
     'activeSinceMs': activeSince?.millisecondsSinceEpoch,
     'lastCleanAtMs': lastCleanAt?.millisecondsSinceEpoch,
     'manualLockAtMs': manualLockAt?.millisecondsSinceEpoch,
+    'remindersEnabled': remindersEnabled,
     'days': {for (final entry in days.entries) '${entry.key}': entry.value},
     'mealTypes': {for (final entry in mealTypes.entries) '${entry.key}': entry.value},
     'blockedPackages': blockedPackages,
@@ -115,6 +122,7 @@ class BlockingSnapshotModel extends Equatable {
     activeSince,
     lastCleanAt,
     manualLockAt,
+    remindersEnabled,
     days.entries.map((entry) => '${entry.key}:${entry.value.join(',')}').join('|'),
     mealTypes.entries.map((entry) => '${entry.key}:${entry.value.join(',')}').join('|'),
     blockedPackages,

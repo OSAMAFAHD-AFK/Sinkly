@@ -12,9 +12,6 @@ abstract class LockScheduleRepo {
   /// Persists the plan and re-schedules the native locks.
   Future<Either<Failure, UserPlanModel>> savePlan(LockScheduleDraftModel draft);
 
-  /// Locks the apps right now — lets users try the full loop instantly.
-  Future<Either<Failure, Unit>> triggerTestLockNow();
-
   /// Android: our own category list · iOS: Apple's embedded picker.
   AppPickerMode get appPickerMode;
 

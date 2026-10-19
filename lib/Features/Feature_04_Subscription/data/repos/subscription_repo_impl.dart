@@ -6,7 +6,6 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/crash_reporting_service.dart';
-import '../../../../core/utils/local_storage_service.dart';
 import '../../../Feature_06_SinkUnlock/data/repos/app_blocking_repo.dart';
 import '../../../Feature_11_Reminders/data/repos/reminders_repo.dart';
 import '../data_sources/subscription_remote_data_source.dart';
@@ -19,11 +18,9 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     required SubscriptionRemoteDataSource remote,
     required AppBlockingRepo blocking,
     required RemindersRepo reminders,
-    required LocalStorageService storage,
   }) : _remote = remote,
        _blocking = blocking,
-       _reminders = reminders,
-       _storage = storage;
+       _reminders = reminders;
 
   // ignore_for_file: prefer_initializing_formals — named parameters keep call sites readable.
   final SubscriptionRemoteDataSource _remote;
@@ -33,14 +30,10 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
 
   /// "Your free trial ends tomorrow", one day before the first charge.
   final RemindersRepo _reminders;
-  final LocalStorageService _storage;
 
-  static const String _devPremiumKey = 'sinkly.dev_premium';
   SubscriptionStatusModel? _status;
   final StreamController<bool> _premiumChanges = StreamController.broadcast();
   bool _started = false;
-
-  bool get _devPremium => AppConstants.devPaywallBypass && _storage.getBool(_devPremiumKey);
 
   @override
   Future<void> start() async {
@@ -58,7 +51,7 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
   /// Every fresh answer from the store reaches the blocker and the reminder.
   Future<bool> _apply(SubscriptionStatusModel status) async {
     _status = status;
-    final active = status.isActive || _devPremium;
+    final active = status.isActive;
     _premiumChanges.add(active);
     await _blocking.setSubscriptionActive(active);
     await _reminders.setTrialChargeAt(status.firstChargeAt);
@@ -101,7 +94,7 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     } catch (_) {
       // Unknown (e.g. offline): keep the last answer; the blocker keeps its
       // own last known state too.
-      return (_status?.isActive ?? false) || _devPremium;
+      return _status?.isActive ?? false;
     }
   }
 
@@ -122,13 +115,5 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     final fromStore = _status?.managementUrl;
     if (fromStore != null && fromStore.isNotEmpty) return fromStore;
     return Platform.isIOS ? AppConstants.appleSubscriptionsUrl : AppConstants.googleSubscriptionsUrl;
-  }
-
-  @override
-  Future<void> devUnlockPremium() async {
-    if (!AppConstants.devPaywallBypass) return;
-    await _storage.setBool(_devPremiumKey, true);
-    _premiumChanges.add(true);
-    await _blocking.setSubscriptionActive(true);
   }
 }

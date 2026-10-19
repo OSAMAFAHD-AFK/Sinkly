@@ -25,8 +25,6 @@ import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/manager/sink_
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/SinkUnlockView.dart';
 import 'package:sinkly/Features/Feature_06_SinkUnlock/presentation/views/widgets/sprint_duration_picker_widget.dart';
 import 'package:sinkly/Features/Feature_03_Feedback/presentation/views/widgets/feedback_success_dialog_widget.dart';
-import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/manager/lock_schedule_cubit.dart';
-import 'package:sinkly/Features/Feature_07_LockSchedule/presentation/views/LockScheduleView.dart';
 import 'package:sinkly/Features/Feature_09_Settings/presentation/views/SettingsView.dart';
 import 'package:sinkly/Features/Feature_09_Settings/data/models/share_invite_outcome.dart';
 import 'package:sinkly/Features/Feature_09_Settings/presentation/views/widgets/settings_sheets_widget.dart';
@@ -38,6 +36,7 @@ import 'package:sinkly/core/models/weekly_lock_schedule_model.dart';
 import 'package:sinkly/core/widgets/glass_bottom_sheet.dart';
 import 'package:sinkly/core/utils/app_localizations.dart';
 import 'package:sinkly/core/utils/app_router.dart';
+import 'package:sinkly/core/utils/local_storage_service.dart';
 import 'package:sinkly/core/utils/service_locator.dart';
 import 'package:sinkly/main.dart';
 
@@ -59,6 +58,7 @@ const _devices = [
 ];
 
 const _textScales = [1.0, 1.4];
+
 /// EN + AR by default; `AUDIT_LANGS=de,hi,fr` audits other languages
 /// (German is the longest, Hindi the tallest).
 final _languages = (Platform.environment['AUDIT_LANGS'] ?? 'en,ar').split(',');
@@ -251,16 +251,12 @@ void main() {
             }
 
             // ── Home while apps are LOCKED (manual test lock from the Plan tab) ──
-            await visit('plan(test-lock)', () async {
+            // A meal "ended" right now: the same state the blocker locks on.
+            await visit('plan(locked)', () async {
+              final storage = getIt<LocalStorageService>();
+              // Not awaited: storage writes only advance while we pump.
+              storage.savePlan(storage.plan.copyWith(manualLockTriggeredAt: DateTime.now()));
               AppRouter.router.go(AppRouter.kLockScheduleView);
-              for (var i = 0; i < 8; i++) {
-                await tester.pump(const Duration(milliseconds: 100));
-              }
-              // Not awaited: mock latency only advances while we pump.
-              tester
-                  .element(find.byType(LockScheduleView, skipOffstage: false))
-                  .read<LockScheduleCubit>()
-                  .triggerTestLockNow();
             }, ms: 2500);
             await visit('home(locked)', () async => AppRouter.router.go(AppRouter.kHomeView), ms: 1500);
             await _scrollThrough(tester, () => currentLabel = 'home(locked,scrolled)');
@@ -317,7 +313,10 @@ void main() {
               'sheet/edit-name',
               () => showEditNameSheet(screen(), currentName: 'Alexandria-Margaret'),
             );
-            await openAndClose('sheet/share-invite', () => showShareInviteSheet(screen(), onShare: (_, _, _) async => ShareInviteOutcome.dismissed));
+            await openAndClose(
+              'sheet/share-invite',
+              () => showShareInviteSheet(screen(), onShare: (_, _, _) async => ShareInviteOutcome.dismissed),
+            );
             await openAndClose(
               'sheet/time-picker',
               () => showGlassTimePickerSheet(context: screen(), title: 'Dinner', initialMinutesOfDay: 19 * 60),

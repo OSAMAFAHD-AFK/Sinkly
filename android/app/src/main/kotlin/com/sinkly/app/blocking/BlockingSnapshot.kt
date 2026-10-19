@@ -16,6 +16,8 @@ data class BlockingSnapshot(
     val activeSinceMs: Long?,
     val lastCleanAtMs: Long?,
     val manualLockAtMs: Long?,
+    /** Settings "Reminders" switch; off = minimized service notification. */
+    val remindersEnabled: Boolean = true,
     val days: Map<Int, List<Int>>,
     /** Same shape as [days]: "breakfast" / "lunch" / "dinner" for each time. */
     val mealTypes: Map<Int, List<String>> = emptyMap(),
@@ -33,6 +35,7 @@ data class BlockingSnapshot(
         putOpt("activeSinceMs", activeSinceMs)
         putOpt("lastCleanAtMs", lastCleanAtMs)
         putOpt("manualLockAtMs", manualLockAtMs)
+        put("remindersEnabled", remindersEnabled)
         put("days", JSONObject().apply { days.forEach { (day, minutes) -> put("$day", JSONArray(minutes)) } })
         put("mealTypes", JSONObject().apply { mealTypes.forEach { (day, types) -> put("$day", JSONArray(types)) } })
         put("blockedPackages", JSONArray(blockedPackages.toList()))
@@ -60,6 +63,7 @@ data class BlockingSnapshot(
             activeSinceMs = (map["activeSinceMs"] as? Number)?.toLong(),
             lastCleanAtMs = (map["lastCleanAtMs"] as? Number)?.toLong(),
             manualLockAtMs = (map["manualLockAtMs"] as? Number)?.toLong(),
+            remindersEnabled = map["remindersEnabled"] != false,
             days = (map["days"] as? Map<*, *>).orEmpty().mapNotNull { (key, value) ->
                 val day = key.toString().toIntOrNull() ?: return@mapNotNull null
                 day to (value as? List<*>).orEmpty().mapNotNull { (it as? Number)?.toInt() }
@@ -90,6 +94,7 @@ data class BlockingSnapshot(
                 activeSinceMs = optLong("activeSinceMs"),
                 lastCleanAtMs = optLong("lastCleanAtMs"),
                 manualLockAtMs = optLong("manualLockAtMs"),
+                remindersEnabled = json.optBoolean("remindersEnabled", true),
                 days = days?.keys()?.asSequence()?.mapNotNull { key ->
                     val day = key.toIntOrNull() ?: return@mapNotNull null
                     val minutes = days.getJSONArray(key)

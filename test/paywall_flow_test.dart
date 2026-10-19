@@ -38,7 +38,6 @@ Future<SubscriptionCubit> _cubit() async {
       remote: MockSubscriptionRemoteDataSource(storage),
       blocking: blocking,
       reminders: reminders,
-      storage: storage,
     ),
   );
 }

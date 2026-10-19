@@ -75,8 +75,6 @@ class LockScheduleCubit extends Cubit<LockScheduleState> {
     );
   }
 
-  Future<bool> triggerTestLockNow() async => (await _repo.triggerTestLockNow()).isRight();
-
   @override
   Future<void> close() async {
     await _planSubscription.cancel();

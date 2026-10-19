@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../../core/utils/app_localizations.dart';
+import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/animated_pressable_widget.dart';
 import '../../../../../core/widgets/custom_card_container.dart';
@@ -49,6 +50,21 @@ class PaywallPlanCardWidget extends StatelessWidget {
     SubscriptionPeriod.monthly => 'plan_per_month',
     SubscriptionPeriod.weekly => 'plan_per_week',
   };
+
+  /// The line under the buy button (paywall and exit offer): "Free until
+  /// Thu, Oct 22. Cancel before then and you won't be charged." — or the
+  /// plain renewing price when the plan has no trial.
+  static String billingNote(BuildContext context, SubscriptionPlanModel plan) {
+    final per = context.tr(perPeriodKey(plan.period));
+    if (!plan.hasTrial) return context.tr('paywall_note_no_trial', {'price': plan.localizedPrice, 'per': per});
+    final trialEnd = DateTime.now().add(Duration(days: plan.trialDays));
+    return context.tr('paywall_note', {
+      'days': '${plan.trialDays}',
+      'price': plan.localizedPrice,
+      'per': per,
+      'date': AppFunctions.westernDigits(MaterialLocalizations.of(context).formatMediumDate(trialEnd)),
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

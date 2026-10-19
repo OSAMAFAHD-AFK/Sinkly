@@ -109,7 +109,7 @@ Future<void> setupServiceLocator() async {
           : MockSubscriptionRemoteDataSource(getIt()),
     )
     ..registerLazySingleton<SubscriptionRepo>(
-      () => SubscriptionRepoImpl(remote: getIt(), blocking: getIt(), reminders: getIt(), storage: getIt()),
+      () => SubscriptionRepoImpl(remote: getIt(), blocking: getIt(), reminders: getIt()),
     )
     // ── Feature 05 · Home ────────────────────────────────────────────────
     ..registerLazySingleton<HomeLocalDataSource>(() => HomeLocalDataSourceImpl(getIt()))
