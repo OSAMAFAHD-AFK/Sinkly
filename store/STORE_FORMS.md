@@ -74,8 +74,7 @@ Demo video: <YouTube unlisted link>
 ```
 
 ## صفحة المتجر
-- **App name:** Sinkly
-- **Subtitle (Apple, 30 حرفًا):** `Clean sink. Clear mind.`
-- **Category:** Productivity (ثانوي: Lifestyle)
-- **Age rating:** 4+ / Everyone (لا محتوى حساس)
-- **Support URL / Marketing URL:** روابط الموقع أعلاه
+النصوص كلها (الاسم، العنوان الفرعي، الوصف، الكلمات المفتاحية بالعربي والإنجليزي) في [STORE_LISTING.md](STORE_LISTING.md).
+- **الاسم:** Sinkly: Clean Sink Focus Lock
+- **العنوان الفرعي (Apple):** Chore & Screen Time Control
+- **الفئة:** Productivity (ثانوي: Lifestyle) · **العمر:** 4+ / للجميع

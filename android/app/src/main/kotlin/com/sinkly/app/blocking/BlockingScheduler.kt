@@ -49,7 +49,15 @@ object BlockingScheduler {
         }
     }
 
-    /** Wakes the phone at the next meal time, even in deep sleep. */
+    /**
+     * Wakes the phone at the next meal time, even in deep sleep.
+     *
+     * Sinkly does not declare SCHEDULE_EXACT_ALARM (Google Play restricts it to
+     * alarm / calendar apps): up to Android 11 the alarm is exact anyway, from
+     * Android 12 it may come a few minutes late. That is fine: the lock itself
+     * is always computed from the planned minute, and the foreground service
+     * keeps watching while the plan is on.
+     */
     private fun scheduleWake(context: Context, atMs: Long?) {
         val alarms = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pending = pendingIntent(context, ACTION_WAKE)

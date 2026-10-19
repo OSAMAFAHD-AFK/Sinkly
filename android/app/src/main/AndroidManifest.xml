@@ -19,9 +19,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-    <!-- Lock exactly at the meal minute in deep sleep (falls back to an
-         inexact alarm when the user doesn't allow it). -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <application
         android:label="Sinkly"
         android:supportsRtl="true"

@@ -51,6 +51,12 @@ Xcode يولّد لكل هدف ملف Swift وInfo.plist داخل مجلد بن�
 - **+ Capability → Family Controls** و **+ Capability → App Groups** ← `group.com.sinkly.app`.
 - **Deployment Target**: iOS 16.0 أو أعلى (نفس Runner).
 
+### ملف الخصوصية الرسمي (PrivacyInfo.xcprivacy)
+- Apple تطلبه من كل تطبيق. ملف Runner **مضاف للمشروع جاهزاً**.
+- لكل إضافة من الثلاث (Monitor وShieldConfiguration وShieldAction) ملف جاهز داخل مجلدها. بعد إنشاء الهدف في Xcode: اسحب `PrivacyInfo.xcprivacy` الخاص بها إلى هدفها (Target Membership = الهدف نفسه فقط).
+- الملفات تصرّح بما يستعمله الكود فعلاً (مخزن App Group المشترك) وبالبيانات التي تجمعها خدماتنا، وتطابق إجابات App Privacy في [STORE_FORMS.md](../store/STORE_FORMS.md). غيّر الملف إن تغيّرت الإجابات.
+- سطر `ITSAppUsesNonExemptEncryption = false` مضاف لـ Info.plist: التطبيق يستعمل HTTPS فقط، فلا يسألك App Store Connect عن التشفير عند كل رفع.
+
 ### Runner فقط (التطبيق الرئيسي)
 - **+ Capability → In-App Purchase** (اشتراكات RevenueCat).
 - لا حاجة لـ Push Notifications: كل التذكيرات محلية على الجهاز.

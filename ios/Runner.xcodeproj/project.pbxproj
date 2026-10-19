@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5B1A00012F00000100000211 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 5B1A00012F00000100000210 /* PrivacyInfo.xcprivacy */; };
 		5B1A00012F00000100000201 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 5B1A00012F00000100000200 /* GoogleService-Info.plist */; };
 		5B1A00012F00000100000101 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5B1A00012F00000100000100 /* InfoPlist.strings */; };
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
@@ -47,6 +48,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		5B1A00012F00000100000210 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		5B1A00012F00000100000200 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		5B1A00012F00000100000110 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		5B1A00012F00000100000111 /* ar */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ar; path = ar.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -140,6 +142,7 @@
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
 				97C147021CF9000F007C117D /* Info.plist */,
+				5B1A00012F00000100000210 /* PrivacyInfo.xcprivacy */,
 				5B1A00012F00000100000200 /* GoogleService-Info.plist */,
 				5B1A00012F00000100000100 /* InfoPlist.strings */,
 				1498D2321E8E86230040F4C2 /* GeneratedPluginRegistrant.h */,
@@ -270,6 +273,7 @@
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
+				5B1A00012F00000100000211 /* PrivacyInfo.xcprivacy in Resources */,
 				5B1A00012F00000100000201 /* GoogleService-Info.plist in Resources */,
 				5B1A00012F00000100000101 /* InfoPlist.strings in Resources */,
 			);
