@@ -12,8 +12,7 @@
   <link rel="stylesheet" href="../style.css">
   <script>
     // One link for everyone: iPhone → App Store, Android → Google Play.
-    // TODO(store): put the numeric Apple ID (App Store Connect → App Information → Apple ID).
-    var APPLE_ID = '';
+    var APPLE_ID = '6824015468';
     var appStore = APPLE_ID ? 'https://apps.apple.com/app/id' + APPLE_ID : '';
     var googlePlay = 'https://play.google.com/store/apps/details?id=com.sinkly.app'
       + (location.search.indexOf('ref=') >= 0 ? '&referrer=' + encodeURIComponent(location.search.slice(1)) : '');

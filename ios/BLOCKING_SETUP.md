@@ -55,7 +55,9 @@ Xcode يولّد لكل هدف ملف Swift وInfo.plist داخل مجلد بن�
 - **+ Capability → In-App Purchase** (اشتراكات RevenueCat).
 - لا حاجة لـ Push Notifications: كل التذكيرات محلية على الجهاز.
 - نصوص أذونات iOS مترجمة للغات العشر جاهزة في `Runner/<lang>.lproj/InfoPlist.strings` ومضافة للمشروع.
-- **Crashlytics** (بعد ربط Firebase بأمر `flutterfire configure`): تأكد أن `GoogleService-Info.plist` داخل هدف Runner، وأضف في **Build Phases** سكربت رفع رموز الأعطال كما يقترحه `flutterfire` (`FirebaseCrashlytics/run`).
+- **Crashlytics:** Firebase مربوط (مشروع `gen-lang-client-0756551794`)، و`GoogleService-Info.plist` مضاف لهدف Runner. على الـ Mac أضف في **Build Phases → + New Run Script Phase** (بعد Compile Sources) السطر:
+  `"${BUILD_DIR%/Build/*}/SourcePackages/checkouts/firebase-ios-sdk/Crashlytics/run"` (أو `"${PODS_ROOT}/FirebaseCrashlytics/run"` إن كان المشروع على CocoaPods)
+  ليرفع رموز الأعطال (dSYM) فتصبح تقارير iPhone مقروءة.
 - أول تشغيل بعد `pod install`: `cd ios && pod install` (مكتبات RevenueCat والإشعارات وFirebase).
 
 ## 6) التجربة

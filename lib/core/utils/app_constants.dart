@@ -21,10 +21,10 @@ abstract final class AppConstants {
   static const int minutesReclaimedPerClean = 30;
 
   // ── Store / sharing ────────────────────────────────────────────────────
-  /// TODO(store): the numeric Apple ID from App Store Connect (App
-  /// Information → Apple ID). Needed on iOS to open the store review page
-  /// when the native prompt is unavailable. Empty until the app is created.
-  static const String appStoreId = '';
+  /// The numeric Apple ID from App Store Connect (App Information → Apple
+  /// ID). Opens the store review page on iOS when the native prompt is
+  /// unavailable.
+  static const String appStoreId = '6824015468';
 
   /// Android package (Google Play listing id) = `applicationId` in Gradle.
   static const String androidPackageName = 'com.sinkly.app';

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851013537296",
+    "project_id": "gen-lang-client-0756551794",
+    "storage_bucket": "gen-lang-client-0756551794.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851013537296:android:c878d846de6d9347454495",
+        "android_client_info": {
+          "package_name": "com.sinkly.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyzDhMKc2INst6qcmwlNLh5jVeO7p89Eo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
