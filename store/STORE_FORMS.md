@@ -48,7 +48,7 @@
 **Foreground service permissions** → النوع: **Special use**
 > Sinkly keeps the meal-time app-lock plan that the user sets up. While a lock is active, a foreground service detects when one of the apps the user chose to lock comes to the foreground and immediately shows Sinkly's lock screen over it, until the user completes their task (a photo of a clean sink). The user starts this by choosing apps and meal times, sees an ongoing notification ("Sinkly is keeping your plan"), and can change or stop the plan at any time. Without a foreground service Android stops the check and the user's lock plan stops working.
 
-- **فيديو** (مطلوب): سجّل شاشة جوالك 30–60 ثانية: اختيار تطبيق في الخطة ← "جرّب القفل الآن" ← فتح التطبيق المقفل ← ظهور شاشة القفل ← "نظّف الحوض". ارفعه على YouTube كـ Unlisted وضع الرابط.
+- **فيديو** (مطلوب): سجّل شاشة جوالك 30–60 ثانية: اختيار تطبيق في الخطة ← ضبط نهاية وجبة بعد دقيقتين ثم «حفظ» ← بعد الموعد فتح التطبيق المقفل ← ظهور شاشة القفل ← "نظّف الحوض". ارفعه على YouTube كـ Unlisted وضع الرابط.
 
 **SYSTEM_ALERT_WINDOW / Usage access**: لا يوجد نموذج خاص، لكن شاشة الإذن في التطبيق تشرح السبب قبل فتح الإعدادات (موجودة).
 
@@ -59,7 +59,7 @@ Sinkly helps users stop avoiding the dishes: after the meal times they choose, i
 How to test:
 1. Complete onboarding, allow Screen Time, pick any app (e.g. Safari).
 2. Start the free trial (sandbox).
-3. Plan tab → "Test the lock now", then open the picked app: the Sinkly shield appears.
+3. Plan tab → set any meal to end 2 minutes from now and tap Save. Once that time has passed, open the picked app: the Sinkly shield appears.
 4. Tap "Clean my sink" → a notification opens Sinkly's lock screen → start the sprint → take a photo of a clean sink to unlock.
 A demo video is attached: <YouTube unlisted link>.
 
@@ -69,7 +69,7 @@ FamilyControls is used only to shield apps the user selects themselves; we never
 ## ملاحظات المراجعة — Google (App access)
 ```
 All features require a subscription with a 3-day free trial. Reviewers can start the trial with a test account.
-To try the lock: Plan tab → "Test the lock now", open a locked app → Sinkly's lock screen appears → "Clean my sink" → take a photo of a clean sink.
+To try the lock: Plan tab → set any meal to end 2 minutes from now → Save. Once that time has passed, open a locked app → Sinkly's lock screen appears → "Clean my sink" → take a photo of a clean sink.
 Demo video: <YouTube unlisted link>
 ```
 

@@ -35,6 +35,10 @@ abstract class SubscriptionRemoteDataSource {
   /// The id the provider knows this customer by. Sent with each photo check
   /// so the server can confirm the subscription itself.
   Future<String?> customerId();
+
+  /// The provider's own subscription management screen (RevenueCat Customer
+  /// Center). `false` when there is none, so the caller opens the store page.
+  Future<bool> presentCustomerCenter();
 }
 
 /// The user closed the store's purchase sheet: not an error to show.
@@ -136,4 +140,7 @@ class MockSubscriptionRemoteDataSource implements SubscriptionRemoteDataSource {
 
   @override
   Future<String?> customerId() async => null;
+
+  @override
+  Future<bool> presentCustomerCenter() async => false;
 }

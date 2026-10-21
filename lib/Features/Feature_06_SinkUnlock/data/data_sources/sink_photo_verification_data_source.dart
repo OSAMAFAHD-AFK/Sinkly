@@ -69,7 +69,10 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
         debugMessage: error.debugMessage,
       );
     } on FunctionException catch (error) {
-      throw VerificationUnavailableException(_keyForStatus(error.status), debugMessage: '${error.status} ${error.details}');
+      throw VerificationUnavailableException(
+        _keyForStatus(error.status),
+        debugMessage: '${error.status} ${error.details}',
+      );
     } catch (error) {
       if (error is VerificationUnavailableException) rethrow;
       if (error is TimeoutException) throw VerificationUnavailableException('error_timeout', debugMessage: '$error');
@@ -89,9 +92,8 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
     }
   }
 
-  Future<FunctionResponse> _invoke(SupabaseClient client, Map<String, String> body) => client.functions
-      .invoke(AppConstants.verifySinkPhotoFunction, body: body)
-      .timeout(const Duration(seconds: 45));
+  Future<FunctionResponse> _invoke(SupabaseClient client, Map<String, String> body) =>
+      client.functions.invoke(AppConstants.verifySinkPhotoFunction, body: body).timeout(const Duration(seconds: 45));
 
   /// `{clean: bool, reason: String}` from the Edge Function.
   SinkPhotoVerificationResultModel _toResult(Object? data) {
@@ -124,6 +126,16 @@ class SupabaseSinkPhotoVerificationDataSource implements SinkPhotoVerificationDa
     400 || 413 => 'verify_error_unreadable',
     _ => 'verify_error_unavailable',
   };
+}
+
+/// A store build without the photo-check backend: no photo is approved; the
+/// user sees "couldn't check your photo right now" instead of a free unlock.
+class UnavailableSinkPhotoVerificationDataSource implements SinkPhotoVerificationDataSource {
+  const UnavailableSinkPhotoVerificationDataSource();
+
+  @override
+  Future<SinkPhotoVerificationResultModel> verifySinkPhoto(String photoPath) async =>
+      const SinkPhotoVerificationResultModel(isClean: false, confidence: 0, reasonKey: 'verify_error_unavailable');
 }
 
 class MockSinkPhotoVerificationDataSource implements SinkPhotoVerificationDataSource {

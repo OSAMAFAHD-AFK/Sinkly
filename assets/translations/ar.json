@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "اليوم {day}",
   "trial_timeline_end_subtitle": "يبدأ اشتراكك — يمكنك الإلغاء قبل ذلك.",
   "trial_reminder_note": "فعّل الإشعارات ليصلك هذا التذكير",
-  "trial_notif_title": "تبقّى يوم واحد على تجربتك المجانية ⏳",
-  "trial_notif_body": "وفّرت {saved} هذا الأسبوع.\nألغِ قبل {date} إن أردت التوقف.",
   "trial_notif_now": "الآن",
   "paywall_title": "ابدأ تجربتك المجانية لمدة {days} أيام يا {name}!",
   "paywall_title_generic": "ابدأ تجربتك المجانية لمدة {days} أيام!",
@@ -435,7 +433,7 @@
   "native_lock_subtitle": "هذا التطبيق في استراحة قصيرة. صورة واحدة لحوض نظيف تعيد لك كل شيء.",
   "native_lock_cta": "نظّف الحوض",
   "native_lock_home": "العودة للشاشة الرئيسية",
-  "native_notify_title": "تحدّي الحوض جاهز 🧽",
+  "native_notify_title": "سباق الحوض جاهز 🧽",
   "native_notify_body": "اضغط لفتح سنكلي، نظّف الحوض وافتح تطبيقاتك.",
   "native_service_channel": "حماية الخطة",
   "native_service_locked": "التطبيقات مقفلة · نظّف الحوض لفتحها",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "{meal} على وشك الانتهاء. ترتيب سريع للحوض بعده يعيد لك كل شيء 💧",
   "reminder_trial_title_tomorrow": "تجربتك المجانية تنتهي غداً",
   "reminder_trial_title_today": "تجربتك المجانية تنتهي اليوم",
-  "reminder_trial_body": "بعدها يتجدد اشتراكك في سنكلي تلقائيًا. لا يناسبك؟ ألغِه قبل ذلك من اشتراكات {store}، الأمر يستغرق ثوانيَ فقط."
+  "reminder_trial_body": "يبدأ اشتراكك في سنكلي المميز عند انتهاء التجربة، وتستمر أقفال وجباتك في العمل. يمكنك إدارته في أي وقت من {store}."
 }

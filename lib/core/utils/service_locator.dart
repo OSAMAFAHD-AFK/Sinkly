@@ -1,6 +1,6 @@
 import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kReleaseMode;
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -122,7 +122,13 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<SinkPhotoVerificationDataSource>(
       () => supabase.isConfigured
           // The server confirms the subscription itself with this customer id.
-          ? SupabaseSinkPhotoVerificationDataSource(getIt(), customerId: () => getIt<SubscriptionRemoteDataSource>().customerId())
+          ? SupabaseSinkPhotoVerificationDataSource(
+              getIt(),
+              customerId: () => getIt<SubscriptionRemoteDataSource>().customerId(),
+            )
+          // Store builds never approve photos offline.
+          : kReleaseMode
+          ? const UnavailableSinkPhotoVerificationDataSource()
           : MockSinkPhotoVerificationDataSource(),
     )
     ..registerLazySingleton<SinkUnlockRepo>(
@@ -136,8 +142,7 @@ Future<void> setupServiceLocator() async {
     // ── Feature 07 · Lock Schedule ───────────────────────────────────────
     ..registerLazySingleton<LockScheduleLocalDataSource>(() => LockScheduleLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<LockScheduleRepo>(
-      () =>
-          LockScheduleRepoImpl(localDataSource: getIt(), installedAppsDataSource: getIt()),
+      () => LockScheduleRepoImpl(localDataSource: getIt(), installedAppsDataSource: getIt()),
     )
     // ── Feature 08 · Progress ────────────────────────────────────────────
     ..registerLazySingleton<ProgressLocalDataSource>(() => ProgressLocalDataSourceImpl(getIt()))

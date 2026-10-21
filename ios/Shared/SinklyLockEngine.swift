@@ -81,7 +81,7 @@ struct SinklyLockState: Equatable {
 
 /// THE lock rule — identical to Dart's `LockStatusModel.evaluate` and Kotlin's
 /// `LockEngine`, checked against the same cases (test/fixtures/lock_engine_vectors.json):
-///  • a lock starts when a planned meal ends (or "Test the lock now"),
+///  • a lock starts when a planned meal ends (or a stored manual lock),
 ///  • it lasts until a clean-sink photo — no expiry,
 ///  • only meals that end after locking became active count,
 ///  • meal times are the phone's wall clock in its current time zone, built
@@ -114,7 +114,7 @@ enum SinklyLockEngine {
   }
 
   /// Which meal started the lock at [lockedSince]: "breakfast" / "lunch" /
-  /// "dinner", or nil for "Test the lock now" (or an unknown time).
+  /// "dinner", or nil for a manual lock (or an unknown time).
   static func mealOf(_ snapshot: SinklySnapshot, lockedSince: Date?, calendar: Calendar = .current) -> String? {
     guard let lockedSince = lockedSince else { return nil }
     if let manual = snapshot.manualLockAtMs, manual == lockedSince.epochMilliseconds { return nil }

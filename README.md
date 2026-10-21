@@ -61,8 +61,10 @@ Everything public lives in `lib/core/utils/app_constants.dart` (Supabase URL and
 
 ## Release checklist
 
-1. `AppConstants.devPaywallBypass` must be `false`.
-2. Fill `revenueCatAppleApiKey` / `revenueCatGoogleApiKey`.
+1. RevenueCat keys: debug builds use the Test Store key (`test_…`), release builds the real `appl_…` / `goog_…`
+   (see `AppConstants`) — the SDK rejects a `test_` key in a release build. Empty keys → the offline mock, which unlocks
+   Premium without paying: never publish with that. Deploy the photo check: `npx supabase functions deploy verify-sink-photo`.
+2. Check the photo check is live (`supabaseUrl` / `supabasePublishableKey`): release builds never approve photos offline.
 3. Bump `version:` in `pubspec.yaml` (and `AppConstants.appVersion`).
 4. Android: `flutter build appbundle` (signed with the upload key).
 5. iOS: archive in Xcode (see `ios/BLOCKING_SETUP.md`).

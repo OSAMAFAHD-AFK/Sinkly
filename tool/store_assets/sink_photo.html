@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:1080px;height:1080px;overflow:hidden;background:#eef1f4}</style></head><body>
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="counter" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f7f8fa"/><stop offset=".55" stop-color="#eceff3"/><stop offset="1" stop-color="#dfe4ea"/>
+  </linearGradient>
+  <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#dde9f1"/><stop offset="1" stop-color="#cfdde8"/>
+  </linearGradient>
+  <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#f4f6f8"/><stop offset=".3" stop-color="#c9d0d8"/><stop offset=".6" stop-color="#eef1f4"/><stop offset="1" stop-color="#aab3bd"/>
+  </linearGradient>
+  <radialGradient id="basin" cx=".5" cy=".42" r=".7">
+    <stop offset="0" stop-color="#e9edf1"/><stop offset=".55" stop-color="#cdd4dc"/><stop offset="1" stop-color="#99a3ae"/>
+  </radialGradient>
+  <linearGradient id="wallIn" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8d97a3"/><stop offset="1" stop-color="#c5ccd4" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="chrome" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#7d8794"/><stop offset=".25" stop-color="#f6f8fa"/><stop offset=".5" stop-color="#b5bec8"/><stop offset=".8" stop-color="#ffffff"/><stop offset="1" stop-color="#8a95a1"/>
+  </linearGradient>
+  <radialGradient id="drain" cx=".5" cy=".5" r=".5">
+    <stop offset="0" stop-color="#5b6570"/><stop offset=".6" stop-color="#9aa4ae"/><stop offset=".8" stop-color="#e6eaee"/><stop offset="1" stop-color="#8b95a0"/>
+  </radialGradient>
+  <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+  <filter id="soft"><feGaussianBlur stdDeviation="14"/></filter>
+  <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .06 0"/></filter>
+</defs>
+<!-- backsplash tiles -->
+<rect width="1080" height="250" fill="url(#tile)"/>
+<g stroke="#f4f8fb" stroke-width="5" opacity=".9">
+  <line x1="0" y1="82" x2="1080" y2="82"/><line x1="0" y1="166" x2="1080" y2="166"/>
+  <line x1="180" y1="0" x2="180" y2="82"/><line x1="540" y1="0" x2="540" y2="82"/><line x1="900" y1="0" x2="900" y2="82"/>
+  <line x1="0" y1="82" x2="0" y2="166"/><line x1="360" y1="82" x2="360" y2="166"/><line x1="720" y1="82" x2="720" y2="166"/>
+  <line x1="180" y1="166" x2="180" y2="250"/><line x1="540" y1="166" x2="540" y2="250"/><line x1="900" y1="166" x2="900" y2="250"/>
+</g>
+<!-- counter -->
+<rect y="240" width="1080" height="840" fill="url(#counter)"/>
+<rect y="240" width="1080" height="14" fill="#cfd6de"/>
+<path d="M0 620 C 300 560 520 700 1080 600" stroke="#d6dce3" stroke-width="3" fill="none" opacity=".6"/>
+<path d="M0 900 C 260 840 700 980 1080 880" stroke="#d6dce3" stroke-width="2" fill="none" opacity=".5"/>
+<!-- sink shadow -->
+<rect x="150" y="372" width="780" height="610" rx="70" fill="#000" opacity=".12" filter="url(#soft)"/>
+<!-- rim -->
+<rect x="140" y="350" width="800" height="610" rx="64" fill="url(#rim)"/>
+<!-- basin -->
+<rect x="196" y="402" width="688" height="506" rx="44" fill="url(#basin)"/>
+<rect x="196" y="402" width="688" height="90" rx="44" fill="url(#wallIn)" opacity=".7"/>
+<rect x="196" y="402" width="688" height="506" rx="44" fill="none" stroke="#7f8995" stroke-width="3" opacity=".5"/>
+<!-- brushed lines -->
+<g stroke="#ffffff" stroke-opacity=".18" stroke-width="2">
+  <line x1="230" y1="520" x2="850" y2="520"/><line x1="230" y1="560" x2="850" y2="560"/><line x1="230" y1="600" x2="850" y2="600"/>
+  <line x1="230" y1="640" x2="850" y2="640"/><line x1="230" y1="680" x2="850" y2="680"/><line x1="230" y1="720" x2="850" y2="720"/>
+  <line x1="230" y1="760" x2="850" y2="760"/><line x1="230" y1="800" x2="850" y2="800"/><line x1="230" y1="840" x2="850" y2="840"/>
+</g>
+<!-- light reflections -->
+<path d="M250 450 L420 450 L330 880 L230 880 Z" fill="url(#sheen)" opacity=".55" filter="url(#blur4)"/>
+<path d="M610 450 L660 450 L600 880 L560 880 Z" fill="url(#sheen)" opacity=".35" filter="url(#blur4)"/>
+<!-- drain -->
+<circle cx="540" cy="700" r="58" fill="url(#drain)"/>
+<circle cx="540" cy="700" r="40" fill="#b9c1ca"/>
+<g stroke="#6b7580" stroke-width="5" stroke-linecap="round">
+  <line x1="514" y1="700" x2="566" y2="700"/><line x1="540" y1="674" x2="540" y2="726"/>
+  <line x1="522" y1="682" x2="558" y2="718"/><line x1="558" y1="682" x2="522" y2="718"/>
+</g>
+<circle cx="540" cy="700" r="12" fill="#e7ebef"/>
+<!-- water droplets -->
+<g fill="#fff" opacity=".85">
+  <ellipse cx="320" cy="560" rx="7" ry="9"/><ellipse cx="760" cy="520" rx="5" ry="7"/><ellipse cx="700" cy="820" rx="6" ry="8"/>
+  <ellipse cx="410" cy="790" rx="4" ry="6"/><ellipse cx="800" cy="680" rx="5" ry="6"/>
+</g>
+<!-- faucet -->
+<ellipse cx="540" cy="318" rx="70" ry="22" fill="#000" opacity=".15" filter="url(#blur4)"/>
+<rect x="508" y="200" width="64" height="118" rx="12" fill="url(#chrome)"/>
+<path d="M540 210 C 540 120 640 120 640 210 L 640 300" stroke="url(#chrome)" stroke-width="40" fill="none" stroke-linecap="round"/>
+<path d="M540 210 C 540 120 640 120 640 210 L 640 300" stroke="#ffffff" stroke-opacity=".5" stroke-width="8" fill="none" stroke-linecap="round" transform="translate(-8 0)"/>
+<ellipse cx="640" cy="318" rx="24" ry="8" fill="#6e7884"/>
+<rect x="608" y="244" width="70" height="20" rx="10" fill="url(#chrome)"/>
+<!-- sponge + soap on the counter -->
+<g transform="translate(860 990) rotate(-8)">
+  <rect x="-70" y="-38" width="140" height="58" rx="16" fill="#ffd27a"/>
+  <rect x="-70" y="-50" width="140" height="22" rx="10" fill="#4cc38a"/>
+</g>
+<g transform="translate(150 1000)">
+  <rect x="-36" y="-110" width="72" height="140" rx="22" fill="#89cff0" opacity=".9"/>
+  <rect x="-14" y="-140" width="28" height="36" rx="6" fill="#f4f6f8"/>
+  <rect x="-24" y="-80" width="10" height="80" rx="5" fill="#fff" opacity=".5"/>
+</g>
+<rect width="1080" height="1080" filter="url(#grain)"/>
+</svg></body></html>

@@ -44,7 +44,9 @@ class UserPlanModel extends Equatable {
   final bool screenTimePermissionGranted;
   final bool notificationsEnabled;
 
-  /// Set when the user taps "Test the lock now" — behaves like a meal ending.
+  /// A lock that behaves like a meal ending right now. Nothing in the UI sets
+  /// it any more (the "Test the lock now" button was removed); kept because
+  /// saved plans and the native blockers still read it. Saving the plan clears it.
   final DateTime? manualLockTriggeredAt;
 
   /// When app locking (re)started: onboarding done + subscription active.

@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "{day}日目",
   "trial_timeline_end_subtitle": "サブスクリプション開始 — それまでならいつでも解約できます。",
   "trial_reminder_note": "このお知らせを受け取るには通知をオンにしてください",
-  "trial_notif_title": "無料トライアルは残り1日です ⏳",
-  "trial_notif_body": "今週は{saved}を節約しました。\nやめる場合は{date}までに解約してください。",
   "trial_notif_now": "今",
   "paywall_title": "{name}さん、{days}日間の無料トライアルを始めましょう！",
   "paywall_title_generic": "{days}日間の無料トライアルを始めましょう！",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "{meal}がもうすぐ終わります。そのあとサッとシンクを片づければ、すべて元通り 💧",
   "reminder_trial_title_tomorrow": "無料トライアルは明日で終了します",
   "reminder_trial_title_today": "無料トライアルは本日で終了します",
-  "reminder_trial_body": "その後、Sinklyのプランは自動更新されます。不要な場合は、それまでに{store}のサブスクリプションから解約してください。数秒で完了します。"
+  "reminder_trial_body": "無料トライアルが終わるとSinkly Premiumが始まり、食後のロックはそのまま続きます。管理はいつでも{store}で行えます。"
 }

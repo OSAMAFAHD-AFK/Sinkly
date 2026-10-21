@@ -22,7 +22,7 @@ class LockOverlaySnapshotModel extends Equatable {
   /// tokens native-side, and the in-app preview may have no apps selected).
   final BlockableAppModel? attemptedApp;
 
-  /// Null while locked means the lock was triggered manually ("Test lock").
+  /// Null while locked means a manual lock (no meal).
   MealType? get lockingMeal => lockStatus.lockingMeal;
 
   @override

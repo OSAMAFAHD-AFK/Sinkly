@@ -4,6 +4,7 @@ import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 import '../../../../core/utils/app_constants.dart';
 import '../models/subscription_plan_model.dart';
@@ -18,8 +19,10 @@ import 'subscription_remote_data_source.dart';
 ///
 /// Dashboard setup the code expects (see store/REVENUECAT_SETUP.md):
 ///  * entitlement [AppConstants.premiumEntitlementId] on every product;
-///  * offering `default` (current): weekly + annual packages;
-///  * offering [AppConstants.exitOfferOfferingId]: the discounted annual;
+///  * offering `default` (current): weekly + annual packages, plus the
+///    discounted annual (`annual_special`) as package
+///    [AppConstants.exitOfferPackageId] — or in its own offering
+///    [AppConstants.exitOfferOfferingId]; both setups work;
 ///  * optional placements with the ids of [AppConstants] (`*PlacementId`)
 ///    — used for targeting / experiments; without them the offerings above
 ///    are used directly.
@@ -34,8 +37,7 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
   static String get apiKey => Platform.isIOS ? AppConstants.revenueCatAppleApiKey : AppConstants.revenueCatGoogleApiKey;
 
   /// Both stores' keys are set (and we run on a phone).
-  static bool get isConfigured =>
-      !kIsWeb && (Platform.isIOS || Platform.isAndroid) && apiKey.trim().isNotEmpty;
+  static bool get isConfigured => !kIsWeb && (Platform.isIOS || Platform.isAndroid) && apiKey.trim().isNotEmpty;
 
   @override
   Future<void> initialize() => _configuring ??= _configure();
@@ -57,15 +59,29 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
     if (offering == null) throw StateError('No RevenueCat offering for placement "$placementId"');
     _offeringsByPlacement[placementId] = offering;
 
-    final packages = offering.availablePackages.where((package) => _periodOf(package) != null).toList();
+    final isExitOffer = placementId == AppConstants.exitOfferPlacementId;
+    var packages = offering.availablePackages.where((package) => _periodOf(package) != null).toList();
+    // One offering may hold both the regular plans and the exit offer's
+    // discounted annual: the main paywall never shows the discounted one, the
+    // exit offer shows only it.
+    final discounted = packages.where(_isExitOfferPackage).toList();
+    if (isExitOffer) {
+      if (discounted.isNotEmpty) {
+        packages = discounted;
+      } else if (identical(offering, offerings.current)) {
+        throw StateError('No exit-offer package (${AppConstants.exitOfferProductId}) in "${offering.identifier}"');
+      }
+    } else {
+      packages.removeWhere(_isExitOfferPackage);
+    }
     final trialEligible = await _trialEligibility(packages);
 
     // Reference prices for the "save X%" and exit-offer badges: the regular
     // weekly and annual plans of the main offering.
     final regular = offerings.current;
-    final weekly = _packageWith(regular, SubscriptionPeriod.weekly) ?? _packageWith(offering, SubscriptionPeriod.weekly);
+    final weekly =
+        _packageWith(regular, SubscriptionPeriod.weekly) ?? _packageWith(offering, SubscriptionPeriod.weekly);
     final regularAnnual = _packageWith(regular, SubscriptionPeriod.annual);
-    final isExitOffer = placementId == AppConstants.exitOfferPlacementId;
 
     final plans = <SubscriptionPlanModel>[];
     for (final package in packages) {
@@ -108,7 +124,7 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
       // No placement configured: fall back below.
     }
     return placementId == AppConstants.exitOfferPlacementId
-        ? offerings.all[AppConstants.exitOfferOfferingId]
+        ? offerings.all[AppConstants.exitOfferOfferingId] ?? offerings.current
         : offerings.current;
   }
 
@@ -120,7 +136,8 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
       final ids = packages.map((package) => package.storeProduct.identifier).toList();
       final result = await Purchases.checkTrialOrIntroductoryPriceEligibility(ids);
       return result.map(
-        (id, eligibility) => MapEntry(id, eligibility.status != IntroEligibilityStatus.introEligibilityStatusIneligible),
+        (id, eligibility) =>
+            MapEntry(id, eligibility.status != IntroEligibilityStatus.introEligibilityStatusIneligible),
       );
     } catch (_) {
       return const {};
@@ -173,6 +190,18 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
     return Purchases.appUserID;
   }
 
+  /// RevenueCat Customer Center (configured in the dashboard → Customer
+  /// Center): plan details, cancel / change plan, restore, refund requests on
+  /// iOS. Our paywall stays custom; this is only the "manage" screen.
+  @override
+  Future<bool> presentCustomerCenter() async {
+    await initialize();
+    await RevenueCatUI.presentCustomerCenter();
+    // Whatever happened inside (cancel, restore…) reaches the app at once.
+    _changes.add(_toStatus(await Purchases.getCustomerInfo()));
+    return true;
+  }
+
   static SubscriptionStatusModel _toStatus(CustomerInfo info) {
     final premium = info.entitlements.active[AppConstants.premiumEntitlementId];
     if (premium == null || !premium.isActive) {
@@ -207,12 +236,19 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
     }
   }
 
+  /// The regular plan of [period] — never the exit offer's discounted annual.
   static Package? _packageWith(Offering? offering, SubscriptionPeriod period) {
     for (final package in offering?.availablePackages ?? const <Package>[]) {
-      if (_periodOf(package) == period) return package;
+      if (_periodOf(package) == period && !_isExitOfferPackage(package)) return package;
     }
     return null;
   }
+
+  /// The exit offer's discounted annual, by its package id or its product id
+  /// (Google Play reports `annual_special:<base plan>`, hence `startsWith`).
+  static bool _isExitOfferPackage(Package package) =>
+      package.identifier == AppConstants.exitOfferPackageId ||
+      package.storeProduct.identifier.startsWith(AppConstants.exitOfferProductId);
 
   static int _weeksIn(SubscriptionPeriod period) => switch (period) {
     SubscriptionPeriod.weekly => 1,

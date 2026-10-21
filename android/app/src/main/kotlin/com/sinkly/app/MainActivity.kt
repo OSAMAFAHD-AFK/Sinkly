@@ -13,13 +13,14 @@ import android.os.Handler
 import android.os.Looper
 import com.sinkly.app.blocking.AppBlockingBridge
 import com.sinkly.app.blocking.BlockingScheduler
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 
-class MainActivity : FlutterActivity() {
+// FlutterFragmentActivity: required by RevenueCat UI (Customer Center).
+class MainActivity : FlutterFragmentActivity() {
     private val worker = Executors.newSingleThreadExecutor()
     private val mainHandler = Handler(Looper.getMainLooper())
     private var screenTimeAccess: ScreenTimeAccessBridge? = null

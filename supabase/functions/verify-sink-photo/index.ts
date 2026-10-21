@@ -8,7 +8,7 @@
 //   GEMINI_MODEL            default "gemini-3.1-flash-lite"
 //   DAILY_LIMIT             default 15     checks per phone per rolling 24 h
 //   REVENUECAT_SECRET_KEY   RevenueCat secret API key (sk_…). Once set, only customers with an
-//                           active "premium" entitlement (paid, trial or grace period) get a check.
+//                           active "sinkly_premium" entitlement (paid, trial or grace period) get a check.
 //                           Not set → everyone is allowed (before the stores are connected).
 // (No whole-app ceiling on purpose: a viral video must never lock real users out.
 //  Emergency stop: `supabase secrets unset GEMINI_API_KEY` → every check answers 502 at once.)
@@ -65,7 +65,7 @@ function reply(status: number, body: Record<string, unknown>): Response {
 }
 
 const REVENUECAT_SECRET_KEY = Deno.env.get("REVENUECAT_SECRET_KEY")?.trim();
-const PREMIUM_ENTITLEMENT = "premium";
+const PREMIUM_ENTITLEMENT = "sinkly_premium";
 
 /**
  * Is this RevenueCat customer subscribed right now (paid, free trial or billing grace period)?

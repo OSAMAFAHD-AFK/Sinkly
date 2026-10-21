@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// App-wide constants and integration switches.
 abstract final class AppConstants {
   static const String appName = 'Sinkly';
@@ -47,14 +49,22 @@ abstract final class AppConstants {
   // the heroine). RevenueCat only supplies products/prices, purchases,
   // restore, status and analytics — never its own paywall UI.
 
-  /// RevenueCat → Project settings → API keys → the PUBLIC app-specific keys
-  /// (`appl_…` / `goog_…`). Public by design: they ship inside the app.
-  /// While empty the app keeps the offline mock subscription.
-  static const String revenueCatAppleApiKey = '';
-  static const String revenueCatGoogleApiKey = '';
+  /// RevenueCat → Project settings → API keys. Public by design: they ship
+  /// inside the app. While empty the app keeps the offline mock subscription.
+  ///
+  /// Debug builds (`flutter run`) use the **Test Store** key: purchases are
+  /// simulated by RevenueCat, no store needed. Release builds always use the
+  /// real app-specific keys — RevenueCat's SDK refuses a Test Store key in a
+  /// release build, so a store build can never hand out free Premium.
+  static const String _revenueCatTestStoreApiKey = 'test_URgWgnTCDHKAOsHLOozgOAlaZYD';
+  static const String _revenueCatAppStoreApiKey = 'appl_FwFcOaOmrdnWGAuzxDlhUzYbTys';
+  static const String _revenueCatPlayStoreApiKey = 'goog_XnIxVwstGaqBBFtHEpCkZHQcdcr';
+  static String get revenueCatAppleApiKey => kDebugMode ? _revenueCatTestStoreApiKey : _revenueCatAppStoreApiKey;
+  static String get revenueCatGoogleApiKey => kDebugMode ? _revenueCatTestStoreApiKey : _revenueCatPlayStoreApiKey;
 
-  /// Entitlement unlocked by every Sinkly product (RevenueCat dashboard).
-  static const String premiumEntitlementId = 'premium';
+  /// Entitlement unlocked by every Sinkly product (RevenueCat dashboard). The
+  /// photo-check Edge Function checks the same id (supabase/functions).
+  static const String premiumEntitlementId = 'sinkly_premium';
 
   /// Paywall placements (optional RevenueCat placements with the same ids
   /// enable targeting / price experiments per screen).
@@ -62,9 +72,14 @@ abstract final class AppConstants {
   static const String settingsPaywallPlacementId = 'settings_upgrade';
 
   /// Discounted annual plan offered every time the user taps "X" on the
-  /// paywall: its own offering, product `sinkly_premium_annual_special`.
+  /// paywall. Products: `weekly`, `annual` and this one, `annual_special`.
+  /// It can sit in the `default` offering as package `custom_annual_special`
+  /// (current setup: it is then kept off the main paywall) or in its own
+  /// offering `exit_offer` / placement `paywall_exit_offer`.
   static const String exitOfferPlacementId = 'paywall_exit_offer';
   static const String exitOfferOfferingId = 'exit_offer';
+  static const String exitOfferPackageId = 'custom_annual_special';
+  static const String exitOfferProductId = 'annual_special';
 
   /// The store pages where a subscription is managed / cancelled.
   static const String appleSubscriptionsUrl = 'https://apps.apple.com/account/subscriptions';

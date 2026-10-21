@@ -12,7 +12,7 @@ data class LockState(val locked: Boolean, val lockedSinceMs: Long?, val nextLock
  * `SinklyLockEngine`, checked against the same cases
  * (`test/fixtures/lock_engine_vectors.json`, see LockEngineTest):
  *
- *  • A lock starts when a planned meal ends (or "Test the lock now").
+ *  • A lock starts when a planned meal ends (or a stored manual lock).
  *  • It lasts until a clean-sink photo — no expiry.
  *  • Only meals that end after locking became active count.
  *  • Meal times are the phone's wall clock in its current time zone, built
@@ -44,7 +44,7 @@ object LockEngine {
 
     /**
      * Which meal started the lock at [lockedSinceMs]: "breakfast" / "lunch" /
-     * "dinner", or null for "Test the lock now" (or an unknown time).
+     * "dinner", or null for a manual lock (or an unknown time).
      */
     fun mealOf(snapshot: BlockingSnapshot, lockedSinceMs: Long?, zone: ZoneId = ZoneId.systemDefault()): String? {
         if (lockedSinceMs == null || lockedSinceMs == snapshot.manualLockAtMs) return null

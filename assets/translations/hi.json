@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "दिन {day}",
   "trial_timeline_end_subtitle": "आपका सब्सक्रिप्शन शुरू — उससे पहले कभी भी रद्द करें।",
   "trial_reminder_note": "यह रिमाइंडर पाने के लिए नोटिफ़िकेशन चालू करें",
-  "trial_notif_title": "आपके फ़्री ट्रायल का 1 दिन बचा है ⏳",
-  "trial_notif_body": "इस हफ़्ते आपने {saved} बचाए।\nरोकना हो तो {date} से पहले रद्द करें।",
   "trial_notif_now": "अभी",
   "paywall_title": "{name}, अपना {days} दिन का फ़्री ट्रायल शुरू करें!",
   "paywall_title_generic": "अपना {days} दिन का फ़्री ट्रायल शुरू करें!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "{meal} लगभग ख़त्म होने वाला है। उसके बाद सिंक की झटपट सफ़ाई, और सब वापस 💧",
   "reminder_trial_title_tomorrow": "आपका फ़्री ट्रायल कल ख़त्म हो रहा है",
   "reminder_trial_title_today": "आपका फ़्री ट्रायल आज ख़त्म हो रहा है",
-  "reminder_trial_body": "इसके बाद आपका Sinkly प्लान अपने-आप रिन्यू होगा। नहीं चाहिए? उससे पहले {store} की सब्सक्रिप्शन में जाकर रद्द करें, बस कुछ सेकंड लगते हैं।"
+  "reminder_trial_body": "ट्रायल ख़त्म होते ही आपका Sinkly Premium शुरू होगा, और खाने के बाद के लॉक चलते रहेंगे। इसे {store} में कभी भी मैनेज करें।"
 }

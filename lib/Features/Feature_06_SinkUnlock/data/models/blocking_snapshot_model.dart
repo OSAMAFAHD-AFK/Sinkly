@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import '../../../../core/models/shared_core_models.dart';
 
 /// Everything the native blocker needs, sent whenever something changes
-/// (plan saved, sink cleaned, test lock, subscription, language).
+/// (plan saved, sink cleaned, subscription, language).
 ///
 /// The native side stores it and decides on its own — even while Sinkly is
 /// closed — with the same rule as [LockStatusModel.evaluate].

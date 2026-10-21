@@ -26,4 +26,7 @@ abstract class SubscriptionRepo {
 
   /// The store's own page where the user manages or cancels the subscription.
   Future<String> manageSubscriptionUrl();
+
+  /// RevenueCat's Customer Center; `false` → open [manageSubscriptionUrl].
+  Future<bool> openCustomerCenter();
 }

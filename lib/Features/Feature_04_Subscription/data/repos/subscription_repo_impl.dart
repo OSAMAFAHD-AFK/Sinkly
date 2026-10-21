@@ -116,4 +116,15 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     if (fromStore != null && fromStore.isNotEmpty) return fromStore;
     return Platform.isIOS ? AppConstants.appleSubscriptionsUrl : AppConstants.googleSubscriptionsUrl;
   }
+
+  @override
+  Future<bool> openCustomerCenter() async {
+    try {
+      return await _remote.presentCustomerCenter();
+    } catch (error, stack) {
+      // Not set up in the dashboard / not supported here: the store page instead.
+      CrashReportingService.recordError(error, stack, reason: 'customer center');
+      return false;
+    }
+  }
 }

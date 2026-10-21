@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "Dia {day}",
   "trial_timeline_end_subtitle": "Sua assinatura começa — cancele quando quiser antes disso.",
   "trial_reminder_note": "Ative as notificações para receber este lembrete",
-  "trial_notif_title": "Falta 1 dia para acabar seu teste grátis ⏳",
-  "trial_notif_body": "Você economizou {saved} nesta semana.\nCancele antes de {date} se quiser parar.",
   "trial_notif_now": "agora",
   "paywall_title": "Comece seu teste grátis de {days} dias, {name}!",
   "paywall_title_generic": "Comece seu teste grátis de {days} dias!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "Sua refeição ({meal}) está acabando. Uma arrumada rápida na pia depois e tudo volta 💧",
   "reminder_trial_title_tomorrow": "Seu teste grátis termina amanhã",
   "reminder_trial_title_today": "Seu teste grátis termina hoje",
-  "reminder_trial_body": "Depois, seu plano do Sinkly é renovado automaticamente. Não é para você? Cancele antes nas assinaturas da {store}; leva só alguns segundos."
+  "reminder_trial_body": "Seu Sinkly Premium começa quando o teste termina e os bloqueios depois das refeições continuam ativos. Gerencie quando quiser em {store}."
 }

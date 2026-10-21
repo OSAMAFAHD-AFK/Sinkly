@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "Tag {day}",
   "trial_timeline_end_subtitle": "Dein Abo beginnt – kündige jederzeit vorher.",
   "trial_reminder_note": "Aktiviere Mitteilungen, um diese Erinnerung zu erhalten",
-  "trial_notif_title": "Noch 1 Tag kostenlose Testphase ⏳",
-  "trial_notif_body": "Du hast diese Woche {saved} gespart.\nKündige vor dem {date}, wenn du aufhören möchtest.",
   "trial_notif_now": "jetzt",
   "paywall_title": "Starte deine {days}-tägige Gratis-Testphase, {name}!",
   "paywall_title_generic": "Starte deine {days}-tägige Gratis-Testphase!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "Deine Mahlzeit ({meal}) ist gleich vorbei. Danach kurz die Spüle machen, und alles ist wieder da 💧",
   "reminder_trial_title_tomorrow": "Deine Gratis-Testphase endet morgen",
   "reminder_trial_title_today": "Deine Gratis-Testphase endet heute",
-  "reminder_trial_body": "Danach verlängert sich dein Sinkly-Abo automatisch. Nichts für dich? Kündige vorher in deinen {store}-Abos, das dauert nur ein paar Sekunden."
+  "reminder_trial_body": "Dein Sinkly Premium beginnt, wenn die Testphase endet, und deine Mahlzeit-Sperren laufen weiter. Verwalte es jederzeit in {store}."
 }

@@ -10,7 +10,7 @@ import 'weekly_lock_schedule_model.dart';
 /// `SinklyLockEngine`) implement exactly the same rule and are checked
 /// against the same cases (`test/fixtures/lock_engine_vectors.json`):
 ///
-///  * A lock starts when a planned meal ends (or "Test the lock now").
+///  * A lock starts when a planned meal ends (or a stored manual lock).
 ///  * It lasts until a clean-sink photo is accepted — there is no expiry.
 ///  * Only meals that end after locking became active count
 ///    ([UserPlanModel.lockingActiveSince]: onboarding done + subscribed).
@@ -29,7 +29,7 @@ class LockStatusModel extends Equatable {
   final bool isLocked;
   final DateTime? lockedSince;
 
-  /// Null while locked means the lock was triggered manually ("Test lock").
+  /// Null while locked means a manual lock (no meal).
   final MealType? lockingMeal;
 
   final DateTime? nextLockAt;

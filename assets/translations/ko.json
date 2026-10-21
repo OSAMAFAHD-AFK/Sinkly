@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "{day}일 차",
   "trial_timeline_end_subtitle": "구독이 시작돼요 — 그 전에는 언제든 취소할 수 있어요.",
   "trial_reminder_note": "이 알림을 받으려면 알림을 켜 주세요",
-  "trial_notif_title": "무료 체험이 1일 남았어요 ⏳",
-  "trial_notif_body": "이번 주에 {saved}을 아꼈어요.\n그만두려면 {date} 전에 취소하세요.",
   "trial_notif_now": "지금",
   "paywall_title": "{name}님, {days}일 무료 체험을 시작하세요!",
   "paywall_title_generic": "{days}일 무료 체험을 시작하세요!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "{meal} 식사가 곧 끝나요. 끝나고 싱크대를 빠르게 정리하면 모두 돌아와요 💧",
   "reminder_trial_title_tomorrow": "무료 체험이 내일 끝나요",
   "reminder_trial_title_today": "무료 체험이 오늘 끝나요",
-  "reminder_trial_body": "그 후에는 Sinkly 플랜이 자동으로 갱신돼요. 원하지 않으면 그 전에 {store} 구독에서 취소하세요. 몇 초면 돼요."
+  "reminder_trial_body": "무료 체험이 끝나면 Sinkly 프리미엄이 시작되고, 식사 후 잠금은 계속 작동해요. {store}에서 언제든 관리할 수 있어요."
 }

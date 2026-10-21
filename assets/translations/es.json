@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "Día {day}",
   "trial_timeline_end_subtitle": "Empieza tu suscripción — cancela cuando quieras antes.",
   "trial_reminder_note": "Activa las notificaciones para recibir este aviso",
-  "trial_notif_title": "Queda 1 día de tu prueba gratuita ⏳",
-  "trial_notif_body": "Esta semana has ahorrado {saved}.\nCancela antes del {date} si quieres dejarlo.",
   "trial_notif_now": "ahora",
   "paywall_title": "¡Empieza tu prueba gratuita de {days} días, {name}!",
   "paywall_title_generic": "¡Empieza tu prueba gratuita de {days} días!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "Tu comida ({meal}) está por terminar. Un repaso rápido al fregadero después y todo vuelve 💧",
   "reminder_trial_title_tomorrow": "Tu prueba gratuita termina mañana",
   "reminder_trial_title_today": "Tu prueba gratuita termina hoy",
-  "reminder_trial_body": "Después, tu plan de Sinkly se renueva automáticamente. ¿No es para ti? Cancela antes en tus suscripciones de {store}; solo te llevará unos segundos."
+  "reminder_trial_body": "Tu Sinkly Premium empieza cuando termina la prueba y tus bloqueos tras las comidas siguen activos. Gestiónalo cuando quieras en {store}."
 }

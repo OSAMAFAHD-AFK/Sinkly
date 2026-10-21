@@ -40,8 +40,12 @@ class SettingsView extends StatelessWidget {
   }
 
   /// The store's own subscription page: change plan or cancel in one tap.
+  /// RevenueCat Customer Center; the store's subscriptions page when it
+  /// isn't available (offline mock, not set up in the dashboard…).
   Future<void> _manageSubscription(BuildContext context) async {
-    final url = await context.read<SubscriptionCubit>().manageSubscriptionUrl();
+    final cubit = context.read<SubscriptionCubit>();
+    if (await cubit.openCustomerCenter()) return;
+    final url = await cubit.manageSubscriptionUrl();
     await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
   }
 
@@ -133,11 +137,7 @@ class SettingsView extends StatelessWidget {
             subtitle: context.tr('settings_feedback_subtitle'),
             onTap: () => context.push(AppRouter.kFeedbackView),
           ),
-          SettingsTileWidget(
-            icon: Icons.star_rounded,
-            title: context.tr('settings_rate'),
-            onTap: () => _rate(context),
-          ),
+          SettingsTileWidget(icon: Icons.star_rounded, title: context.tr('settings_rate'), onTap: () => _rate(context)),
           SettingsTileWidget(
             icon: Icons.ios_share_rounded,
             title: context.tr('settings_share'),
@@ -187,7 +187,8 @@ class SettingsView extends StatelessWidget {
 
     return BlocListener<SettingsCubit, SettingsState>(
       listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
-      listener: (context, state) => AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error),
+      listener: (context, state) =>
+          AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error),
       child: GlassScreenScaffold(
         palette: MeshPalette.calm,
         safeAreaBottom: false,

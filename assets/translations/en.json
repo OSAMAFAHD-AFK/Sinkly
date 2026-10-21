@@ -195,8 +195,6 @@
   "trial_timeline_end_title": "Day {day}",
   "trial_timeline_end_subtitle": "Your subscription starts — cancel anytime before.",
   "trial_reminder_note": "Enable notifications to receive this reminder",
-  "trial_notif_title": "1 day left in your free trial ⏳",
-  "trial_notif_body": "You've saved {saved} this week.\nCancel before {date} if you'd like to stop.",
   "trial_notif_now": "now",
   "paywall_title": "Start your {days}-day free trial, {name}!",
   "paywall_title_generic": "Start your {days}-day free trial!",
@@ -460,5 +458,5 @@
   "reminder_lock_body": "{meal} is almost over. A quick sink reset afterwards brings everything back 💧",
   "reminder_trial_title_tomorrow": "Your free trial ends tomorrow",
   "reminder_trial_title_today": "Your free trial ends today",
-  "reminder_trial_body": "After that, your Sinkly plan renews automatically. Not for you? Cancel in your {store} subscriptions before then, it only takes a few seconds."
+  "reminder_trial_body": "Your Sinkly Premium begins when the trial ends and your meal locks keep running. Manage it anytime in {store}."
 }

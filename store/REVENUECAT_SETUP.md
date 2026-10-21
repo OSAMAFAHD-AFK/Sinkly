@@ -1,78 +1,84 @@
-# ربط الاشتراكات: المتجران + RevenueCat (المهمة الأخيرة)
+# ربط الاشتراكات: RevenueCat + المتجران
 
-الكود جاهز بالكامل. ما تحتاجه هو تعبئة لوحات التحكم بهذه **المعرّفات الحرفية** (الكود مبني عليها)، ثم وضع مفتاحين عامّين في التطبيق.
+الكود مربوط الآن بمشروعك في RevenueCat عبر **Test Store** (شراء تجريبي من RevenueCat نفسه، بدون Apple أو Google).
+المتبقي لاحقًا: ربط App Store و Google Play داخل RevenueCat، ثم استبدال المفتاح.
 
 > 🔒 **لا ترسل لأحد ولا تضع في الكود:** ملف ‎`.p8` من Apple، ملف JSON لحساب خدمة Google، مفتاح RevenueCat السري (`sk_…`). هذه تُرفع مباشرة في RevenueCat / Supabase.
 
 ---
 
-## المعرّفات التي يعتمد عليها الكود
+## المعرّفات التي يعتمد عليها الكود (مطابقة لمشروعك الآن)
 
 | الشيء | القيمة |
 |---|---|
 | Bundle ID / Package | `com.sinkly.app` |
-| Entitlement (مستوى الوصول) | `premium` |
-| المنتج الأسبوعي | `sinkly_premium_weekly` |
-| المنتج السنوي | `sinkly_premium_annual` |
-| عرض الخروج السنوي المخفّض | `sinkly_premium_annual_special` |
-| Offering الرئيسي (Current) | `default` ← حزمتا Weekly و Annual |
-| Offering عرض الخروج | `exit_offer` ← حزمة Annual = المنتج المخفّض |
+| Entitlement | `sinkly_premium` (التطبيق + خادم فحص الصورة) |
+| المنتج الأسبوعي | `weekly` |
+| المنتج السنوي | `annual` |
+| عرض الخروج (السنوي المخفّض) | `annual_special` |
+| Offering الرئيسي (Current) | `default` |
+| حزم `default` | `$rc_weekly` ← `weekly` · `$rc_annual` ← `annual` · `custom_annual_special` ← `annual_special` |
 | Placements (اختيارية، للتجارب لاحقًا) | `onboarding_paywall` · `settings_upgrade` · `paywall_exit_offer` |
 
-الأسعار المقترحة: أسبوعي 4.99$ · سنوي 39.99$ · عرض الخروج 29.99$ (25% أقل من السنوي). تجربة مجانية 3 أيام: أنصح بها على **السنوي وعرض الخروج فقط**. شاشة الدفع تتكيّف تلقائيًا: تعرض التجربة فقط للخطة التي تملكها فعلًا.
+كيف يقرأ الكود هذا الترتيب:
+- **شاشة الدفع:** تعرض الأسبوعي والسنوي فقط (تخفي `annual_special` تلقائيًا).
+- **عرض الخروج (زر X):** يعرض `annual_special` فقط، ويحسب نسبة الخصم مقارنة بالسنوي العادي.
+- يعمل أيضًا لو نقلت `annual_special` لاحقًا إلى Offering مستقل اسمه `exit_offer`.
+- المطابقة بنوع الحزمة واسمها، فلا تحتاج تغيير الكود عند إضافة منتجات Apple و Google.
+
+تم التحقق (20 أكتوبر 2026) من لوحة مشروعك: الـ Offering `default` موجود بالحزم الثلاث، والمنتجات الثلاثة كلها تفتح `sinkly_premium`.
 
 ---
 
-## 1) App Store Connect
-1. **Apps → Sinkly → Monetization → Subscriptions** ← أنشئ Subscription Group باسم `Sinkly Premium`.
-2. أنشئ الاشتراكات الثلاثة بالمعرّفات أعلاه (المدة: 1 Week / 1 Year / 1 Year).
-3. لكل اشتراك:
-   - **Subscription Prices**: اختر الولايات المتحدة بالسعر، وApple تحسب باقي الدول.
-   - **Localization**: الاسم والوصف (عربي + إنجليزي على الأقل).
-   - **Review Information**: لقطة شاشة لشاشة الدفع + سطر: "Unlocks meal-linked app locking and photo-verified unlocking."
-4. التجربة المجانية: **Subscription Prices → Introductory Offers → +** ← كل الدول ← Free ← 3 Days ← بلا تاريخ انتهاء.
-5. **Users and Access → Integrations → In-App Purchase → Generate**: نزّل ملف `.p8` (مرة واحدة فقط!) وسجّل **Key ID** و **Issuer ID**.
-6. **Users and Access → Sandbox → Test Accounts → +**: حساب اختبار ببريد جديد.
-7. (بعد الخطوة 3 في RevenueCat) **App Information → App Store Server Notifications**: ضع رابط RevenueCat في Production و Sandbox، اختر Version 2.
-8. انسخ **Apple ID** الرقمي من App Information وأرسله لي (لرابط التقييم وصفحة الدعوة).
+## 0) كيف يختار الكود المفتاح (جاهز)
+- **نسخ Debug** (`flutter run`): مفتاح Test Store `test_…`. الشراء يُظهر نافذة RevenueCat التجريبية (نجاح / فشل / إلغاء) بدون دفع.
+- **نسخ Release** (APK / AAB / App Store): المفتاحان الحقيقيان `appl_…` و `goog_…` تلقائيًا. مكتبة RevenueCat ترفض مفتاح `test_…` في Release أصلًا، فلا يمكن أن يصل Premium مجاني للمستخدمين.
+- المفاتيح في `lib/core/utils/app_constants.dart`.
+- نتيجة ذلك: نسخة Release لا تُظهر الخطط إلا بعد أن تكون منتجات المتجر منشأة ومربوطة في RevenueCat (الخطوات 1 إلى 3). قبل ذلك جرّب الدفع بنسخة Debug.
+- الأسعار ومدة التجربة في Debug هي ما ضبطته لمنتجات Test Store في لوحة RevenueCat.
 
-## 2) Google Play Console
-1. ارفع أول نسخة إلى **Testing → Internal testing** (الأمر: `flutter build appbundle` ثم ارفع الملف من `build/app/outputs/bundle/release/app-release.aab`). Google لا يسمح بإنشاء الاشتراكات قبل ذلك.
-2. **Monetize → Products → Subscriptions → Create** بالمعرّفات نفسها. لكل واحد Base plan:
-   - `sinkly_premium_weekly` ← base plan `weekly` (Weekly, auto-renewing)
-   - `sinkly_premium_annual` ← base plan `annual` (Yearly)
-   - `sinkly_premium_annual_special` ← base plan `annual-special` (Yearly)
-   - السعر بالدولار ← **Update prices** ← **Activate**.
-3. التجربة: داخل الخطة **Add offer** ← `free-trial-3d` ← Eligibility: **New customer acquisition → Never had any subscription** ← Free trial 3 days ← Activate.
-4. حساب الخدمة لـ RevenueCat: اتبع دليل RevenueCat "Google Play: Creating Service Account Credentials" (Google Cloud: فعّل Google Play Android Developer API و Google Play Developer Reporting API ← Service Account ← مفتاح JSON ← ادعُ بريده في Play Console بصلاحيات View app information · View financial data · Manage orders and subscriptions). قد يستغرق تفعيله حتى 36 ساعة.
-5. **Monetize → Monetization setup → Real-time developer notifications**: ضع الـ Topic الذي يعطيك إياه RevenueCat.
+## 1) App Store Connect (لاحقًا)
+1. **Apps → Sinkly → Monetization → Subscriptions** ← Subscription Group باسم `Sinkly Premium`.
+2. أنشئ 3 اشتراكات: `weekly` (1 Week) · `annual` (1 Year) · `annual_special` (1 Year).
+3. لكل اشتراك: **Prices** (السعر الأمريكي، Apple تحسب الباقي) · **Localization** (عربي + إنجليزي) · **Review Information** (لقطة شاشة الدفع + سطر: "Unlocks meal-linked app locking and photo-verified unlocking.").
+4. التجربة المجانية: **Introductory Offers → +** ← كل الدول ← Free ← 3 Days (على `annual` و `annual_special`).
+5. **Users and Access → Integrations → In-App Purchase → Generate**: نزّل `.p8` (مرة واحدة فقط!) وسجّل **Key ID** و **Issuer ID**.
+6. **Users and Access → Sandbox → Test Accounts → +**: حساب اختبار.
+7. بعد إضافة التطبيق في RevenueCat: **App Information → App Store Server Notifications** ← رابط RevenueCat في Production و Sandbox (Version 2).
+
+## 2) Google Play Console (لاحقًا)
+1. ارفع أول نسخة إلى **Testing → Internal testing** (`flutter build appbundle` ← `build/app/outputs/bundle/release/app-release.aab`). Google لا يسمح بإنشاء الاشتراكات قبل ذلك.
+2. **Monetize → Products → Subscriptions → Create**: `weekly` · `annual` · `annual_special`، لكل واحد Base plan (Weekly / Yearly / Yearly، auto-renewing) ← السعر ← **Activate**.
+3. التجربة: داخل الخطة **Add offer** ← Eligibility: **New customer acquisition** ← Free trial 3 days ← Activate.
+4. حساب خدمة لـ RevenueCat: دليل RevenueCat "Google Play: Creating Service Account Credentials" (قد يستغرق التفعيل حتى 36 ساعة).
+5. **Monetization setup → Real-time developer notifications**: الـ Topic الذي يعطيك إياه RevenueCat.
 6. **Setup → License testing**: أضف بريد Gmail الذي ستختبر به.
 
-## 3) RevenueCat
-1. أنشئ Project باسم Sinkly ← أضف تطبيقين:
-   - **App Store**: Bundle ID `com.sinkly.app` ← ارفع `.p8` + Key ID + Issuer ID ← انسخ رابط Server Notifications إلى Apple.
-   - **Play Store**: Package `com.sinkly.app` ← ارفع JSON حساب الخدمة ← Connect to Google (RTDN).
-2. **Products**: استورد الستة (3 لكل متجر).
-3. **Entitlements**: أنشئ `premium` واربط به المنتجات الستة.
-4. **Offerings**:
-   - `default` ← **Make current** ← حزمة `$rc_weekly` (الأسبوعي في المتجرين) + حزمة `$rc_annual` (السنوي في المتجرين).
-   - `exit_offer` ← حزمة `$rc_annual` = `sinkly_premium_annual_special` في المتجرين.
-5. **Project settings → API keys**: انسخ المفتاحين العامّين (`appl_…` و `goog_…`) وأرسلهما لي، أو ضعهما في:
-   `lib/core/utils/app_constants.dart` → `revenueCatAppleApiKey` و `revenueCatGoogleApiKey`.
-   (عامّان بطبيعتهما ويُشحنان داخل كل تطبيق.)
-6. أنشئ **Secret API key** (`sk_…`) ونفّذ بنفسك في مجلد المشروع:
+## 3) RevenueCat (لاحقًا، بعد 1 و 2)
+1. **Apps**: أضف **App Store** (Bundle `com.sinkly.app` + `.p8`) و **Play Store** (Package `com.sinkly.app` + JSON حساب الخدمة).
+2. **Products**: استورد منتجات كل متجر (3 لكل متجر).
+3. **Entitlements → `sinkly_premium`**: اربط به المنتجات الجديدة أيضًا.
+4. **Offerings → `default`**: داخل كل حزمة أضف منتج كل متجر بجانب منتج Test Store:
+   `$rc_weekly` ← weekly · `$rc_annual` ← annual · `custom_annual_special` ← annual_special.
+5. **Customer Center** (Tools → Customer Center): فعّله واضبط بريد الدعم `osamadeveloper0@gmail.com`. هو ما يفتح من الإعدادات ← «إدارة الاشتراك» (تفاصيل الخطة، الإلغاء، الاستعادة، طلب استرداد على iPhone). إن لم يكن متاحًا يفتح التطبيق صفحة اشتراكات المتجر تلقائيًا.
+6. **Project settings → API keys**: انسخ `appl_…` و `goog_…`.
+7. أنشئ **Secret API key** (`sk_…`) ونفّذ بنفسك في مجلد المشروع:
    ```
    npx supabase secrets set REVENUECAT_SECRET_KEY=sk_...
    ```
-   من هذه اللحظة لا يفحص صور الحوض إلا المشتركون (ثغرة رصيد Gemini تُغلق).
+   من هذه اللحظة لا يفحص صور الحوض إلا المشتركون.
 
-## 4) قبل الإرسال للمراجعة
-- في `app_constants.dart`: اجعل `devPaywallBypass = false` (زر "تخطّي الدفع · مطوّر").
-- جرّب في بيئة الاختبار: شراء ← استعادة ← إلغاء أثناء التجربة ← انتهاء التجربة ← فشل الدفع.
+## 4) قبل الإرسال للمراجعة (إلزامي)
+1. تأكد أن Customer Center مفعّل وأن مفتاح الخادم `REVENUECAT_SECRET_KEY` موضوع، وأن `verify-sink-photo` منشورة:
+   ```
+   npx supabase functions deploy verify-sink-photo
+   ```
+2. جرّب ببيئة الاختبار: شراء ← استعادة ← إلغاء أثناء التجربة ← انتهاء التجربة ← فشل الدفع ← «إدارة الاشتراك».
 
 ## ماذا يحدث تلقائيًا في الكود
-- الأسعار الحقيقية بعملة كل بلد تأتي من المتجر (لا أرقام ثابتة).
+- الأسعار بعملة كل بلد تأتي من المتجر (لا أرقام ثابتة)، ونسب التوفير تُحسب منها.
 - التجربة تظهر فقط لمن يستحقها (iPhone يتحقق، Google لا يعرضها لغير المستحق).
+- كل تغيير في الاشتراك (تجديد، إلغاء، استرداد، انتهاء) يصل التطبيق فورًا ويحدّث القفل.
 - تذكير محلي قبل الخصم بيوم، يُلغى تلقائيًا إذا ألغى المستخدم.
 - انتهاء الاشتراك يوقف القفل ويحتفظ بالخطة.
-- الإعدادات: "إدارة الاشتراك" يفتح صفحة المتجر، و"استعادة" للهاتف الجديد.
+- شاشة الدفع تبقى تصميمنا الخاص (قرار المنتج)؛ RevenueCat يوفّر المنتجات والشراء والإحصاءات فقط.

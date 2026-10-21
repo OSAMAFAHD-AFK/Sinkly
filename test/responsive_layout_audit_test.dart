@@ -250,7 +250,7 @@ void main() {
               await settle(400);
             }
 
-            // ── Home while apps are LOCKED (manual test lock from the Plan tab) ──
+            // ── Home while apps are LOCKED (a meal "ended" right now) ──
             // A meal "ended" right now: the same state the blocker locks on.
             await visit('plan(locked)', () async {
               final storage = getIt<LocalStorageService>();

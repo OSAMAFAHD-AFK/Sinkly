@@ -4,7 +4,7 @@ import '../models/blocking_status_model.dart';
 /// Keeps the native app blocker in step with the app, automatically.
 ///
 /// Every change that matters — plan saved (onboarding or Plan tab, even
-/// while locked), sink cleaned, "Test the lock now", language, subscription
+/// while locked), sink cleaned, language, subscription
 /// — is pushed to the native side as one snapshot. Features never call the
 /// blocker directly.
 abstract class AppBlockingRepo {

@@ -120,6 +120,9 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
   /// The store page where the subscription is managed or cancelled.
   Future<String> manageSubscriptionUrl() => _repo.manageSubscriptionUrl();
 
+  /// RevenueCat Customer Center; `false` → use [manageSubscriptionUrl].
+  Future<bool> openCustomerCenter() => _repo.openCustomerCenter();
+
   void clearFailure() => emit(state.copyWith(clearFailure: true));
 
   @override

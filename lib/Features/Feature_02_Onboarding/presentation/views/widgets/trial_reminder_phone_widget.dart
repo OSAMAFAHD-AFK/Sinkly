@@ -126,11 +126,11 @@ class _TrialReminderPhoneWidgetState extends State<TrialReminderPhoneWidget> wit
             left: 4,
             right: 4,
             child:
+                // The REAL reminder (same texts as Feature_11_Reminders).
                 _NotificationCard(
-                      title: context.tr('trial_notif_title'),
-                      body: context.tr('trial_notif_body', {
-                        'saved': context.tr('duration_hours_minutes', {'h': '4', 'm': '20'}),
-                        'date': material.formatShortMonthDay(trialEnd),
+                      title: context.tr('reminder_trial_title_tomorrow'),
+                      body: context.tr('reminder_trial_body', {
+                        'store': Theme.of(context).platform == TargetPlatform.iOS ? 'App Store' : 'Google Play',
                       }),
                       time: context.tr('trial_notif_now'),
                     )
