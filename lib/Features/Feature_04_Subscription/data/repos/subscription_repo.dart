@@ -4,6 +4,10 @@ import '../../../../core/errors/failures.dart';
 import '../models/subscription_plan_model.dart';
 
 abstract class SubscriptionRepo {
+  /// Failure key of a purchase the store still has to confirm: a notice, not
+  /// an error (Premium turns on by itself once the payment goes through).
+  static const String paymentPendingKey = 'purchase_pending';
+
   /// Connects to the store and keeps the app in step with every status
   /// change (renewal, cancellation, refund…): app locking runs only while
   /// subscribed, and the "trial ends tomorrow" reminder follows the trial.

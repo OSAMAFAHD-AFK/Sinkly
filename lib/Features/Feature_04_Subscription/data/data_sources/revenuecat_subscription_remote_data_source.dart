@@ -69,7 +69,7 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
       if (discounted.isNotEmpty) {
         packages = discounted;
       } else if (identical(offering, offerings.current)) {
-        throw StateError('No exit-offer package (${AppConstants.exitOfferProductId}) in "${offering.identifier}"');
+        throw StateError('No exit-offer package (${AppConstants.exitOfferPackageId}) in "${offering.identifier}"');
       }
     } else {
       packages.removeWhere(_isExitOfferPackage);
@@ -162,10 +162,14 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
       final result = await Purchases.purchase(PurchaseParams.package(package));
       return _toStatus(result.customerInfo);
     } on PlatformException catch (error) {
-      if (PurchasesErrorHelper.getErrorCode(error) == PurchasesErrorCode.purchaseCancelledError) {
-        throw const PurchaseCancelledException();
+      switch (PurchasesErrorHelper.getErrorCode(error)) {
+        case PurchasesErrorCode.purchaseCancelledError:
+          throw const PurchaseCancelledException();
+        case PurchasesErrorCode.paymentPendingError:
+          throw const PurchasePendingException();
+        default:
+          rethrow;
       }
-      rethrow;
     }
   }
 
@@ -245,10 +249,10 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
   }
 
   /// The exit offer's discounted annual, by its package id or its product id
-  /// (Google Play reports `annual_special:<base plan>`, hence `startsWith`).
+  /// (Google Play reports `<product>:<base plan>`).
   static bool _isExitOfferPackage(Package package) =>
       package.identifier == AppConstants.exitOfferPackageId ||
-      package.storeProduct.identifier.startsWith(AppConstants.exitOfferProductId);
+      AppConstants.exitOfferProductIds.contains(package.storeProduct.identifier.split(':').first);
 
   static int _weeksIn(SubscriptionPeriod period) => switch (period) {
     SubscriptionPeriod.weekly => 1,

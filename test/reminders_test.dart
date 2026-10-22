@@ -56,10 +56,10 @@ void main() {
       expect(s.notifications.scheduled.containsKey(ReminderModel.trialEndId), isFalse);
     });
 
-    test('follows the Reminders switch', () async {
+    test('ignores the Reminders switch (billing notice the paywall promises)', () async {
       final s = await setUp(notifications: false);
       await s.repo.setTrialChargeAt(now.add(const Duration(days: 3)));
-      expect(s.notifications.scheduled, isEmpty);
+      expect(s.notifications.scheduled.keys, [ReminderModel.trialEndId]);
     });
 
     test('less than a day left and never reminded: reminds right away', () async {

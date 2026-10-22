@@ -62,7 +62,9 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
   Future<Either<Failure, List<SubscriptionPlanModel>>> fetchPaywallPlans({required String placementId}) async {
     try {
       return right(await _remote.fetchPaywallPlans(placementId: placementId));
-    } catch (error) {
+    } catch (error, stack) {
+      // No plans = no sales: always worth knowing about.
+      CrashReportingService.recordError(error, stack, reason: 'paywall load ($placementId)');
       return left(ServerFailure('error_paywall_load', debugMessage: '$error'));
     }
   }
@@ -73,7 +75,10 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
       return right(await _apply(await _remote.purchase(plan)));
     } on PurchaseCancelledException {
       return left(const PurchaseFailure('error_purchase_cancelled', userCancelled: true));
-    } catch (error) {
+    } on PurchasePendingException {
+      return left(const PurchaseFailure(SubscriptionRepo.paymentPendingKey));
+    } catch (error, stack) {
+      CrashReportingService.recordError(error, stack, reason: 'purchase ${plan.vendorProductId}');
       return left(PurchaseFailure('error_purchase', debugMessage: '$error'));
     }
   }
@@ -82,7 +87,8 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
   Future<Either<Failure, bool>> restorePurchases() async {
     try {
       return right(await _apply(await _remote.restorePurchases()));
-    } catch (error) {
+    } catch (error, stack) {
+      CrashReportingService.recordError(error, stack, reason: 'restore');
       return left(PurchaseFailure('error_restore', debugMessage: '$error'));
     }
   }

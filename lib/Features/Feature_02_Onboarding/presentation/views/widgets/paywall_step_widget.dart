@@ -67,6 +67,9 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _celebrating = false;
   bool _exitOfferOpen = false;
 
+  /// A purchase / restore started here is running: its own result moves on.
+  bool _inFlight = false;
+
   late final SubscriptionCubit _cubit = context.read<SubscriptionCubit>();
 
   @override
@@ -91,13 +94,16 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _purchase() async {
+    _inFlight = true;
     final purchased = await _cubit.purchaseSelectedPlan();
+    _inFlight = false;
     if (!purchased || !mounted) return;
     AppFunctions.successHaptic();
     await _celebrate();
   }
 
   Future<void> _celebrate() async {
+    if (_celebrating) return;
     // Let the heroine celebrate with the user before moving on.
     setState(() => _celebrating = true);
     await Future<void>.delayed(const Duration(milliseconds: 1800));
@@ -105,8 +111,19 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _restore() async {
+    _inFlight = true;
     final restored = await _cubit.restorePurchases();
-    if (restored) widget.onFinished(true);
+    _inFlight = false;
+    if (restored && mounted) widget.onFinished(true);
+  }
+
+  /// Premium turned on while the paywall is open without a purchase from
+  /// here: a pending payment was confirmed, or the store recognised an
+  /// existing subscription a moment late.
+  void _onPremiumFromStore() {
+    if (_inFlight || _celebrating || _exitOfferOpen) return;
+    AppFunctions.successHaptic();
+    _celebrate();
   }
 
   /// "X" or system back: always the exit offer (strict paywall — the only
@@ -118,17 +135,29 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     final purchased = await showPaywallExitOfferSheet(context);
     if (!mounted) return;
     setState(() => _exitOfferOpen = false);
-    if (purchased) await _celebrate();
+    if (purchased || _cubit.state.isPremium) await _celebrate();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<SubscriptionCubit, SubscriptionState>(
-      listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
-      listener: (context, state) {
-        AppFunctions.showSnack(context, context.tr(state.failureKey!), tone: AppToastTone.error);
-        context.read<SubscriptionCubit>().clearFailure();
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<SubscriptionCubit, SubscriptionState>(
+          listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
+          listener: (context, state) {
+            AppFunctions.showSnack(
+              context,
+              context.tr(state.failureKey!),
+              tone: state.failureIsNotice ? AppToastTone.info : AppToastTone.error,
+            );
+            context.read<SubscriptionCubit>().clearFailure();
+          },
+        ),
+        BlocListener<SubscriptionCubit, SubscriptionState>(
+          listenWhen: (previous, current) => !previous.isPremium && current.isPremium,
+          listener: (context, state) => _onPremiumFromStore(),
+        ),
+      ],
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {

@@ -18,7 +18,8 @@ abstract class SubscriptionRemoteDataSource {
   Future<List<SubscriptionPlanModel>> fetchPaywallPlans({required String placementId});
 
   /// Buys [plan]. Throws [PurchaseCancelledException] when the user closes
-  /// the store sheet.
+  /// the store sheet, [PurchasePendingException] when the store still has to
+  /// confirm the payment.
   Future<SubscriptionStatusModel> purchase(SubscriptionPlanModel plan);
 
   Future<SubscriptionStatusModel> restorePurchases();
@@ -44,6 +45,13 @@ abstract class SubscriptionRemoteDataSource {
 /// The user closed the store's purchase sheet: not an error to show.
 class PurchaseCancelledException implements Exception {
   const PurchaseCancelledException();
+}
+
+/// The store accepted the order but the payment isn't confirmed yet (Google
+/// Play cash / carrier billing, a parent's approval…). Premium turns on by
+/// itself once it is: nothing has failed.
+class PurchasePendingException implements Exception {
+  const PurchasePendingException();
 }
 
 /// Offline mock with realistic latency. Remembers the purchase locally so the

@@ -72,14 +72,19 @@ abstract final class AppConstants {
   static const String settingsPaywallPlacementId = 'settings_upgrade';
 
   /// Discounted annual plan offered every time the user taps "X" on the
-  /// paywall. Products: `weekly`, `annual` and this one, `annual_special`.
+  /// paywall. Products (App Store / Google Play): `sinkly_premium_weekly`,
+  /// `sinkly_premium_annual` and this one, `sinkly_premium_annual_special`
+  /// (Test Store: `weekly`, `annual`, `annual_special`).
   /// It can sit in the `default` offering as package `custom_annual_special`
   /// (current setup: it is then kept off the main paywall) or in its own
   /// offering `exit_offer` / placement `paywall_exit_offer`.
   static const String exitOfferPlacementId = 'paywall_exit_offer';
   static const String exitOfferOfferingId = 'exit_offer';
   static const String exitOfferPackageId = 'custom_annual_special';
-  static const String exitOfferProductId = 'annual_special';
+
+  /// The discounted annual's product id: Test Store, then App Store / Google
+  /// Play (Google reports `<product>:<base plan>`, the part before ":" counts).
+  static const Set<String> exitOfferProductIds = {'annual_special', 'sinkly_premium_annual_special'};
 
   /// The store pages where a subscription is managed / cancelled.
   static const String appleSubscriptionsUrl = 'https://apps.apple.com/account/subscriptions';

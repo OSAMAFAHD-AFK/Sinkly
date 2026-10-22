@@ -129,10 +129,13 @@ class RemindersRepoImpl implements RemindersRepo {
   }
 
   // ── Free trial ends ────────────────────────────────────────────────────
+  /// A billing notice, not a nudge: the paywall promises it, so it ignores
+  /// the Reminders switch (only the phone's notification permission can stop
+  /// it).
   Future<void> _syncTrial(_Texts texts) async {
     final chargeAt = DateTime.tryParse(_storage.getString(_trialChargeAtKey) ?? '');
     final now = _now();
-    if (!_enabled || chargeAt == null || !chargeAt.isAfter(now)) {
+    if (!_storage.plan.onboardingCompleted || chargeAt == null || !chargeAt.isAfter(now)) {
       await _notifications.cancel(ReminderModel.trialEndId);
       return;
     }
@@ -146,8 +149,8 @@ class RemindersRepoImpl implements RemindersRepo {
     if (remindAt.isAfter(now.add(const Duration(minutes: 1)))) {
       at = remindAt;
     } else if (!alreadyPlanned && chargeAt.difference(now) >= const Duration(hours: 2)) {
-      // Less than a day left and never reminded (e.g. notifications were
-      // just switched on): remind now rather than not at all.
+      // Less than a day left and never reminded (e.g. notification
+      // permission was just granted): remind now rather than not at all.
       at = now.add(const Duration(minutes: 1));
       titleKey = 'reminder_trial_title_today';
     }
