@@ -9,6 +9,7 @@ class SubscriptionStatusModel extends Equatable {
     this.expiresAt,
     this.productId,
     this.managementUrl,
+    this.confirmed = true,
   });
 
   static const SubscriptionStatusModel inactive = SubscriptionStatusModel(isActive: false);
@@ -30,11 +31,15 @@ class SubscriptionStatusModel extends Equatable {
   /// The store's own "manage subscription" page, when the store gave one.
   final String? managementUrl;
 
+  /// A fresh answer of the store, not an old copy kept on the phone (offline).
+  /// Only a confirmed "not active" may stop the user at the paywall.
+  final bool confirmed;
+
   /// When the first payment will be taken: only while a free trial is
   /// running AND will turn into a paid subscription. `null` otherwise (no
   /// trial, or the user already cancelled → nothing will be charged).
   DateTime? get firstChargeAt => isActive && isInTrial && willRenew ? expiresAt : null;
 
   @override
-  List<Object?> get props => [isActive, isInTrial, willRenew, expiresAt, productId, managementUrl];
+  List<Object?> get props => [isActive, isInTrial, willRenew, expiresAt, productId, managementUrl, confirmed];
 }

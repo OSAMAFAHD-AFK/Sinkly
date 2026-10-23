@@ -6,6 +6,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/app_constants.dart';
 import '../../../../core/utils/crash_reporting_service.dart';
+import '../../../../core/utils/local_storage_service.dart';
 import '../../../Feature_06_SinkUnlock/data/repos/app_blocking_repo.dart';
 import '../../../Feature_11_Reminders/data/repos/reminders_repo.dart';
 import '../data_sources/subscription_remote_data_source.dart';
@@ -18,9 +19,11 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     required SubscriptionRemoteDataSource remote,
     required AppBlockingRepo blocking,
     required RemindersRepo reminders,
+    required LocalStorageService storage,
   }) : _remote = remote,
        _blocking = blocking,
-       _reminders = reminders;
+       _reminders = reminders,
+       _storage = storage;
 
   // ignore_for_file: prefer_initializing_formals — named parameters keep call sites readable.
   final SubscriptionRemoteDataSource _remote;
@@ -30,6 +33,10 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
 
   /// "Your free trial ends tomorrow", one day before the first charge.
   final RemindersRepo _reminders;
+
+  /// Keeps the store's last confirmed answer for [hasAccess] when offline.
+  final LocalStorageService _storage;
+  static const String _lastConfirmedKey = 'sinkly.subscription_last_confirmed';
 
   SubscriptionStatusModel? _status;
   final StreamController<bool> _premiumChanges = StreamController.broadcast();
@@ -53,6 +60,7 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
     _status = status;
     final active = status.isActive;
     _premiumChanges.add(active);
+    if (status.confirmed) await _storage.setString(_lastConfirmedKey, active ? 'active' : 'inactive');
     await _blocking.setSubscriptionActive(active);
     await _reminders.setTrialChargeAt(status.firstChargeAt);
     return active;
@@ -102,6 +110,18 @@ class SubscriptionRepoImpl implements SubscriptionRepo {
       // own last known state too.
       return _status?.isActive ?? false;
     }
+  }
+
+  @override
+  Future<bool> hasAccess({Duration timeout = const Duration(seconds: 4)}) async {
+    try {
+      final status = await _remote.currentStatus().timeout(timeout);
+      await _apply(status);
+      if (status.confirmed) return status.isActive;
+    } catch (_) {
+      // Offline / store down / too slow: decided below, never a lock-out.
+    }
+    return _storage.getString(_lastConfirmedKey) != 'inactive';
   }
 
   @override

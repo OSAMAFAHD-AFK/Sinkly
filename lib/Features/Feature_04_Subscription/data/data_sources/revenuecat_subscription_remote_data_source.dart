@@ -207,9 +207,11 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
   }
 
   static SubscriptionStatusModel _toStatus(CustomerInfo info) {
+    final confirmed = _isFresh(info.requestDate);
+    // Free trial and billing grace period are both "active" for RevenueCat.
     final premium = info.entitlements.active[AppConstants.premiumEntitlementId];
     if (premium == null || !premium.isActive) {
-      return SubscriptionStatusModel(isActive: false, managementUrl: info.managementURL);
+      return SubscriptionStatusModel(isActive: false, managementUrl: info.managementURL, confirmed: confirmed);
     }
     return SubscriptionStatusModel(
       isActive: true,
@@ -218,7 +220,15 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
       expiresAt: DateTime.tryParse(premium.expirationDate ?? ''),
       productId: premium.productIdentifier,
       managementUrl: info.managementURL,
+      confirmed: confirmed,
     );
+  }
+
+  /// Offline, RevenueCat answers from its cache: only an answer fetched in
+  /// the last few minutes counts as the store's word.
+  static bool _isFresh(String requestDate) {
+    final at = DateTime.tryParse(requestDate);
+    return at != null && DateTime.now().difference(at).abs() < const Duration(minutes: 15);
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────

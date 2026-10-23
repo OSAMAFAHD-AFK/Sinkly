@@ -38,7 +38,10 @@ import 'paywall_plan_card_widget.dart';
 /// the heroine cries, then offers an extra discount on the annual plan. The
 /// sheet has no decline button; swiping it away just returns here.
 /// The standalone PaywallView ([isDismissible]) is only reachable from inside
-/// the app, so there "X" simply closes it.
+/// the app, so there "X" simply closes it. At app open after the subscription
+/// ended, PaywallView(strict) is non-dismissible like here.
+/// The headline promises the free trial only when the selected plan really
+/// has one: the stores give it once per account ([titleKey]).
 class PaywallStepWidget extends StatefulWidget {
   const PaywallStepWidget({
     super.key,
@@ -58,6 +61,13 @@ class PaywallStepWidget extends StatefulWidget {
   /// Standalone paywall opened from inside the app: "X" just closes it.
   final bool isDismissible;
 
+  static String titleKey({required bool hasTrial, required bool hasName}) => switch ((hasTrial, hasName)) {
+    (true, true) => 'paywall_title',
+    (true, false) => 'paywall_title_generic',
+    (false, true) => 'paywall_title_subscribe',
+    (false, false) => 'paywall_title_subscribe_generic',
+  };
+
   @override
   State<PaywallStepWidget> createState() => _PaywallStepWidgetState();
 }
@@ -66,9 +76,6 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _showCloseButton = false;
   bool _celebrating = false;
   bool _exitOfferOpen = false;
-
-  /// A purchase / restore started here is running: its own result moves on.
-  bool _inFlight = false;
 
   late final SubscriptionCubit _cubit = context.read<SubscriptionCubit>();
 
@@ -94,16 +101,13 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _purchase() async {
-    _inFlight = true;
     final purchased = await _cubit.purchaseSelectedPlan();
-    _inFlight = false;
     if (!purchased || !mounted) return;
     AppFunctions.successHaptic();
     await _celebrate();
   }
 
   Future<void> _celebrate() async {
-    if (_celebrating) return;
     // Let the heroine celebrate with the user before moving on.
     setState(() => _celebrating = true);
     await Future<void>.delayed(const Duration(milliseconds: 1800));
@@ -111,19 +115,8 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   }
 
   Future<void> _restore() async {
-    _inFlight = true;
     final restored = await _cubit.restorePurchases();
-    _inFlight = false;
-    if (restored && mounted) widget.onFinished(true);
-  }
-
-  /// Premium turned on while the paywall is open without a purchase from
-  /// here: a pending payment was confirmed, or the store recognised an
-  /// existing subscription a moment late.
-  void _onPremiumFromStore() {
-    if (_inFlight || _celebrating || _exitOfferOpen) return;
-    AppFunctions.successHaptic();
-    _celebrate();
+    if (restored) widget.onFinished(true);
   }
 
   /// "X" or system back: always the exit offer (strict paywall — the only
@@ -135,29 +128,23 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     final purchased = await showPaywallExitOfferSheet(context);
     if (!mounted) return;
     setState(() => _exitOfferOpen = false);
-    if (purchased || _cubit.state.isPremium) await _celebrate();
+    if (purchased) await _celebrate();
   }
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<SubscriptionCubit, SubscriptionState>(
-          listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
-          listener: (context, state) {
-            AppFunctions.showSnack(
-              context,
-              context.tr(state.failureKey!),
-              tone: state.failureIsNotice ? AppToastTone.info : AppToastTone.error,
-            );
-            context.read<SubscriptionCubit>().clearFailure();
-          },
-        ),
-        BlocListener<SubscriptionCubit, SubscriptionState>(
-          listenWhen: (previous, current) => !previous.isPremium && current.isPremium,
-          listener: (context, state) => _onPremiumFromStore(),
-        ),
-      ],
+    // Plans still loading: the trial headline, as before.
+    final hasTrial = context.select((SubscriptionCubit c) => c.state.selectedPlan?.hasTrial ?? true);
+    return BlocListener<SubscriptionCubit, SubscriptionState>(
+      listenWhen: (previous, current) => current.failureKey != null && previous.failureKey != current.failureKey,
+      listener: (context, state) {
+        AppFunctions.showSnack(
+          context,
+          context.tr(state.failureKey!),
+          tone: state.failureIsNotice ? AppToastTone.info : AppToastTone.error,
+        );
+        context.read<SubscriptionCubit>().clearFailure();
+      },
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
@@ -183,14 +170,15 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
                           child: PaywallHeroineHeroWidget(celebrating: _celebrating),
                         ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
                         OnboardingStepHeaderWidget(
-                          title: widget.userName.isEmpty
-                              ? context.tr('paywall_title_generic', {'days': '${AppConstants.freeTrialDays}'})
-                              : context.tr('paywall_title', {
-                                  // Bidi isolate: a Latin name inside Arabic text stays one
-                                  // unit, so its letters and the punctuation keep their order.
-                                  'name': '\u2068${widget.userName}\u2069',
-                                  'days': '${AppConstants.freeTrialDays}',
-                                }),
+                          title: context.tr(
+                            PaywallStepWidget.titleKey(hasTrial: hasTrial, hasName: widget.userName.isNotEmpty),
+                            {
+                              // Bidi isolate: a Latin name inside Arabic text stays one
+                              // unit, so its letters and the punctuation keep their order.
+                              'name': '\u2068${widget.userName}\u2069',
+                              'days': '${AppConstants.freeTrialDays}',
+                            },
+                          ),
                           highlight: widget.userName,
                           description: context.tr('paywall_subtitle'),
                           textAlign: TextAlign.center,

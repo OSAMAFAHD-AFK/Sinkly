@@ -50,6 +50,15 @@ Future<void> main() async {
   unawaited(getIt<RemindersRepo>().start());
   // RevenueCat: every status change reaches the blocker and the trial reminder.
   unawaited(getIt<SubscriptionRepo>().start());
+  // Back in front: a subscription that ended meanwhile (confirmed by the
+  // store) sends the user to the paywall, exactly as at app open.
+  AppLifecycleListener(
+    onResume: () async {
+      if (!AppRouter.isOnMainTab) return;
+      if (await getIt<SubscriptionRepo>().hasAccess()) return;
+      if (AppRouter.isOnMainTab) AppRouter.router.go(AppRouter.kSubscribeView);
+    },
+  );
 
   runApp(const SinklyApp());
 

@@ -17,10 +17,20 @@ class SplashCubit extends Cubit<AppStartDestination?> {
 
   /// Plays the brand animation, then routes. Opened from a lock screen, it
   /// skips the animation: the user is in the middle of something.
+  /// Onboarding done: the store is asked about the subscription right away,
+  /// while the animation plays, so nobody sees the paywall flash by.
   Future<void> start(Duration brandAnimation) async {
-    final destination = _repo.resolveStartDestination();
-    if (destination == AppStartDestination.home) pendingLockOverlay = await _repo.consumePendingLockOverlay();
+    var destination = _repo.resolveStartDestination();
+    Future<bool>? access;
+    if (destination == AppStartDestination.home) {
+      access = _repo.hasSubscriptionAccess();
+      pendingLockOverlay = await _repo.consumePendingLockOverlay();
+    }
     if (pendingLockOverlay == null) await Future<void>.delayed(brandAnimation);
+    if (access != null && !await access) {
+      destination = AppStartDestination.paywall;
+      pendingLockOverlay = null; // nothing is locked without a subscription
+    }
     if (!isClosed) emit(destination);
   }
 }

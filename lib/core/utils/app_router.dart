@@ -35,6 +35,10 @@ abstract final class AppRouter {
   /// Celebration right after subscribing on the onboarding paywall → Home.
   static const String kWelcomeView = '/welcome';
   static const String kPaywallView = '/paywall';
+
+  /// The paywall at app open once the store confirms the subscription has
+  /// ended: subscribing or restoring is the only way on (then Home).
+  static const String kSubscribeView = '/subscribe';
   static const String kSinkUnlockView = '/sink-unlock';
   static const String kFeedbackView = '/feedback';
 
@@ -67,6 +71,7 @@ abstract final class AppRouter {
       ),
       GoRoute(path: kWelcomeView, pageBuilder: (context, state) => _fade(state, const WelcomeView())),
       GoRoute(path: kPaywallView, pageBuilder: (context, state) => _slideUp(state, const PaywallView())),
+      GoRoute(path: kSubscribeView, pageBuilder: (context, state) => _fade(state, const PaywallView(strict: true))),
       GoRoute(
         path: kSinkUnlockView,
         pageBuilder: (context, state) => _slideUp(
@@ -118,6 +123,14 @@ abstract final class AppRouter {
       ),
     ],
   );
+
+  /// One of the four tabs is on screen (nothing pushed on top of it).
+  static bool get isOnMainTab => const {
+    kHomeView,
+    kLockScheduleView,
+    kProgressView,
+    kSettingsView,
+  }.contains(router.routerDelegate.currentConfiguration.uri.path);
 
   /// "Clean my sink" on the native lock card (Android) or the shield
   /// notification (iOS): Sinkly opens on its full lock screen.

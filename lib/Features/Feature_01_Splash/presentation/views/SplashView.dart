@@ -29,7 +29,11 @@ class _SplashViewState extends State<SplashView> {
     return BlocListener<SplashCubit, AppStartDestination?>(
       listenWhen: (previous, current) => current != null,
       listener: (context, destination) {
-        context.go(destination == AppStartDestination.home ? AppRouter.kHomeView : AppRouter.kOnboardingView);
+        context.go(switch (destination!) {
+          AppStartDestination.home => AppRouter.kHomeView,
+          AppStartDestination.paywall => AppRouter.kSubscribeView,
+          AppStartDestination.onboarding => AppRouter.kOnboardingView,
+        });
         // Launched from a locked app: its lock overlay goes on top of Home.
         final lockRequest = context.read<SplashCubit>().pendingLockOverlay;
         if (lockRequest != null) AppRouter.openNativeLockRequest(lockRequest);

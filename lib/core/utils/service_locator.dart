@@ -85,7 +85,7 @@ Future<void> setupServiceLocator() async {
     ..registerLazySingleton<InstalledAppsPlatformDataSource>(MethodChannelInstalledAppsDataSource.new)
     // ── Feature 01 · Splash ──────────────────────────────────────────────
     ..registerLazySingleton<SplashLocalDataSource>(() => SplashLocalDataSourceImpl(getIt()))
-    ..registerLazySingleton<SplashRepo>(() => SplashRepoImpl(getIt(), getIt()))
+    ..registerLazySingleton<SplashRepo>(() => SplashRepoImpl(getIt(), getIt(), getIt()))
     // ── Feature 02 · Onboarding ──────────────────────────────────────────
     ..registerLazySingleton<OnboardingLocalDataSource>(() => OnboardingLocalDataSourceImpl(getIt()))
     ..registerLazySingleton<OnboardingRepo>(
@@ -109,7 +109,7 @@ Future<void> setupServiceLocator() async {
           : MockSubscriptionRemoteDataSource(getIt()),
     )
     ..registerLazySingleton<SubscriptionRepo>(
-      () => SubscriptionRepoImpl(remote: getIt(), blocking: getIt(), reminders: getIt()),
+      () => SubscriptionRepoImpl(remote: getIt(), blocking: getIt(), reminders: getIt(), storage: getIt()),
     )
     // ── Feature 05 · Home ────────────────────────────────────────────────
     ..registerLazySingleton<HomeLocalDataSource>(() => HomeLocalDataSourceImpl(getIt()))

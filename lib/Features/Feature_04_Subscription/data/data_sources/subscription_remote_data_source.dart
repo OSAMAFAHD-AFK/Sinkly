@@ -48,8 +48,8 @@ class PurchaseCancelledException implements Exception {
 }
 
 /// The store accepted the order but the payment isn't confirmed yet (Google
-/// Play cash / carrier billing, a parent's approval…). Premium turns on by
-/// itself once it is: nothing has failed.
+/// Play cash / carrier billing, a parent's approval…). Nothing has failed:
+/// Premium unlocks (Restore / reopening the app) once the store confirms it.
 class PurchasePendingException implements Exception {
   const PurchasePendingException();
 }

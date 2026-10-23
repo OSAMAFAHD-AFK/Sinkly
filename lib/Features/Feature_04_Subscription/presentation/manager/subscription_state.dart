@@ -24,7 +24,7 @@ class SubscriptionState extends Equatable {
   bool get isBusy => status == SubscriptionStatus.purchasing || status == SubscriptionStatus.restoring;
 
   /// [failureKey] is a notice, not an error: the store is still confirming
-  /// the payment and Premium will turn on by itself.
+  /// the payment (Restore / reopening the app unlocks Premium afterwards).
   bool get failureIsNotice => failureKey == SubscriptionRepo.paymentPendingKey;
 
   SubscriptionPlanModel? get selectedPlan {

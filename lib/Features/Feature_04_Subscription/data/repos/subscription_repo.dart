@@ -5,7 +5,7 @@ import '../models/subscription_plan_model.dart';
 
 abstract class SubscriptionRepo {
   /// Failure key of a purchase the store still has to confirm: a notice, not
-  /// an error (Premium turns on by itself once the payment goes through).
+  /// an error (Restore or reopening the app unlocks Premium once it clears).
   static const String paymentPendingKey = 'purchase_pending';
 
   /// Connects to the store and keeps the app in step with every status
@@ -22,6 +22,13 @@ abstract class SubscriptionRepo {
   Future<Either<Failure, bool>> restorePurchases();
 
   Future<bool> isPremiumActive();
+
+  /// App open: may the user go past the paywall? `false` only when the store
+  /// confirms there is no active subscription (free trial and billing grace
+  /// period count as active). No answer within [timeout] (offline, store
+  /// down) → the last confirmed answer, or `true` when there never was one:
+  /// a glitch never locks a subscriber out.
+  Future<bool> hasAccess({Duration timeout});
 
   /// Premium switched on / off (purchase, expiry, refund…) while the app runs.
   Stream<bool> get premiumChanges;
