@@ -89,11 +89,12 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
       });
       return;
     }
+    // Fresh every time: trial eligibility changes after a purchase / expiry.
     _cubit
-      ..loadPaywall()
+      ..loadPaywall(force: true)
       ..paywallShown();
     // Preloaded so the exit offer opens instantly.
-    _cubit.loadExitOffer();
+    _cubit.loadExitOffer(force: true);
     // A delayed close button keeps focus on the offer (common paywall practice).
     Future<void>.delayed(widget.closeButtonDelay, () {
       if (mounted) setState(() => _showCloseButton = true);
@@ -253,9 +254,11 @@ class _PaywallTrustChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const chips = [
+    // The billing reminder exists for free trials only.
+    final hasTrial = context.select((SubscriptionCubit c) => c.state.selectedPlan?.hasTrial ?? true);
+    final chips = [
       (Icons.event_available_rounded, 'paywall_trust_cancel'),
-      (Icons.notifications_active_rounded, 'paywall_trust_reminder'),
+      if (hasTrial) (Icons.notifications_active_rounded, 'paywall_trust_reminder'),
       (Icons.lock_rounded, 'paywall_trust_secure'),
     ];
     return Wrap(

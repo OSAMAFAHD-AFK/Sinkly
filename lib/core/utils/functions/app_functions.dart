@@ -30,6 +30,14 @@ abstract final class AppFunctions {
     (match) => '${match[0]!.codeUnitAt(0) & 0x0F}',
   );
 
+  /// A store price ("US$ ٣٩٫٩٩") as the app shows it: 0-9 digits and "." / ",",
+  /// inside a left-to-right isolate so Arabic / Hebrew text around it can't
+  /// reverse "US$39.99" into "$US 39.99". Display only: never parse it.
+  static String priceText(String price) {
+    final plain = westernDigits(price).replaceAll('٫', '.').replaceAll('٬', ',').trim();
+    return plain.isEmpty ? plain : '\u2066$plain\u2069';
+  }
+
   static String formatDateTimeClock(BuildContext context, DateTime dateTime) =>
       formatMinutesOfDay(context, dateTime.hour * 60 + dateTime.minute);
 

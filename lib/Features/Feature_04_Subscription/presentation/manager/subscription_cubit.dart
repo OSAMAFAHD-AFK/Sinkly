@@ -27,9 +27,13 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
     if (!isClosed) emit(state.copyWith(isPremium: isPremium));
   }
 
-  Future<void> loadPaywall({String placementId = AppConstants.onboardingPaywallPlacementId}) async {
-    if (state.plans.isNotEmpty) return;
-    emit(state.copyWith(status: SubscriptionStatus.loading, clearFailure: true));
+  /// [force]: ask the store again even if plans are already loaded (the paywall
+  /// opens again later: the free trial may no longer be on offer).
+  Future<void> loadPaywall({String placementId = AppConstants.onboardingPaywallPlacementId, bool force = false}) async {
+    if (state.plans.isNotEmpty && !force) return;
+    if (state.isBusy) return;
+    // Plans already on screen stay while the fresh ones load (no flicker).
+    emit(state.copyWith(status: state.plans.isEmpty ? SubscriptionStatus.loading : state.status, clearFailure: true));
     final result = await _repo.fetchPaywallPlans(placementId: placementId);
     result.fold(
       (failure) => emit(state.copyWith(status: SubscriptionStatus.failure, failureKey: failure.messageKey)),
@@ -52,8 +56,8 @@ class SubscriptionCubit extends Cubit<SubscriptionState> {
 
   // ── Paywall exit offer (opens every time the user taps "X") ─────────────
   /// Preloads the discounted plan so the sheet opens instantly.
-  Future<void> loadExitOffer() async {
-    if (state.exitOffer != null) return;
+  Future<void> loadExitOffer({bool force = false}) async {
+    if (state.exitOffer != null && !force) return;
     final result = await _repo.fetchPaywallPlans(placementId: AppConstants.exitOfferPlacementId);
     if (isClosed) return;
     result.fold((_) {}, (plans) {

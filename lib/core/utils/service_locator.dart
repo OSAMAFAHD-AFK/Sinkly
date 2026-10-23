@@ -93,6 +93,7 @@ Future<void> setupServiceLocator() async {
         localDataSource: getIt(),
         permissionsDataSource: getIt(),
         installedAppsDataSource: getIt(),
+        storeReviewDataSource: getIt(),
       ),
     )
     // ── Feature 03 · Feedback ────────────────────────────────────────────

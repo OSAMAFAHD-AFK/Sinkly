@@ -219,7 +219,9 @@ class _OfferCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final offer = context.select((SubscriptionCubit c) => c.state.exitOffer);
     final purchasing = context.select((SubscriptionCubit c) => c.state.status == SubscriptionStatus.purchasing);
-    final percent = '${offer?.discountPercent ?? ''}';
+    // "% off" only with a real discount: still loading, or equal prices → the plain wording.
+    final discount = offer?.discountPercent;
+    final percent = '${discount ?? ''}';
     const radius = BorderRadius.vertical(top: Radius.circular(AppRadii.large));
 
     return DecoratedBox(
@@ -259,12 +261,16 @@ class _OfferCard extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                context.tr('exit_offer_title', {'percent': percent}),
+                discount == null ? context.tr('exit_offer_title_plain') : context.tr('exit_offer_title', {'percent': percent}),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.headline.copyWith(fontSize: 24),
               ),
               const SizedBox(height: 6),
-              Text(context.tr('exit_offer_subtitle'), textAlign: TextAlign.center, style: AppTextStyles.caption),
+              Text(
+                context.tr(discount == null ? 'exit_offer_subtitle_plain' : 'exit_offer_subtitle'),
+                textAlign: TextAlign.center,
+                style: AppTextStyles.caption,
+              ),
               const SizedBox(height: AppSpacing.md + 4),
               if (offer == null)
                 Container(
@@ -278,7 +284,7 @@ class _OfferCard extends StatelessWidget {
                     .fade(begin: 0.55, end: 1, duration: 300.ms),
               const SizedBox(height: AppSpacing.md),
               CustomPrimaryButton(
-                label: context.tr('exit_offer_cta', {'percent': percent}),
+                label: discount == null ? context.tr('exit_offer_cta_plain') : context.tr('exit_offer_cta', {'percent': percent}),
                 showShimmer: true,
                 trailingIcon: Icons.card_giftcard_rounded,
                 isLoading: purchasing,

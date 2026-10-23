@@ -7,6 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 import '../../../../core/utils/app_constants.dart';
+import '../../../../core/utils/functions/app_functions.dart';
 import '../models/subscription_plan_model.dart';
 import '../models/subscription_status_model.dart';
 import 'subscription_remote_data_source.dart';
@@ -98,14 +99,16 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
           id: planId,
           vendorProductId: product.identifier,
           period: period,
-          localizedPrice: product.priceString,
-          localizedPricePerWeek: product.pricePerWeekString ?? product.priceString,
+          localizedPrice: AppFunctions.priceText(product.priceString),
+          localizedPricePerWeek: AppFunctions.priceText(product.pricePerWeekString ?? product.priceString),
           trialDays: (trialEligible[product.identifier] ?? true) ? _freeTrialDays(product) : 0,
           savingVsWeeklyPercent: period != SubscriptionPeriod.weekly && weekly != null
               ? _percentLess(product.price, weekly.storeProduct.price * _weeksIn(period))
               : null,
           discountPercent: discount != null && discount > 0 ? discount : null,
-          originalLocalizedPrice: discount != null && discount > 0 ? regularAnnual!.storeProduct.priceString : null,
+          originalLocalizedPrice: discount != null && discount > 0
+              ? AppFunctions.priceText(regularAnnual!.storeProduct.priceString)
+              : null,
         ),
       );
     }

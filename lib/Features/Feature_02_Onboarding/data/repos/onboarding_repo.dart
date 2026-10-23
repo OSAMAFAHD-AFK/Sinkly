@@ -29,4 +29,8 @@ abstract class OnboardingRepo {
 
   /// Apps installed on the device (empty on iOS — Apple's picker lists them).
   Future<List<BlockableAppModel>> loadInstalledApps();
+
+  /// The native Apple / Google rating sheet, at most once per install (the OS
+  /// still decides whether it shows). Best effort: never fails.
+  Future<void> requestStoreReviewOnce();
 }

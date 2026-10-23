@@ -81,7 +81,7 @@ class SettingsRepoImpl implements SettingsRepo {
   @override
   Future<Either<Failure, StoreReviewOutcome>> requestAppReview() async {
     try {
-      return right(await _storeReview.requestReview());
+      return right(await _storeReview.openStoreReviewPage());
     } catch (error) {
       return left(PlatformFailure('settings_rate_unavailable', debugMessage: '$error'));
     }

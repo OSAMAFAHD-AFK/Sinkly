@@ -52,6 +52,9 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   }
 
   // ── Navigation ─────────────────────────────────────────────────────────
+  /// Native store rating sheet, once, a moment after the plan reveal.
+  Future<void> requestStoreReview() => _repo.requestStoreReviewOnce();
+
   void nextStep() {
     if (state.currentStep.isPaywall) return;
     _goTo(OnboardingStep.values[state.stepIndex + 1]);

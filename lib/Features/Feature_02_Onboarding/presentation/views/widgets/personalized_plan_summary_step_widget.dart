@@ -17,8 +17,13 @@ import 'heroine_character_widget.dart';
 import 'onboarding_step_scaffold_widget.dart';
 
 /// Screen 13 — "{name}'s Sinkly plan is ready!" after a short build-up.
+/// A moment after the reveal, the native Apple / Google rating sheet is asked
+/// for (once per install; the OS decides whether it shows).
 class PersonalizedPlanSummaryStepWidget extends StatefulWidget {
   const PersonalizedPlanSummaryStepWidget({super.key});
+
+  /// Plan revealed → rating sheet: time to see the plan and the confetti.
+  static const Duration storeReviewDelay = Duration(seconds: 2);
 
   @override
   State<PersonalizedPlanSummaryStepWidget> createState() => _PersonalizedPlanSummaryStepWidgetState();
@@ -60,6 +65,11 @@ class _PersonalizedPlanSummaryStepWidgetState extends State<PersonalizedPlanSumm
                   if (!mounted) return;
                   AppFunctions.successHaptic();
                   setState(() => _planReady = true);
+                  final cubit = context.read<OnboardingCubit>();
+                  Future<void>.delayed(PersonalizedPlanSummaryStepWidget.storeReviewDelay, () {
+                    // Already moved on to the paywall: not over it.
+                    if (mounted) cubit.requestStoreReview();
+                  });
                 },
               ),
       ),

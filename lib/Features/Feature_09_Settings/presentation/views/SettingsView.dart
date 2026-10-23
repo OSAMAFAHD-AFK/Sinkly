@@ -53,7 +53,7 @@ class SettingsView extends StatelessWidget {
 
   Future<void> _rate(BuildContext context) async {
     final outcome = await context.read<SettingsCubit>().rateApp();
-    // Native sheet / store page handled it; otherwise explain (pre-launch).
+    // The store page opened; otherwise say so instead of doing nothing.
     if (outcome == StoreReviewOutcome.unavailable && context.mounted) {
       AppFunctions.showSnack(context, context.tr('settings_rate_unavailable'));
     }

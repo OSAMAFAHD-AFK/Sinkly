@@ -14,7 +14,8 @@ abstract class SettingsRepo {
   Future<Either<Failure, Unit>> setNotificationsEnabled(bool enabled);
   Future<Either<Failure, bool>> requestScreenTimePermission();
 
-  /// "Rate Sinkly": native Apple / Google rating sheet (store page fallback).
+  /// "Rate Sinkly": the App Store / Play Store page to write a review (a
+  /// button never uses the native sheet: the OS may silently skip it).
   Future<Either<Failure, StoreReviewOutcome>> requestAppReview();
 
   /// "Share with a friend": system share sheet. `Right(true)` = shared.
