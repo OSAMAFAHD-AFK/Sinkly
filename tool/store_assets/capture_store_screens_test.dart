@@ -126,6 +126,7 @@ void main() {
     GoogleFonts.config.allowRuntimeFetching = false;
     await _loadFonts();
     (plan, sessions, _) = _demoAccount(DateTime.now());
+    // ignore: invalid_use_of_visible_for_testing_member — this tool runs as a test.
     SharedPreferences.setMockInitialValues({
       'sinkly.user_plan': jsonEncode(plan.toJson()),
       'sinkly.sink_sessions': jsonEncode([for (final s in sessions) s.toJson()]),
