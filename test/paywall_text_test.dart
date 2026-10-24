@@ -6,12 +6,23 @@ import 'package:sinkly/core/utils/functions/app_functions.dart';
 
 void main() {
   group('store price text', () {
-    const lri = '⁦';
-    const pdi = '⁩';
+    const lri = '\u2066';
+    const pdi = '\u2069';
 
     test('Arabic-Indic digits and separators become 0-9 . ,', () {
-      expect(AppFunctions.priceText('US\$ ٣٩٫٩٩'), '${lri}US\$ 39.99$pdi');
-      expect(AppFunctions.priceText('١٬٢٣٤٫٥٠ ر.س'), '${lri}1,234.50 ر.س$pdi');
+      expect(AppFunctions.priceText('١٬٢٣٤٫٥٠ ر.س', currencyCode: 'SAR'), '${lri}1,234.50 ر.س$pdi');
+    });
+
+    test('US dollars show \$39.99 without "US"', () {
+      expect(AppFunctions.priceText('US\$ ٣٩٫٩٩', currencyCode: 'USD'), '$lri\$39.99$pdi');
+      expect(AppFunctions.priceText('US\$39.99', currencyCode: 'USD'), '$lri\$39.99$pdi');
+      expect(AppFunctions.priceText('\$4.99', currencyCode: 'USD'), '$lri\$4.99$pdi');
+    });
+
+    test('other currencies keep what the store writes (CA\$, A\$, US\$ outside USD)', () {
+      expect(AppFunctions.priceText('CA\$50.00', currencyCode: 'CAD'), '${lri}CA\$50.00$pdi');
+      expect(AppFunctions.priceText('A\$ ٧٫٩٩', currencyCode: 'AUD'), '${lri}A\$ 7.99$pdi');
+      expect(AppFunctions.priceText('US\$39.99'), '${lri}US\$39.99$pdi');
     });
 
     test('already plain prices stay as they are, in a left-to-right isolate', () {

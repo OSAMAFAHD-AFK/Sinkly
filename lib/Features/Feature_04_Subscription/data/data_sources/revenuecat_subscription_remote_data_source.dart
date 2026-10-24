@@ -99,15 +99,21 @@ class RevenueCatSubscriptionRemoteDataSource implements SubscriptionRemoteDataSo
           id: planId,
           vendorProductId: product.identifier,
           period: period,
-          localizedPrice: AppFunctions.priceText(product.priceString),
-          localizedPricePerWeek: AppFunctions.priceText(product.pricePerWeekString ?? product.priceString),
+          localizedPrice: AppFunctions.priceText(product.priceString, currencyCode: product.currencyCode),
+          localizedPricePerWeek: AppFunctions.priceText(
+            product.pricePerWeekString ?? product.priceString,
+            currencyCode: product.currencyCode,
+          ),
           trialDays: (trialEligible[product.identifier] ?? true) ? _freeTrialDays(product) : 0,
           savingVsWeeklyPercent: period != SubscriptionPeriod.weekly && weekly != null
               ? _percentLess(product.price, weekly.storeProduct.price * _weeksIn(period))
               : null,
           discountPercent: discount != null && discount > 0 ? discount : null,
           originalLocalizedPrice: discount != null && discount > 0
-              ? AppFunctions.priceText(regularAnnual!.storeProduct.priceString)
+              ? AppFunctions.priceText(
+                  regularAnnual!.storeProduct.priceString,
+                  currencyCode: regularAnnual.storeProduct.currencyCode,
+                )
               : null,
         ),
       );

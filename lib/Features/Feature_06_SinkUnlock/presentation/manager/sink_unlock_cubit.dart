@@ -86,15 +86,14 @@ class SinkUnlockCubit extends Cubit<SinkUnlockState> {
           failureKey: failure.messageKey,
         ),
       ),
-      (_) => _completeSession(photoPath),
+      (_) => _completeSession(),
     );
   }
 
-  Future<void> _completeSession(String photoPath) async {
+  Future<void> _completeSession() async {
     _sprintTimer?.cancel();
     final result = await _repo.completeSession(
       startedAt: state.sprintStartedAt ?? DateTime.now(),
-      photoPath: photoPath,
       triggeringMeal: state.lockStatus.lockingMeal,
     );
     result.fold((failure) => emit(state.copyWith(stage: SinkUnlockStage.sprinting, failureKey: failure.messageKey)), (

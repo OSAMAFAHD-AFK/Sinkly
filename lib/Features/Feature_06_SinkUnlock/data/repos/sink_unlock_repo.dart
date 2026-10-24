@@ -24,7 +24,6 @@ abstract class SinkUnlockRepo {
   /// Records the session and lifts the OS-level lock.
   Future<Either<Failure, SinkCleaningSessionModel>> completeSession({
     required DateTime startedAt,
-    required String photoPath,
     required MealType? triggeringMeal,
   });
 

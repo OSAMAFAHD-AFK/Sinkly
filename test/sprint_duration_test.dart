@@ -17,6 +17,9 @@ class _Online implements ConnectivityProbeDataSource {
 class _NoCapture implements SinkPhotoCaptureDataSource {
   @override
   Future<String?> captureSinkPhoto() async => null;
+
+  @override
+  Future<void> discardSinkPhoto(String photoPath) async {}
 }
 
 SinkUnlockCubit _cubit(LocalStorageService storage) => SinkUnlockCubit(

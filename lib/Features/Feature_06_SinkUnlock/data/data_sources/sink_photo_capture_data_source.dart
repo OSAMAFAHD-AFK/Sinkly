@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -11,6 +13,10 @@ import '../../../../core/utils/app_constants.dart';
 abstract class SinkPhotoCaptureDataSource {
   /// Returns the local file path, or `null` if the user cancelled.
   Future<String?> captureSinkPhoto();
+
+  /// Deletes the photo for good (and every copy the camera plugin made of it).
+  /// Called as soon as the check is over: Sinkly never keeps a photo.
+  Future<void> discardSinkPhoto(String photoPath);
 }
 
 class SinkPhotoCaptureDataSourceImpl implements SinkPhotoCaptureDataSource {
@@ -42,5 +48,22 @@ class SinkPhotoCaptureDataSourceImpl implements SinkPhotoCaptureDataSource {
       );
     }
     return file?.path;
+  }
+
+  /// The camera plugin keeps the full-size original (and the resized copy it
+  /// returns) as `image_picker…` files in the same cache folder.
+  static final RegExp _cameraPluginFile = RegExp(r'^(scaled_)?image_picker.*\.(jpe?g|png|webp)$', caseSensitive: false);
+
+  @override
+  Future<void> discardSinkPhoto(String photoPath) async {
+    try {
+      final file = File(photoPath);
+      if (await file.exists()) await file.delete();
+      await for (final entity in file.parent.list(followLinks: false)) {
+        if (entity is File && _cameraPluginFile.hasMatch(entity.uri.pathSegments.last)) await entity.delete();
+      }
+    } catch (_) {
+      // Best effort: the OS clears its cache folder anyway.
+    }
   }
 }

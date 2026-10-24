@@ -4,6 +4,17 @@ export const REASONS = ["clean", "dishes", "dirt", "no_sink", "not_real_photo", 
 export type Reason = (typeof REASONS)[number];
 export type Verdict = { clean: boolean; reason: Reason };
 
+/**
+ * RevenueCat's anonymous customer id, the only kind the app uses:
+ * "$RCAnonymousID:" + 32 hex characters. Anything else is refused before RevenueCat is asked
+ * (so made-up ids can't create junk customers there).
+ */
+export const CUSTOMER_ID_PATTERN = /^\$RCAnonymousID:[0-9a-fA-F]{32}$/;
+
+export function isValidCustomerId(value: unknown): value is string {
+  return typeof value === "string" && CUSTOMER_ID_PATTERN.test(value);
+}
+
 /** The app sends ≤1024 px JPEGs (~150-300 KB). Anything bigger is rejected before it costs money. */
 export const MAX_IMAGE_BYTES = 700_000;
 

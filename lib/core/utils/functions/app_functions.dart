@@ -32,9 +32,12 @@ abstract final class AppFunctions {
 
   /// A store price ("US$ ٣٩٫٩٩") as the app shows it: 0-9 digits and "." / ",",
   /// inside a left-to-right isolate so Arabic / Hebrew text around it can't
-  /// reverse "US$39.99" into "$US 39.99". Display only: never parse it.
-  static String priceText(String price) {
-    final plain = westernDigits(price).replaceAll('٫', '.').replaceAll('٬', ',').trim();
+  /// reverse "$39.99" into "99.39$". US dollars lose their "US" ("$39.99");
+  /// every other currency keeps exactly what the store writes (CA$, A$, HK$…).
+  /// Display only: never parse it.
+  static String priceText(String price, {String? currencyCode}) {
+    var plain = westernDigits(price).replaceAll('٫', '.').replaceAll('٬', ',').trim();
+    if (currencyCode == 'USD') plain = plain.replaceAll('US\$', '\$').replaceAll('\$ ', '\$');
     return plain.isEmpty ? plain : '\u2066$plain\u2069';
   }
 

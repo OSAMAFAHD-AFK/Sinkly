@@ -1,7 +1,7 @@
 name: sinkly
 description: "Sinkly — clean the sink, unlock your apps. Guilt-free scrolling, earned."
 publish_to: 'none'
-version: 1.0.0+6
+version: 1.0.0+7
 
 environment:
   sdk: ^3.13.2

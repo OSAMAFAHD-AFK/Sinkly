@@ -71,13 +71,15 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
       // A real bug: reported to Crashlytics (no photo, no personal data).
       CrashReportingService.recordError(error, stack, reason: 'photo check');
       return left(VerificationFailure('verify_error_unreadable', debugMessage: '$error'));
+    } finally {
+      // Whatever the answer: the photo has done its job and is deleted.
+      await _capture.discardSinkPhoto(photoPath);
     }
   }
 
   @override
   Future<Either<Failure, SinkCleaningSessionModel>> completeSession({
     required DateTime startedAt,
-    required String photoPath,
     required MealType? triggeringMeal,
   }) async {
     try {
@@ -87,7 +89,6 @@ class SinkUnlockRepoImpl implements SinkUnlockRepo {
         startedAt: startedAt,
         completedAt: now,
         triggeringMeal: triggeringMeal,
-        photoPath: photoPath,
       );
       // Saving the session IS the unlock: AppBlockingRepo sees it and tells
       // the native blocker at once.
