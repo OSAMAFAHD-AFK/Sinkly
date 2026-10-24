@@ -15,7 +15,6 @@ import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'paywall_plan_card_widget.dart' show PaywallPlanCardWidget;
 import 'onboarding_step_header_widget.dart';
-import 'heroine_character_widget.dart';
 import 'paywall_exit_offer_sheet_widget.dart';
 import 'paywall_heroine_hero_widget.dart';
 import 'paywall_plan_card_widget.dart';
@@ -77,16 +76,6 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _celebrating = false;
   bool _exitOfferOpen = false;
 
-  // One screen, no scrolling: on shorter phones the heroine gets smaller (never
-  // the prices, texts or buttons) until everything fits. Very small phones or
-  // very large text still scroll as a last resort, so nothing is ever cut off.
-  static const _heroMinWidth = 64.0;
-  double _heroWidth = PaywallHeroineHeroWidget.maxCharacterWidth;
-
-  /// The width the last layout used: the overflow a notification reports was
-  /// measured with it (a newer [_heroWidth] may not be laid out yet).
-  double _laidOutHeroWidth = PaywallHeroineHeroWidget.maxCharacterWidth;
-
   late final SubscriptionCubit _cubit = context.read<SubscriptionCubit>();
 
   @override
@@ -142,21 +131,8 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     if (purchased) await _celebrate();
   }
 
-  bool _shrinkHeroToFit(ScrollMetricsNotification notification) {
-    final overflow = notification.metrics.maxScrollExtent;
-    if (notification.depth != 0 || overflow < 1) return false;
-    final width = (_laidOutHeroWidth - overflow / HeroineCharacterWidget.heightFor(1)).clamp(
-      _heroMinWidth,
-      PaywallHeroineHeroWidget.maxCharacterWidth,
-    );
-    // Sent after the frame, so a rebuild is allowed here. Only ever shrinks.
-    if (width < _heroWidth) setState(() => _heroWidth = width);
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
-    _laidOutHeroWidth = _heroWidth;
     // Plans still loading: the trial headline, as before.
     final hasTrial = context.select((SubscriptionCubit c) => c.state.selectedPlan?.hasTrial ?? true);
     return BlocListener<SubscriptionCubit, SubscriptionState>(
@@ -180,42 +156,61 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
             Column(
               children: [
                 _PaywallTopBar(showClose: _showCloseButton, onClose: _onExitAttempt, onRestore: _restore),
+                // The heroine always keeps her natural size. A short phone scrolls;
+                // on a tall one the spare height is shared equally above the plans
+                // and below them (never one empty gap above the button).
                 Expanded(
-                  child: NotificationListener<ScrollMetricsNotification>(
-                    onNotification: _shrinkHeroToFit,
-                    child: SingleChildScrollView(
+                  child: LayoutBuilder(
+                    builder: (context, viewport) => SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Hidden while the exit sheet shows her crying (one heroine at a time).
-                          AnimatedOpacity(
-                            opacity: _exitOfferOpen ? 0 : 1,
-                            duration: AppDurations.medium,
-                            child: PaywallHeroineHeroWidget(celebrating: _celebrating, characterWidth: _heroWidth),
-                          ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
-                          OnboardingStepHeaderWidget(
-                            title: context.tr(
-                              PaywallStepWidget.titleKey(hasTrial: hasTrial, hasName: widget.userName.isNotEmpty),
-                              {
-                                // Bidi isolate: a Latin name inside Arabic text stays one
-                                // unit, so its letters and the punctuation keep their order.
-                                'name': '\u2068${widget.userName}\u2069',
-                                'days': '${AppConstants.freeTrialDays}',
-                              },
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(minHeight: viewport.maxHeight),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Hidden while the exit sheet shows her crying (one heroine at a time).
+                                AnimatedOpacity(
+                                  opacity: _exitOfferOpen ? 0 : 1,
+                                  duration: AppDurations.medium,
+                                  child: PaywallHeroineHeroWidget(celebrating: _celebrating),
+                                ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
+                                OnboardingStepHeaderWidget(
+                                  title: context.tr(
+                                    PaywallStepWidget.titleKey(hasTrial: hasTrial, hasName: widget.userName.isNotEmpty),
+                                    {
+                                      // Bidi isolate: a Latin name inside Arabic text stays one
+                                      // unit, so its letters and the punctuation keep their order.
+                                      'name': '\u2068${widget.userName}\u2069',
+                                      'days': '${AppConstants.freeTrialDays}',
+                                    },
+                                  ),
+                                  highlight: widget.userName,
+                                  description: context.tr('paywall_subtitle'),
+                                  textAlign: TextAlign.center,
+                                ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
+                                const SizedBox(height: AppSpacing.md + 6),
+                              ],
                             ),
-                            highlight: widget.userName,
-                            description: context.tr('paywall_subtitle'),
-                            textAlign: TextAlign.center,
-                          ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
-                          // Plans first: both prices visible without scrolling (clarity
-                          // converts better and is what App Review expects).
-                          const SizedBox(height: AppSpacing.md + 6),
-                          const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
-                          const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
-                          const SizedBox(height: AppSpacing.md),
-                        ],
+                            // Plans first: both prices visible without scrolling (clarity
+                            // converts better and is what App Review expects).
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
+                                const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
+                                const SizedBox(height: AppSpacing.md),
+                              ],
+                            ),
+                            // Empty third slot: with spaceBetween the spare height is split
+                            // between "above the plans" and "below the plans".
+                            const SizedBox.shrink(),
+                          ],
+                        ),
                       ),
                     ),
                   ),
