@@ -8,7 +8,6 @@ import '../../../../../core/utils/app_localizations.dart';
 import '../../../../../core/utils/functions/app_functions.dart';
 import '../../../../../core/utils/style.dart';
 import '../../../../../core/widgets/app_toast_widget.dart';
-import '../../../../../core/widgets/custom_card_container.dart';
 import '../../../../../core/widgets/custom_primary_button.dart';
 import '../../../../../core/widgets/floating_soap_bubbles_widget.dart';
 import '../../../../../core/widgets/glass_icon_button.dart';
@@ -16,6 +15,7 @@ import '../../../../../core/widgets/confetti_burst_widget.dart';
 import '../../../../Feature_04_Subscription/presentation/manager/subscription_cubit.dart';
 import 'paywall_plan_card_widget.dart' show PaywallPlanCardWidget;
 import 'onboarding_step_header_widget.dart';
+import 'heroine_character_widget.dart';
 import 'paywall_exit_offer_sheet_widget.dart';
 import 'paywall_heroine_hero_widget.dart';
 import 'paywall_plan_card_widget.dart';
@@ -77,6 +77,16 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
   bool _celebrating = false;
   bool _exitOfferOpen = false;
 
+  // One screen, no scrolling: on shorter phones the heroine gets smaller (never
+  // the prices, texts or buttons) until everything fits. Very small phones or
+  // very large text still scroll as a last resort, so nothing is ever cut off.
+  static const _heroMinWidth = 64.0;
+  double _heroWidth = PaywallHeroineHeroWidget.maxCharacterWidth;
+
+  /// The width the last layout used: the overflow a notification reports was
+  /// measured with it (a newer [_heroWidth] may not be laid out yet).
+  double _laidOutHeroWidth = PaywallHeroineHeroWidget.maxCharacterWidth;
+
   late final SubscriptionCubit _cubit = context.read<SubscriptionCubit>();
 
   @override
@@ -132,8 +142,21 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
     if (purchased) await _celebrate();
   }
 
+  bool _shrinkHeroToFit(ScrollMetricsNotification notification) {
+    final overflow = notification.metrics.maxScrollExtent;
+    if (notification.depth != 0 || overflow < 1) return false;
+    final width = (_laidOutHeroWidth - overflow / HeroineCharacterWidget.heightFor(1)).clamp(
+      _heroMinWidth,
+      PaywallHeroineHeroWidget.maxCharacterWidth,
+    );
+    // Sent after the frame, so a rebuild is allowed here. Only ever shrinks.
+    if (width < _heroWidth) setState(() => _heroWidth = width);
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
+    _laidOutHeroWidth = _heroWidth;
     // Plans still loading: the trial headline, as before.
     final hasTrial = context.select((SubscriptionCubit c) => c.state.selectedPlan?.hasTrial ?? true);
     return BlocListener<SubscriptionCubit, SubscriptionState>(
@@ -158,41 +181,42 @@ class _PaywallStepWidgetState extends State<PaywallStepWidget> {
               children: [
                 _PaywallTopBar(showClose: _showCloseButton, onClose: _onExitAttempt, onRestore: _restore),
                 Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Hidden while the exit sheet shows her crying (one heroine at a time).
-                        AnimatedOpacity(
-                          opacity: _exitOfferOpen ? 0 : 1,
-                          duration: AppDurations.medium,
-                          child: PaywallHeroineHeroWidget(celebrating: _celebrating),
-                        ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
-                        OnboardingStepHeaderWidget(
-                          title: context.tr(
-                            PaywallStepWidget.titleKey(hasTrial: hasTrial, hasName: widget.userName.isNotEmpty),
-                            {
-                              // Bidi isolate: a Latin name inside Arabic text stays one
-                              // unit, so its letters and the punctuation keep their order.
-                              'name': '\u2068${widget.userName}\u2069',
-                              'days': '${AppConstants.freeTrialDays}',
-                            },
-                          ),
-                          highlight: widget.userName,
-                          description: context.tr('paywall_subtitle'),
-                          textAlign: TextAlign.center,
-                        ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
-                        // Plans first: both prices visible without scrolling (clarity
-                        // converts better and is what App Review expects).
-                        const SizedBox(height: AppSpacing.md + 6),
-                        const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
-                        const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
-                        const SizedBox(height: AppSpacing.md),
-                        const _PaywallFeatureList().animate(delay: 300.ms).fadeIn().slideY(begin: 0.06),
-                        const SizedBox(height: AppSpacing.md),
-                      ],
+                  child: NotificationListener<ScrollMetricsNotification>(
+                    onNotification: _shrinkHeroToFit,
+                    child: SingleChildScrollView(
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenGutter),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Hidden while the exit sheet shows her crying (one heroine at a time).
+                          AnimatedOpacity(
+                            opacity: _exitOfferOpen ? 0 : 1,
+                            duration: AppDurations.medium,
+                            child: PaywallHeroineHeroWidget(celebrating: _celebrating, characterWidth: _heroWidth),
+                          ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
+                          OnboardingStepHeaderWidget(
+                            title: context.tr(
+                              PaywallStepWidget.titleKey(hasTrial: hasTrial, hasName: widget.userName.isNotEmpty),
+                              {
+                                // Bidi isolate: a Latin name inside Arabic text stays one
+                                // unit, so its letters and the punctuation keep their order.
+                                'name': '\u2068${widget.userName}\u2069',
+                                'days': '${AppConstants.freeTrialDays}',
+                              },
+                            ),
+                            highlight: widget.userName,
+                            description: context.tr('paywall_subtitle'),
+                            textAlign: TextAlign.center,
+                          ).animate(delay: 100.ms).fadeIn().slideY(begin: 0.08),
+                          // Plans first: both prices visible without scrolling (clarity
+                          // converts better and is what App Review expects).
+                          const SizedBox(height: AppSpacing.md + 6),
+                          const _PaywallPlansSection().animate(delay: 200.ms).fadeIn().slideY(begin: 0.06),
+                          const _PaywallTrustChips().animate(delay: 260.ms).fadeIn(),
+                          const SizedBox(height: AppSpacing.md),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -290,39 +314,6 @@ class _PaywallTrustChips extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-class _PaywallFeatureList extends StatelessWidget {
-  const _PaywallFeatureList();
-
-  @override
-  Widget build(BuildContext context) {
-    const features = [
-      ('🔒', 'paywall_feature_smart_lock'),
-      ('📸', 'paywall_feature_photo_unlock'),
-      ('🗓️', 'paywall_feature_unlimited'),
-      ('🔥', 'paywall_feature_streaks'),
-    ];
-    return CustomCardContainer(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-      child: Column(
-        children: [
-          for (final (emoji, key) in features)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  Text(emoji, style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(child: Text(context.tr(key), style: AppTextStyles.bodyStrong.copyWith(fontSize: 14.5))),
-                  const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 20),
-                ],
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

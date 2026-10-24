@@ -49,6 +49,8 @@ abstract final class AppColors {
   // ── Semantic ───────────────────────────────────────────────────────────
   static const Color success = Color(0xFF34C38F);
   static const Color successSoft = Color(0xFFE3F8EF);
+  static const Color successInk = Color(0xFF1E8A5F); // green small text on white
+
   static const Color warning = Color(0xFFFFB547);
   static const Color warningSoft = Color(0xFFFFF4E0);
   static const Color danger = Color(0xFFFF6B6B);

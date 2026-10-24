@@ -16,9 +16,12 @@ import '../../../../Feature_04_Subscription/data/models/subscription_plan_model.
 /// around its border, the radio springs in and the price grows.
 /// The "Save X%" ribbon shimmers to anchor attention on the best value.
 ///
-/// Store compliance: the BILLED price ([SubscriptionPlanModel.localizedPrice]
-/// + its period) is the biggest price on the card; the per-week equivalent is
-/// a small secondary line, and the trial terms are spelled out.
+/// One fact per line, so the price is never repeated: the BILLED price
+/// ([SubscriptionPlanModel.localizedPrice] + its period) appears once, as the
+/// biggest text on the card (store compliance), with a small "then" before it
+/// when there is a free trial. The lines under the title only say what the
+/// price doesn't: the free days, the per-week equivalent (longer plans), or
+/// that the weekly plan renews every week (no trial).
 class PaywallPlanCardWidget extends StatelessWidget {
   const PaywallPlanCardWidget({super.key, required this.plan, required this.isSelected, required this.onTap});
 
@@ -30,19 +33,6 @@ class PaywallPlanCardWidget extends StatelessWidget {
     SubscriptionPeriod.annual => 'plan_annual_title',
     SubscriptionPeriod.monthly => 'plan_monthly_title',
     SubscriptionPeriod.weekly => 'plan_weekly_title',
-  };
-
-  static String trialLineKey(SubscriptionPeriod period) => switch (period) {
-    SubscriptionPeriod.annual => 'plan_trial_then_year',
-    SubscriptionPeriod.monthly => 'plan_trial_then_month',
-    SubscriptionPeriod.weekly => 'plan_trial_then_week',
-  };
-
-  /// No free trial (store says not eligible / none configured): the billed price.
-  static String billedLineKey(SubscriptionPeriod period) => switch (period) {
-    SubscriptionPeriod.annual => 'plan_billed_year',
-    SubscriptionPeriod.monthly => 'plan_billed_month',
-    SubscriptionPeriod.weekly => 'plan_billed_week',
   };
 
   static String perPeriodKey(SubscriptionPeriod period) => switch (period) {
@@ -69,10 +59,14 @@ class PaywallPlanCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final title = context.tr(titleKey(plan.period));
-    final priceLine = plan.hasTrial
-        ? context.tr(trialLineKey(plan.period), {'days': '${plan.trialDays}', 'price': plan.localizedPrice})
-        : context.tr(billedLineKey(plan.period), {'price': plan.localizedPrice});
-    final showWeeklyEquivalent = plan.period != SubscriptionPeriod.weekly;
+    final trialLine = plan.hasTrial ? context.tr('plan_trial_first', {'days': '${plan.trialDays}'}) : null;
+    final perWeekLine = plan.period == SubscriptionPeriod.weekly
+        ? null
+        : context.tr('plan_per_week_equivalent', {'price': plan.localizedPricePerWeek});
+    // Weekly without a trial would have no line at all: say how it bills.
+    final renewsLine = trialLine == null && perWeekLine == null ? context.tr('plan_renews_week') : null;
+    final then = plan.hasTrial ? context.tr('plan_then') : null;
+    final per = context.tr(perPeriodKey(plan.period));
     final ribbon = plan.savingVsWeeklyPercent == null
         ? null
         : context.tr('plan_save_badge', {'percent': '${plan.savingVsWeeklyPercent}'});
@@ -108,16 +102,34 @@ class PaywallPlanCardWidget extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 2),
-                  Text(priceLine, style: AppTextStyles.caption.copyWith(fontSize: 12.5)),
-                  if (showWeeklyEquivalent)
+                  if (trialLine != null)
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.card_giftcard_rounded, size: 14, color: AppColors.successInk),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            trialLine,
+                            style: AppTextStyles.caption.copyWith(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.successInk,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  if (perWeekLine != null)
                     Text(
-                      context.tr('plan_per_week_equivalent', {'price': plan.localizedPricePerWeek}),
+                      perWeekLine,
                       style: AppTextStyles.caption.copyWith(
-                        fontSize: 11.5,
+                        fontSize: trialLine == null ? 12.5 : 11.5,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primaryInk,
                       ),
                     ),
+                  if (renewsLine != null) Text(renewsLine, style: AppTextStyles.caption.copyWith(fontSize: 12.5)),
                 ],
               ),
             ),
@@ -139,11 +151,22 @@ class PaywallPlanCardWidget extends StatelessWidget {
                         color: AppColors.inkMuted,
                       ),
                     ),
-                  Text(
-                    plan.localizedPrice,
-                    style: AppTextStyles.title.copyWith(color: isSelected ? AppColors.primaryInk : AppColors.ink),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      if (then != null) ...[
+                        Text(then, style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
+                        const SizedBox(width: 4),
+                      ],
+                      Text(
+                        plan.localizedPrice,
+                        style: AppTextStyles.title.copyWith(color: isSelected ? AppColors.primaryInk : AppColors.ink),
+                      ),
+                    ],
                   ),
-                  Text(context.tr(perPeriodKey(plan.period)), style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
+                  Text(per, style: AppTextStyles.caption.copyWith(fontSize: 11.5)),
                 ],
               ),
             ),
@@ -154,7 +177,7 @@ class PaywallPlanCardWidget extends StatelessWidget {
 
     return AnimatedPressableWidget(
       onTap: onTap,
-      semanticLabel: '$title, $priceLine',
+      semanticLabel: [title, trialLine, perWeekLine, renewsLine, then, plan.localizedPrice, per].nonNulls.join(', '),
       child: AnimatedScale(
         scale: isSelected ? 1 : 0.97,
         duration: AppDurations.medium,

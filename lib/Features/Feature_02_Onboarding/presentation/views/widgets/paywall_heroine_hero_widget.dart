@@ -23,10 +23,16 @@ import 'rising_emoji_particles_widget.dart';
 ///  • Every few seconds of hesitation she waves "psst… 3 days free".
 ///  • While the purchase runs she hugs a heart; on success she cheers.
 class PaywallHeroineHeroWidget extends StatefulWidget {
-  const PaywallHeroineHeroWidget({super.key, required this.celebrating});
+  const PaywallHeroineHeroWidget({super.key, required this.celebrating, this.characterWidth = maxCharacterWidth});
+
+  static const double maxCharacterWidth = 138;
 
   /// Purchase succeeded — play the celebration.
   final bool celebrating;
+
+  /// Smaller on short phones so the whole paywall fits one screen; the speech
+  /// bubble keeps its size (always readable).
+  final double characterWidth;
 
   @override
   State<PaywallHeroineHeroWidget> createState() => _PaywallHeroineHeroWidgetState();
@@ -108,7 +114,7 @@ class _PaywallHeroineHeroWidgetState extends State<PaywallHeroineHeroWidget> {
     final warm = widget.celebrating || purchasing || annual;
     final showJoyParticles = _reaction == _PlanReaction.joy && !purchasing && !widget.celebrating;
 
-    const characterWidth = 138.0;
+    final characterWidth = widget.characterWidth;
     final height = HeroineCharacterWidget.heightFor(characterWidth);
 
     return BlocListener<SubscriptionCubit, SubscriptionState>(
